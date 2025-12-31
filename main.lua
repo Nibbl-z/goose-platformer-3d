@@ -31,12 +31,12 @@ function love.wheelmoved(x, y)
 end
 
 function love.update(dt)
-    player:update()
+    player:update(dt)
 end
 
 function love.draw()
     for _, v in pairs(platforms) do
-        v:draw()
+       v:draw()
     end
 
     player:draw()

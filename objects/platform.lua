@@ -5,7 +5,7 @@ platform.__index = platform
 
 function platform:new(position, size)
     local object = {
-        model = g3d.newModel("models/cube.obj", assets["img/goog.png"], position, vec3.new(0,0,0), size)
+        model = g3d.newModel("models/cube.obj", assets["img/goog.png"], position:get(), vec3.new(0,0,0):get(), size:get())
     }
 
     setmetatable(object, self)
