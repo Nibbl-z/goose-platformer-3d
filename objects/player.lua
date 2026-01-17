@@ -6,12 +6,15 @@ player.__index = player
 local CAMERA_DISTANCE = 5
 local SENSITIVITY = 0.1
 local RUN_SPEED = 15
+local JUMP_HEIGHT = 15
 local MOVE_DIRECTIONS = {
     w = 0,
     a = 90,
     s = 180,
     d = 270
 }
+
+local GRAVITY = 20
 
 function player:new()
     local object = {
@@ -25,6 +28,8 @@ function player:new()
         modelDirection = 0,
         lastDirection = 0,
         directionAdd = 0,
+        velocity = vec3.new(0, -GRAVITY, 0),
+        grounded = false
     }
 
     setmetatable(object, self)
@@ -34,17 +39,20 @@ end
 function player:mousemoved(x, y, dx, dy)
     self.camera.rotation = self.camera.rotation - vec3.new(0, dx * SENSITIVITY, dy * SENSITIVITY)
     self.camera.rotation.z = math.clamp(self.camera.rotation.z, -90, 90)
-
-    
-
-    
-
-    -- print(self.camera.rotation:get())
-    -- print(self.camera.position:get())
-    -- print("..")
 end
 
-function player:update(dt)
+function player:isGrounded(platforms)
+    -- This is probably bad.
+    for _, platform in ipairs(platforms) do
+        local _, x, y, z = g3d.collisions.sphereIntersection(platform.model.verts, platform.model, self.position.x, self.position.z, self.position.y - 1.5, 0.1)
+        if x ~= nil then
+            
+            return x + platform.model.translation[1], y + platform.model.translation[3], z + platform.model.translation[2]
+        end
+    end
+end
+
+function player:update(dt, platforms)
     self.camera.position = vec3.new(
         math.cos(math.rad(self.camera.rotation.y)) * math.cos(math.rad(self.camera.rotation.z)) * -CAMERA_DISTANCE, 
         math.sin(math.rad(self.camera.rotation.z)) * -CAMERA_DISTANCE, 
@@ -73,32 +81,34 @@ function player:update(dt)
     if direction.x == 0 then
         modelRotation = 0
     end
-    
 
     if keysDown > 0 then
-        -- if self.lastDirection > 0 and modelRotation < 0 then
-        --     print("correcting left turn")
-        --     self.directionAdd = self.directionAdd + math.rad(180)
-        -- end
-
-        -- if self.lastDirection < 0 and modelRotation > 0 then
-        --     print("correcting right turn")
-        --     self.directionAdd = self.directionAdd - math.rad(180)
-        -- end
-
-        -- Oh my god.
-
         self.modelDirection = modelRotation
     end
-    
-    
+
+    if self.grounded and love.keyboard.isDown("space") then
+        self.grounded = false
+        self.velocity = vec3.new(0,JUMP_HEIGHT,0)
+    end
+
     self.model:setRotation(0, 0, self.modelDirection)
 
     self.position = self.position + direction:normalize() * dt * RUN_SPEED
+
+    self.position = self.position + self.velocity * dt
+
+    local gx, gy, gz = self:isGrounded(platforms)
+
+    if gx ~= nil then
+        self.velocity = vec3.new(0,0,0)
+        self.grounded = true
+    else
+        self.velocity.y = math.clamp(self.velocity.y - dt * GRAVITY, -40, 40)
+    end
+
     self.lerpPosition:lerp(self.position, dt * 30)
     g3d.camera.lookInDirection(self.camera.position.x, self.camera.position.z, self.camera.position.y, math.rad(self.camera.rotation.y), math.rad(self.camera.rotation.z))
-    
-    
+
     self.model:setTranslation(self.position.x, self.position.z, self.position.y)
 
     self.lastDirection = modelRotation

@@ -11,7 +11,10 @@ function love.load()
 
     biribiri:LoadSprites("img")
 
-    table.insert(platforms, Platform:new(vec3.new(0,-3,0), vec3.new(5,1,5)))
+    table.insert(platforms, Platform:new(vec3.new(0,-50,0), vec3.new(30,1,30)))
+
+    table.insert(platforms, Platform:new(vec3.new(40,-48,0), vec3.new(30,1,30)))
+    table.insert(platforms, Platform:new(vec3.new(40,-48,0), vec3.new(10,10,10)))
 
     -- table.insert(platforms, Platform:new(vec3.new(1, 0, 0)))
 
@@ -31,7 +34,7 @@ function love.wheelmoved(x, y)
 end
 
 function love.update(dt)
-    player:update(dt)
+    player:update(dt, platforms)
 end
 
 function love.draw()
