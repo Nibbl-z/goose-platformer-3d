@@ -5,8 +5,8 @@ player.__index = player
 
 local CAMERA_DISTANCE = 5
 local SENSITIVITY = 0.1
-local RUN_SPEED = 15
-local JUMP_HEIGHT = 15
+local RUN_SPEED = 20
+local JUMP_HEIGHT = 35
 local MOVE_DIRECTIONS = {
     w = 0,
     a = 90,
@@ -14,7 +14,7 @@ local MOVE_DIRECTIONS = {
     d = 270
 }
 
-local GRAVITY = 20
+local GRAVITY = 70
 
 function player:new()
     local object = {
@@ -48,6 +48,22 @@ function player:isGrounded(platforms)
         if x ~= nil then
             
             return x + platform.model.translation[1], y + platform.model.translation[3], z + platform.model.translation[2]
+        end
+    end
+end
+
+function player:solveCollision(platforms, dt)
+    -- This is probably worse.
+
+    for _, platform in ipairs(platforms) do
+        local distance, x, z, _, nx, nz = g3d.collisions.capsuleIntersection(platform.model.verts, platform.model, self.position.x, self.position.z, self.position.y - 1.5, self.position.x, self.position.z, self.position.y + 1.5, 1.0)
+        
+        if distance ~= nil then  
+            self.grounded = true
+            
+            self.position.x = self.position.x + nx * math.clamp(dt, 0, 1) * RUN_SPEED
+            self.position.z = self.position.z + nz * math.clamp(dt, 0, 1) * RUN_SPEED
+
         end
     end
 end
@@ -98,6 +114,7 @@ function player:update(dt, platforms)
     self.position = self.position + self.velocity * dt
 
     local gx, gy, gz = self:isGrounded(platforms)
+   
 
     if gx ~= nil then
         self.velocity = vec3.new(0,0,0)
@@ -108,9 +125,9 @@ function player:update(dt, platforms)
 
     self.lerpPosition:lerp(self.position, dt * 30)
     g3d.camera.lookInDirection(self.camera.position.x, self.camera.position.z, self.camera.position.y, math.rad(self.camera.rotation.y), math.rad(self.camera.rotation.z))
-
+    self:solveCollision(platforms, dt)
     self.model:setTranslation(self.position.x, self.position.z, self.position.y)
-
+     
     self.lastDirection = modelRotation
 end
 
