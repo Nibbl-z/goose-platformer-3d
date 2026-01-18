@@ -5,8 +5,9 @@ player.__index = player
 
 local CAMERA_DISTANCE = 5
 local SENSITIVITY = 0.1
-local RUN_SPEED = 20
+local RUN_SPEED = 25
 local JUMP_HEIGHT = 35
+
 local MOVE_DIRECTIONS = {
     w = 0,
     a = 90,
@@ -26,8 +27,9 @@ function player:new()
         position = vec3.new(0,0,0),
         lerpPosition = vec3.new(0,0,0),
         modelDirection = 0,
-        lastDirection = 0,
+        lastDirection = vec3.new(0,0,0),
         directionAdd = 0,
+        acceleration = 0.0,
         velocity = vec3.new(0, -GRAVITY, 0),
         grounded = false
     }
@@ -99,17 +101,21 @@ function player:update(dt, platforms)
     end
 
     if keysDown > 0 then
+        self.lastDirection = direction
+        self.acceleration = math.clamp(self.acceleration + dt * 4, 0, 1)
         self.modelDirection = modelRotation
+    else
+        self.acceleration = math.clamp(self.acceleration - dt * 4, 0, 1)
     end
 
     if self.grounded and love.keyboard.isDown("space") then
         self.grounded = false
-        self.velocity = vec3.new(0,JUMP_HEIGHT,0)
+        self.velocity.y = JUMP_HEIGHT
     end
 
     self.model:setRotation(0, 0, self.modelDirection)
-
-    self.position = self.position + direction:normalize() * dt * RUN_SPEED
+    
+    self.position = self.position + self.lastDirection:normalize() * dt * RUN_SPEED * self.acceleration
 
     self.position = self.position + self.velocity * dt
 
@@ -117,18 +123,20 @@ function player:update(dt, platforms)
    
 
     if gx ~= nil then
-        self.velocity = vec3.new(0,0,0)
+        self.velocity.y = 0
         self.grounded = true
     else
         self.velocity.y = math.clamp(self.velocity.y - dt * GRAVITY, -40, 40)
     end
 
-    self.lerpPosition:lerp(self.position, dt * 30)
+    self.lerpPosition:lerp(self.position, 0.4)
+
+
     g3d.camera.lookInDirection(self.camera.position.x, self.camera.position.z, self.camera.position.y, math.rad(self.camera.rotation.y), math.rad(self.camera.rotation.z))
     self:solveCollision(platforms, dt)
     self.model:setTranslation(self.position.x, self.position.z, self.position.y)
      
-    self.lastDirection = modelRotation
+    
 end
 
 function player:wheelmoved(x, y)
@@ -136,7 +144,7 @@ function player:wheelmoved(x, y)
 end
 
 function player:draw()
-    love.graphics.print(tostring(math.deg(self.modelDirection)).." .. "..tostring(math.deg((self.directionAdd))))
+    love.graphics.print(tostring(self.acceleration))
     self.model:draw()
 end
 
