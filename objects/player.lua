@@ -18,7 +18,7 @@ local GRAVITY = 70
 
 function player:new()
     local object = {
-        model = g3d.newModel("models/goose.obj", assets["img/goog.png"], vec3.new(0,0,0):get(), vec3.new(0,0,0):get()),
+        model = g3d.newModel(g3d.loadObj("models/goose.obj", false, true), assets["img/goose.skin.png"], vec3.new(0,0,0):get(), vec3.new(0,0,0):get()),
         camera = {
             position = vec3.new(0,0,0),
             rotation = vec3.new(0,0,0)
@@ -60,7 +60,7 @@ function player:solveCollision(platforms, dt)
         
         if distance ~= nil then  
             self.grounded = true
-            
+
             self.position.x = self.position.x + nx * math.clamp(dt, 0, 1) * RUN_SPEED
             self.position.z = self.position.z + nz * math.clamp(dt, 0, 1) * RUN_SPEED
 
