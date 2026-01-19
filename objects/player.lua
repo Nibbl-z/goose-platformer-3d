@@ -17,9 +17,193 @@ local MOVE_DIRECTIONS = {
 
 local GRAVITY = 70
 
+local ANIMATIONS = {
+    idle = {
+        ["0"] = {
+            root = {
+                rotation = vec3.new(0,0,0)
+            }
+        },
+        ["5"] = {
+            root = {
+                rotation = vec3.new(0,0,0.01),
+                position = vec3.new(0.01,-0.02,0)
+            }
+        },
+        ["10"] = {
+            root = {
+                rotation = vec3.new(0,0,0.02),
+                position = vec3.new(0.02,-0.04,0)
+            }
+        },
+        ["15"] = {
+            root = {
+                rotation = vec3.new(0,0,0.01),
+                position = vec3.new(0.01,-0.02,0)
+            }
+        },
+        ["20"] = "END"
+    },
+    run = {
+        -- left back, right front
+        ["0"] = {
+            leftLeg = {
+                rotation = vec3.new(0,0,0.4),
+                position = vec3.new(-0.3, -0.1, 0)
+            },
+            rightLeg = {
+                rotation = vec3.new(0,0,-0.5),
+                position = vec3.new(0.3, -0.1, 0)
+            },
+            root = {position = vec3.new(0,-0.1,0)}
+        },
+        -- inbetween
+        ["2"] = {
+            leftLeg = {
+                rotation = vec3.new(0,0,0.2),
+                position = vec3.new(-0.1, 0, 0)
+            },
+            rightLeg = {
+                rotation = vec3.new(0,0,-0.1),
+                position = vec3.new(0.1, -0.05, 0)
+            },
+            root = {position = vec3.new(0,-0.05,0)}
+        },
+        -- middle
+        ["4"] = {
+            leftLeg = {
+                rotation = vec3.new(0,0,0)
+            },
+            rightLeg = {
+                rotation = vec3.new(0,0,-0)
+            }
+        },
+
+        -- inbetween
+
+        ["6"] = {
+            leftLeg = {
+                rotation = vec3.new(0,0,-0.3),
+                position = vec3.new(0.1, -0.05, 0)
+            },
+            rightLeg = {
+                rotation = vec3.new(0,0,0.2),
+                position = vec3.new(-0.1, 0, 0)
+            },
+            root = {position = vec3.new(0,-0.05,0)}
+        },
+
+        -- right back, left front
+
+        ["8"] = {
+            leftLeg = {
+                rotation = vec3.new(0,0,-0.5),
+                position = vec3.new(0.3, -0.1, 0)
+            },
+            rightLeg = {
+                rotation = vec3.new(0,0,0.4),
+                position = vec3.new(-0.3, -0.1, 0)
+            },
+            root = {position = vec3.new(0,-0.1,0)}
+        },
+
+        -- inbetween
+
+        ["10"] = {
+            leftLeg = {
+                rotation = vec3.new(0,0,-0.1),
+                position = vec3.new(0.1, -0.05, 0)
+            },
+            rightLeg = {
+                rotation = vec3.new(0,0,0.2),
+                position = vec3.new(-0.1, 0, 0)
+            },
+            root = {position = vec3.new(0,-0.05,0)}
+        },
+
+        -- middle
+
+        ["12"] = {
+            leftLeg = {
+                rotation = vec3.new(0,0,0)
+            },
+            rightLeg = {
+                rotation = vec3.new(0,0,-0)
+            }
+        },
+
+        -- inbetween
+
+        ["14"] = {
+            leftLeg = {
+                rotation = vec3.new(0,0,0.2),
+                position = vec3.new(-0.1, 0, 0)
+            },
+            rightLeg = {
+                rotation = vec3.new(0,0,-0.3),
+                position = vec3.new(0.1, -0.05, 0)
+            },
+            root = {position = vec3.new(0,-0.05,0)}
+        },
+
+        ["16"] = "END"
+    },
+    fall = {
+        ["0"] = {
+            root = {
+                rotation = vec3.new(0,0,-0.1)
+            },
+            leftLeg = {
+                rotation = vec3.new(0.15,0,0)
+            },
+            rightLeg = {
+                rotation = vec3.new(-0.15,0,0)
+            }
+        },
+        ["3"] = {
+            root = {
+                rotation = vec3.new(0,0,-0.15),
+            },
+            leftLeg = {
+                rotation = vec3.new(0.075,0,0)
+            },
+            rightLeg = {
+                rotation = vec3.new(-0.075,0,0)
+            }
+        },
+        ["6"] = {
+            root = {
+                rotation = vec3.new(0,0,-0.1),
+            },
+            leftLeg = {
+                rotation = vec3.new(0.05,0,0)
+            },
+            rightLeg = {
+                rotation = vec3.new(-0.05,0,0)
+            }
+        },
+        ["9"] = {
+            root = {
+                rotation = vec3.new(0,0,-0.15),
+            },
+            leftLeg = {
+                rotation = vec3.new(0.075,0,0)
+            },
+            rightLeg = {
+                rotation = vec3.new(-0.075,0,0)
+            }
+        },
+        ["12"] = "END"
+    }
+}
+
+local ANIM_LENGTHS = {}
+
 function player:new()
     local object = {
-        model = g3d.newModel(g3d.loadObj("models/goose.obj", false, true), assets["img/goose.skin.png"], vec3.new(0,0,0):get(), vec3.new(0,0,0):get()),
+        root = g3d.newModel(g3d.loadObj("models/goose.obj", false, true), assets["img/goose.skin.png"], vec3.new(0,0,0):get(), vec3.new(0,0,0):get()),
+        leftLeg = g3d.newModel(g3d.loadObj("models/leftleg.obj", false, true), assets["img/goose.skin.png"], vec3.new(0,0,0):get(), vec3.new(0,0,0):get()),
+        rightLeg = g3d.newModel(g3d.loadObj("models/rightleg.obj", false, true), assets["img/goose.skin.png"], vec3.new(0,0,0):get(), vec3.new(0,0,0):get()),
         camera = {
             position = vec3.new(0,0,0),
             rotation = vec3.new(0,0,0)
@@ -31,10 +215,27 @@ function player:new()
         directionAdd = 0,
         acceleration = 0.0,
         velocity = vec3.new(0, -GRAVITY, 0),
-        grounded = false
+        grounded = false,
+
+        currentAnimation = "idle",
+        currentFrame = -1,
+        currentFrameData = nil,
+        currentFrameTimer = 0.0
     }
 
+    for k, anim in pairs(ANIMATIONS) do
+        local max = 0
+        for num, v in pairs(anim) do
+            if v == "END" then 
+                max = tonumber(num) or 0 -- shut up linter.. GRR!!!
+            end
+        end
+
+        ANIM_LENGTHS[k] = max
+    end
+
     setmetatable(object, self)
+
     return object
 end
 
@@ -65,8 +266,41 @@ function player:solveCollision(platforms, dt)
 
             self.position.x = self.position.x + nx * math.clamp(dt, 0, 1) * RUN_SPEED
             self.position.z = self.position.z + nz * math.clamp(dt, 0, 1) * RUN_SPEED
-
         end
+    end
+end
+
+function player:updateModel()
+    for k, v in pairs({root = self.root, leftLeg = self.leftLeg, rightLeg = self.rightLeg}) do
+        local data = nil
+
+        if self.currentFrameData ~= nil then
+            data = self.currentFrameData[k]
+        end
+
+        local rx, ry, rz = 0,0,0
+        local px, py, pz = 0,0,0
+
+        if data ~= nil then
+            
+            if data["rotation"] ~= nil then
+                rx = data["rotation"].x
+                ry = data["rotation"].z
+                rz = data["rotation"].y
+            end
+
+            if data["position"] ~= nil then
+                px = data["position"].x
+                py = data["position"].z
+                pz = data["position"].y
+            end
+        end
+
+        local x = px * math.cos(self.modelDirection) - py * math.sin(self.modelDirection)
+        local y = px * math.sin(self.modelDirection) + py * math.cos(self.modelDirection)
+
+        v:setRotation(0 + rx, 0 + ry, self.modelDirection + rz)
+        v:setTranslation(self.position.x + x, self.position.z + y, self.position.y + pz)
     end
 end
 
@@ -105,22 +339,30 @@ function player:update(dt, platforms)
         self.acceleration = math.clamp(self.acceleration + dt * 4, 0, 1)
         self.modelDirection = modelRotation
     else
+        self.currentAnimation = "idle"
         self.acceleration = math.clamp(self.acceleration - dt * 4, 0, 1)
+    end
+
+    if not self.grounded then
+        self.currentAnimation = "fall"
+    else
+        if keysDown > 0 then
+            self.currentAnimation = "run"
+        else
+            self.currentAnimation = "idle"
+        end
     end
 
     if self.grounded and love.keyboard.isDown("space") then
         self.grounded = false
         self.velocity.y = JUMP_HEIGHT
     end
-
-    self.model:setRotation(0, 0, self.modelDirection)
     
     self.position = self.position + self.lastDirection:normalize() * dt * RUN_SPEED * self.acceleration
 
     self.position = self.position + self.velocity * dt
 
     local gx, gy, gz = self:isGrounded(platforms)
-   
 
     if gx ~= nil then
         self.velocity.y = 0
@@ -134,9 +376,29 @@ function player:update(dt, platforms)
 
     g3d.camera.lookInDirection(self.camera.position.x, self.camera.position.z, self.camera.position.y, math.rad(self.camera.rotation.y), math.rad(self.camera.rotation.z))
     self:solveCollision(platforms, dt)
-    self.model:setTranslation(self.position.x, self.position.z, self.position.y)
-     
     
+    self.currentFrameTimer = self.currentFrameTimer + dt
+
+    if self.currentFrameTimer >= 1/20 then
+        self.currentFrameTimer = self.currentFrameTimer - 1/20
+        self.currentFrame = self.currentFrame + 1
+
+        if self.currentFrame > ANIM_LENGTHS[self.currentAnimation] then
+            self.currentFrame = 0
+        end
+
+        if ANIMATIONS[self.currentAnimation][tostring(self.currentFrame)] ~= nil then
+            local data = ANIMATIONS[self.currentAnimation][tostring(self.currentFrame)]
+            if data == "END" then
+                self.currentFrame = 0
+                self.currentFrameData = ANIMATIONS[self.currentAnimation]["0"]
+            elseif data ~= nil then
+                self.currentFrameData = data
+            end
+        end
+    end
+
+    self:updateModel()
 end
 
 function player:wheelmoved(x, y)
@@ -144,8 +406,10 @@ function player:wheelmoved(x, y)
 end
 
 function player:draw()
-    love.graphics.print(tostring(self.acceleration))
-    self.model:draw()
+    love.graphics.print(tostring(self.currentFrame))
+    self.root:draw()
+    self.leftLeg:draw()
+    self.rightLeg:draw()
 end
 
 return player
