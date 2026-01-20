@@ -16,6 +16,7 @@ function love.load()
     table.insert(platforms, Platform:new(vec3.new(40,-48,0), vec3.new(30,1,30)))
     table.insert(platforms, Platform:new(vec3.new(40,-48,0), vec3.new(10,50,10)))
     table.insert(platforms, Platform:new(vec3.new(70,-28,20), vec3.new(10,50,10)))
+    table.insert(platforms, Platform:new(vec3.new(40,-28,0), vec3.new(30,1,30)))
     -- table.insert(platforms, Platform:new(vec3.new(1, 0, 0)))
 
     -- table.insert(platforms, Platform:new(vec3.new(0, 1, 0)))

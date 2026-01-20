@@ -19,34 +19,34 @@ local GRAVITY = 70
 
 local ANIMATIONS = {
     idle = {
-        ["0"] = {
+        [0] = {
             root = {
                 rotation = vec3.new(0,0,0)
             }
         },
-        ["5"] = {
+        [5] = {
             root = {
                 rotation = vec3.new(0,0,0.01),
                 position = vec3.new(0.01,-0.02,0)
             }
         },
-        ["10"] = {
+        [10] = {
             root = {
                 rotation = vec3.new(0,0,0.02),
                 position = vec3.new(0.02,-0.04,0)
             }
         },
-        ["15"] = {
+        [15] = {
             root = {
                 rotation = vec3.new(0,0,0.01),
                 position = vec3.new(0.01,-0.02,0)
             }
         },
-        ["20"] = "END"
+        [20] = "END"
     },
     run = {
         -- left back, right front
-        ["0"] = {
+        [0] = {
             leftLeg = {
                 rotation = vec3.new(0,0,0.4),
                 position = vec3.new(-0.3, -0.1, 0)
@@ -58,7 +58,7 @@ local ANIMATIONS = {
             root = {position = vec3.new(0,-0.1,0)}
         },
         -- inbetween
-        ["2"] = {
+        [2] = {
             leftLeg = {
                 rotation = vec3.new(0,0,0.2),
                 position = vec3.new(-0.1, 0, 0)
@@ -70,7 +70,7 @@ local ANIMATIONS = {
             root = {position = vec3.new(0,-0.05,0)}
         },
         -- middle
-        ["4"] = {
+        [4] = {
             leftLeg = {
                 rotation = vec3.new(0,0,0)
             },
@@ -81,7 +81,7 @@ local ANIMATIONS = {
 
         -- inbetween
 
-        ["6"] = {
+        [6] = {
             leftLeg = {
                 rotation = vec3.new(0,0,-0.3),
                 position = vec3.new(0.1, -0.05, 0)
@@ -95,7 +95,7 @@ local ANIMATIONS = {
 
         -- right back, left front
 
-        ["8"] = {
+        [8] = {
             leftLeg = {
                 rotation = vec3.new(0,0,-0.5),
                 position = vec3.new(0.3, -0.1, 0)
@@ -109,7 +109,7 @@ local ANIMATIONS = {
 
         -- inbetween
 
-        ["10"] = {
+        [10] = {
             leftLeg = {
                 rotation = vec3.new(0,0,-0.1),
                 position = vec3.new(0.1, -0.05, 0)
@@ -123,7 +123,7 @@ local ANIMATIONS = {
 
         -- middle
 
-        ["12"] = {
+        [12] = {
             leftLeg = {
                 rotation = vec3.new(0,0,0)
             },
@@ -134,7 +134,7 @@ local ANIMATIONS = {
 
         -- inbetween
 
-        ["14"] = {
+        [14] = {
             leftLeg = {
                 rotation = vec3.new(0,0,0.2),
                 position = vec3.new(-0.1, 0, 0)
@@ -146,10 +146,10 @@ local ANIMATIONS = {
             root = {position = vec3.new(0,-0.05,0)}
         },
 
-        ["16"] = "END"
+        [16] = "END"
     },
     fall = {
-        ["0"] = {
+        [0] = {
             root = {
                 rotation = vec3.new(0,0,-0.1)
             },
@@ -160,7 +160,7 @@ local ANIMATIONS = {
                 rotation = vec3.new(-0.15,0,0)
             }
         },
-        ["3"] = {
+        [3] = {
             root = {
                 rotation = vec3.new(0,0,-0.15),
             },
@@ -171,7 +171,7 @@ local ANIMATIONS = {
                 rotation = vec3.new(-0.075,0,0)
             }
         },
-        ["6"] = {
+        [6] = {
             root = {
                 rotation = vec3.new(0,0,-0.1),
             },
@@ -182,7 +182,7 @@ local ANIMATIONS = {
                 rotation = vec3.new(-0.05,0,0)
             }
         },
-        ["9"] = {
+        [9] = {
             root = {
                 rotation = vec3.new(0,0,-0.15),
             },
@@ -193,7 +193,7 @@ local ANIMATIONS = {
                 rotation = vec3.new(-0.075,0,0)
             }
         },
-        ["12"] = "END"
+        [12] = "END"
     }
 }
 
@@ -227,7 +227,7 @@ function player:new()
         local max = 0
         for num, v in pairs(anim) do
             if v == "END" then 
-                max = tonumber(num) or 0 -- shut up linter.. GRR!!!
+                max = num
             end
         end
 
@@ -387,11 +387,11 @@ function player:update(dt, platforms)
             self.currentFrame = 0
         end
 
-        if ANIMATIONS[self.currentAnimation][tostring(self.currentFrame)] ~= nil then
-            local data = ANIMATIONS[self.currentAnimation][tostring(self.currentFrame)]
+        if ANIMATIONS[self.currentAnimation][self.currentFrame] ~= nil then
+            local data = ANIMATIONS[self.currentAnimation][self.currentFrame]
             if data == "END" then
                 self.currentFrame = 0
-                self.currentFrameData = ANIMATIONS[self.currentAnimation]["0"]
+                self.currentFrameData = ANIMATIONS[self.currentAnimation][0]
             elseif data ~= nil then
                 self.currentFrameData = data
             end
