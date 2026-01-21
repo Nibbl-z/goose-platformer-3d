@@ -38,6 +38,12 @@ function love.update(dt)
     player:update(dt, platforms)
 end
 
+function love.keypressed(key)
+    if key == "space" and player.grounded then
+        player.jumpPressed = true
+    end
+end
+
 function love.draw()
     love.graphics.setBackgroundColor(0.1,0.1,0.1)
     for _, v in pairs(platforms) do

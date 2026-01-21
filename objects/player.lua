@@ -216,6 +216,7 @@ function player:new()
         acceleration = 0.0,
         velocity = vec3.new(0, -GRAVITY, 0),
         grounded = false,
+        jumpPressed = false,
 
         currentAnimation = "idle",
         currentFrame = -1,
@@ -259,13 +260,21 @@ function player:solveCollision(platforms, dt)
     -- This is probably worse.
 
     for _, platform in ipairs(platforms) do
-        local distance, x, z, _, nx, nz = g3d.collisions.capsuleIntersection(platform.model.verts, platform.model, self.position.x, self.position.z, self.position.y - 1.5, self.position.x, self.position.z, self.position.y + 1.5, 1.0)
+        local distance, x, z, y, nx, nz = g3d.collisions.capsuleIntersection(platform.model.verts, platform.model, self.position.x, self.position.z, self.position.y - 1.5, self.position.x, self.position.z, self.position.y + 1.5, 1.0)
         
         if distance ~= nil then  
             self.grounded = true
 
             self.position.x = self.position.x + nx * math.clamp(dt, 0, 1) * RUN_SPEED
             self.position.z = self.position.z + nz * math.clamp(dt, 0, 1) * RUN_SPEED
+        end
+
+        local above = g3d.collisions.sphereIntersection(platform.model.verts, platform.model, self.position.x, self.position.z, self.position.y + 1.5, 0.1)
+
+        if above ~= nil then
+            self.grounded = false
+            self.velocity.y = -7
+            self.position.y = self.position.y - GRAVITY * dt
         end
     end
 end
@@ -353,7 +362,8 @@ function player:update(dt, platforms)
         end
     end
 
-    if self.grounded and love.keyboard.isDown("space") then
+    if self.grounded and self.jumpPressed then
+        self.jumpPressed = false
         self.grounded = false
         self.velocity.y = JUMP_HEIGHT
     end
