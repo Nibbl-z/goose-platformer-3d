@@ -217,6 +217,7 @@ function player:new()
         velocity = vec3.new(0, -GRAVITY, 0),
         grounded = false,
         jumpPressed = false,
+        airtime = 0.0,
 
         currentAnimation = "idle",
         currentFrame = -1,
@@ -362,7 +363,7 @@ function player:update(dt, platforms)
         end
     end
 
-    if self.grounded and self.jumpPressed then
+    if (self.grounded or self.airtime <= 0.2) and self.jumpPressed then
         self.jumpPressed = false
         self.grounded = false
         self.velocity.y = JUMP_HEIGHT
@@ -375,10 +376,13 @@ function player:update(dt, platforms)
     local gx, gy, gz = self:isGrounded(platforms)
 
     if gx ~= nil then
+        self.airtime = 0
         self.velocity.y = 0
         self.grounded = true
     else
+        self.grounded = false
         self.velocity.y = math.clamp(self.velocity.y - dt * GRAVITY, -40, 40)
+        self.airtime = self.airtime + dt
     end
 
     self.lerpPosition:lerp(self.position, 0.4)
@@ -416,7 +420,7 @@ function player:wheelmoved(x, y)
 end
 
 function player:draw()
-    love.graphics.print(tostring(self.currentFrame))
+    love.graphics.print(tostring(self.airtime))
     self.root:draw()
     self.leftLeg:draw()
     self.rightLeg:draw()
