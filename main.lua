@@ -11,12 +11,14 @@ function love.load()
 
     biribiri:LoadSprites("img")
 
-    table.insert(platforms, Platform:new(vec3.new(0,-50,0), vec3.new(10000,1,10000)))
+    table.insert(platforms, Platform:new(vec3.new(0,-60,0), vec3.new(100,10,100), PLATFORM_TYPE.default))
 
-    table.insert(platforms, Platform:new(vec3.new(40,-48,0), vec3.new(30,1,30)))
-    table.insert(platforms, Platform:new(vec3.new(40,-48,0), vec3.new(10,50,10)))
-    table.insert(platforms, Platform:new(vec3.new(70,-28,20), vec3.new(10,50,10)))
-    table.insert(platforms, Platform:new(vec3.new(40,-28,0), vec3.new(30,1,30)))
+    table.insert(platforms, Platform:new(vec3.new(40,-48,0), vec3.new(30,1,30), PLATFORM_TYPE.default))
+    table.insert(platforms, Platform:new(vec3.new(40,-48,0), vec3.new(10,50,10), PLATFORM_TYPE.default))
+    table.insert(platforms, Platform:new(vec3.new(70,-28,20), vec3.new(10,50,10), PLATFORM_TYPE.default))
+    table.insert(platforms, Platform:new(vec3.new(40,-28,0), vec3.new(30,1,30), PLATFORM_TYPE.default))
+
+    table.insert(platforms, Platform:new(vec3.new(40,-28,40), vec3.new(10,50,10), PLATFORM_TYPE.lava))
 
     player = Player:new()
 end

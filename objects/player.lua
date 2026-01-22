@@ -253,7 +253,9 @@ function player:isGrounded(platforms)
     for _, platform in ipairs(platforms) do
         local _, x, y, z = g3d.collisions.sphereIntersection(platform.model.verts, platform.model, self.position.x, self.position.z, self.position.y - 1.5, 0.1)
         if x ~= nil then
-            
+            if platform.platformType == PLATFORM_TYPE.lava then
+                self:reset()
+            end
             return x + platform.model.translation[1], y + platform.model.translation[3], z + platform.model.translation[2]
         end
     end
@@ -265,7 +267,11 @@ function player:solveCollision(platforms, dt)
     for _, platform in ipairs(platforms) do
         local distance, x, z, y, nx, nz = g3d.collisions.capsuleIntersection(platform.model.verts, platform.model, self.position.x, self.position.z, self.position.y - 1.5, self.position.x, self.position.z, self.position.y + 1.5, 1.0)
         
-        if distance ~= nil then  
+        if distance ~= nil then 
+            if platform.platformType == PLATFORM_TYPE.lava then
+                self:reset()
+                return
+            end
             self.grounded = true
 
             self.position.x = self.position.x + nx * math.clamp(dt, 0, 1) * RUN_SPEED
@@ -280,6 +286,13 @@ function player:solveCollision(platforms, dt)
             self.position.y = self.position.y - GRAVITY * dt
         end
     end
+end
+
+function player:reset()
+    self.position = vec3.new(0,0,0)
+    self.grounded = false
+    self.airtime = 0
+
 end
 
 function player:updateModel()
