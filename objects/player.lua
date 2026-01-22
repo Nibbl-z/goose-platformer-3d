@@ -211,6 +211,8 @@ function player:new()
         position = vec3.new(0,0,0),
         lerpPosition = vec3.new(0,0,0),
         modelDirection = 0,
+        wraparoundCompensation = 0,
+        lastModelRotation = 0,
         lastDirection = vec3.new(0,0,0),
         directionAdd = 0,
         acceleration = 0.0,
@@ -347,7 +349,16 @@ function player:update(dt, platforms)
     if keysDown > 0 then
         self.lastDirection = direction
         self.acceleration = math.clamp(self.acceleration + dt * 4, 0, 1)
-        self.modelDirection = modelRotation
+        
+        if math.abs(math.deg(self.lastModelRotation - modelRotation)) >= 300 then
+            if math.deg(self.lastModelRotation - modelRotation) > 0 then
+                self.wraparoundCompensation = self.wraparoundCompensation + math.rad(360)
+            else
+                self.wraparoundCompensation = self.wraparoundCompensation - math.rad(360)
+            end
+        end
+        self.lastModelRotation = modelRotation
+        self.modelDirection = self.modelDirection + ((modelRotation + self.wraparoundCompensation) - self.modelDirection) * 0.1
     else
         self.currentAnimation = "idle"
         self.acceleration = math.clamp(self.acceleration - dt * 4, 0, 1)
@@ -373,7 +384,7 @@ function player:update(dt, platforms)
 
     self.position = self.position + self.velocity * dt
 
-    local gx, gy, gz = self:isGrounded(platforms)
+    local gx = self:isGrounded(platforms)
 
     if gx ~= nil then
         self.airtime = 0
@@ -386,7 +397,6 @@ function player:update(dt, platforms)
     end
 
     self.lerpPosition:lerp(self.position, 0.4)
-
 
     g3d.camera.lookInDirection(self.camera.position.x, self.camera.position.z, self.camera.position.y, math.rad(self.camera.rotation.y), math.rad(self.camera.rotation.z))
     self:solveCollision(platforms, dt)
