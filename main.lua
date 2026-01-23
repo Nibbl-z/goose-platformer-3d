@@ -2,7 +2,8 @@ require "global"
 
 local Platform = require("objects.platform")
 local Player = require("objects.player")
-
+local Editor = require("editor")
+local scene = "editor"
 
 platforms = {}
 
@@ -24,7 +25,13 @@ function love.load()
 end
 
 function love.mousemoved(x,y, dx,dy)
-    player:mousemoved(x,y,dx,dy)
+    if scene == "game" then
+        player:mousemoved(x,y,dx,dy)
+    elseif scene == "editor" then
+        Editor:mousemoved(x,y,dx,dy)
+    end
+    
+
 end
 
 function love.wheelmoved(x, y)
@@ -32,7 +39,13 @@ function love.wheelmoved(x, y)
 end
 
 function love.update(dt)
-    player:update(dt, platforms)
+    if scene == "game" then
+        player.active = true
+        player:update(dt, platforms)
+    elseif scene == "editor" then
+        Editor:update(dt)
+        player.active = false
+    end
 end
 
 function love.keypressed(key)

@@ -201,6 +201,7 @@ local ANIM_LENGTHS = {}
 
 function player:new()
     local object = {
+        active = true,
         root = g3d.newModel(g3d.loadObj("models/goose.obj", false, true), assets["img/goose.skin.png"], vec3.new(0,0,0):get(), vec3.new(0,0,0):get()),
         leftLeg = g3d.newModel(g3d.loadObj("models/leftleg.obj", false, true), assets["img/goose.skin.png"], vec3.new(0,0,0):get(), vec3.new(0,0,0):get()),
         rightLeg = g3d.newModel(g3d.loadObj("models/rightleg.obj", false, true), assets["img/goose.skin.png"], vec3.new(0,0,0):get(), vec3.new(0,0,0):get()),
@@ -329,11 +330,36 @@ function player:updateModel()
     end
 end
 
+function player:updateCameraDistance(platforms)
+    for _, platform in ipairs(platforms) do
+        -- i have suffered for so long.
+        -- rayIntersection just DOESNT WORK <3 YAY!!!!!!!!!!!!!!!!!!!
+
+        -- thus enjoy this disaster
+
+        for i = 0, CAMERA_DISTANCE, 0.1 do
+            local camPos = (vec3.new(
+                math.cos(math.rad(self.camera.rotation.y)) * math.cos(math.rad(self.camera.rotation.z)) * -i, 
+                math.sin(math.rad(self.camera.rotation.z)) * -i, 
+                math.sin(math.rad(self.camera.rotation.y)) * math.cos(math.rad(self.camera.rotation.z)) * -i
+            ) + self.position + vec3.new(0,1,0))
+
+            if g3d.collisions.sphereIntersection(platform.model.verts, platform.model, camPos.x, camPos.z, camPos.y, 0.1) then
+                return i - 0.1
+            end
+
+        end
+    end
+end
+
 function player:update(dt, platforms)
+    if not self.active then return end
+
+    local distance = self:updateCameraDistance(platforms) or CAMERA_DISTANCE
     self.camera.position = vec3.new(
-        math.cos(math.rad(self.camera.rotation.y)) * math.cos(math.rad(self.camera.rotation.z)) * -CAMERA_DISTANCE, 
-        math.sin(math.rad(self.camera.rotation.z)) * -CAMERA_DISTANCE, 
-        math.sin(math.rad(self.camera.rotation.y)) * math.cos(math.rad(self.camera.rotation.z)) * -CAMERA_DISTANCE
+        math.cos(math.rad(self.camera.rotation.y)) * math.cos(math.rad(self.camera.rotation.z)) * -distance, 
+        math.sin(math.rad(self.camera.rotation.z)) * -distance, 
+        math.sin(math.rad(self.camera.rotation.y)) * math.cos(math.rad(self.camera.rotation.z)) * -distance
     ) + self.lerpPosition + vec3.new(0,1,0)
 
     local direction = vec3.new(0,0,0)
@@ -443,7 +469,7 @@ function player:wheelmoved(x, y)
 end
 
 function player:draw()
-    love.graphics.print(tostring(self.airtime))
+    if not self.active then return end
     self.root:draw()
     self.leftLeg:draw()
     self.rightLeg:draw()
