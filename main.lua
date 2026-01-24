@@ -43,7 +43,7 @@ function love.update(dt)
         player.active = true
         player:update(dt, platforms)
     elseif scene == "editor" then
-        Editor:update(dt)
+        Editor:update(dt, platforms)
         player.active = false
     end
 end
@@ -61,4 +61,5 @@ function love.draw()
     end
 
     player:draw()
+    Editor:draw()
 end

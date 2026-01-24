@@ -8,6 +8,8 @@ PLATFORM_TYPE = {
     lava = 1
 }
 
+local selectionShader = love.graphics.newShader(g3d.shaderpath, "shaders/selection.glsl")
+
 function platform:new(position, size, platformType)
     local textureLookup = {
         [0] = "img/stone.png",
@@ -16,7 +18,8 @@ function platform:new(position, size, platformType)
 
     local object = {
         model = g3d.newModel("models/cube.obj", assets[textureLookup[platformType]], position:get(), vec3.new(0,0,0):get(), size:get()),
-        platformType = platformType
+        platformType = platformType,
+        selected = false
     }
 
     setmetatable(object, self)
@@ -24,7 +27,7 @@ function platform:new(position, size, platformType)
 end
 
 function platform:draw()
-    self.model:draw()
+    self.model:draw(self.selected and selectionShader or nil)
 end
 
 return platform
