@@ -9,6 +9,14 @@ function vec3.new(x, y, z)
     }, vec3)
 end
 
+function vec3.fromg3d(v)
+    return setmetatable({
+        x = v[1],
+        y = v[3],
+        z = v[2]
+    }, vec3)
+end
+
 function vec3.__add(a, b)
     return vec3.new(a.x + b.x, a.y + b.y, a.z + b.z)
 end
@@ -23,6 +31,10 @@ end
 
 function vec3:get()
     return {self.x, self.z, self.y}
+end
+
+function vec3:getTuple()
+    return self.x, self.z, self.y
 end
 
 function vec3:magnitude()

@@ -18,6 +18,33 @@ local mouseX, mouseY = nil, nil
 local debugObjs = {}
 local Debug = require("objects.debug")
 
+local chosenPlatform, selectedPlatform
+
+function camRay(dist)
+    local rotation = camera.rotation
+
+    local dx = (love.mouse.getX() - (love.graphics.getWidth() / 2)) * SENSITIVITY
+    local dy = (love.mouse.getY() - (love.graphics.getHeight() / 2)) * SENSITIVITY
+
+    local xmin = (-love.graphics.getWidth() / 2) * SENSITIVITY
+    local xmax = (love.graphics.getWidth() / 2) * SENSITIVITY
+    local ymin = (-love.graphics.getHeight() / 2) * SENSITIVITY
+    local ymax = (love.graphics.getHeight() / 2) * SENSITIVITY
+
+    local f = 90 / (math.pi / 2)
+
+    local dxn = ((dx - xmin) / (xmax - xmin)) * (f - -f) + -f
+    local dyn = ((dy - ymin) / (ymax - ymin)) * (f - -f) + -f
+
+    rotation = rotation - vec3.new(0, dxn, dyn)
+
+    return vec3.new(
+        math.cos(math.rad(rotation.y)) * math.cos(math.rad(rotation.z)) * dist, 
+        math.sin(math.rad(rotation.z)) * dist, 
+        math.sin(math.rad(rotation.y)) * math.cos(math.rad(rotation.z)) * dist
+    ) + camera.position
+end
+
 function editor:mousemoved(x, y, dx, dy)
     if love.mouse.isDown(2) then
         if mouseX ~= nil then
@@ -26,6 +53,19 @@ function editor:mousemoved(x, y, dx, dy)
 
         camera.rotation = camera.rotation - vec3.new(0, dx * SENSITIVITY, dy * SENSITIVITY)
         camera.rotation.z = math.clamp(camera.rotation.z, -90, 90)
+    end
+
+    if love.mouse.isDown(1) then
+        if selectedPlatform.moveHandles.x.hovered then
+            local distance = (camera.position - vec3.fromg3d(selectedPlatform.moveHandles.x.model.translation)):magnitude()
+
+            local d = math.sqrt(dx ^ 2 + dy ^ 2)
+            local pos = camRay(distance)
+            local m = ((pos - vec3.fromg3d(selectedPlatform.moveHandles.x.model.translation)).x < 0) and -1 or 1
+
+            selectedPlatform.model:setTranslation( (vec3.fromg3d(selectedPlatform.model.translation) + vec3.new(d * (distance / 700 * m), 0, 0)):getTuple() )
+            selectedPlatform.model:setTranslation( (vec3.fromg3d(selectedPlatform.model.translation) + vec3.new(d * (distance / 700 * m), 0, 0)):getTuple() )
+        end
     end
 end
 
@@ -66,35 +106,23 @@ function editor:update(dt, platforms)
     --if love.keyboard.isDown("1") then
         -- welcome back to Lack of raycast hell
     for _, platform in ipairs(platforms) do
-        platform.selected = false
+        platform.hovered = false
+        platform.moveHandles.x.hovered = false
+        platform:updateHandles()
     end
 
     local dist = 100
-    local chosenPlatform = nil
-    for _, platform in ipairs(platforms) do
-        for i = 0.1, 50, 0.2 do
-            local rotation = camera.rotation
+    
+    
+    for i = 0.1, 50, 0.2 do
+        local rayPos = camRay(i)
 
-            local dx = (love.mouse.getX() - (love.graphics.getWidth() / 2)) * SENSITIVITY
-            local dy = (love.mouse.getY() - (love.graphics.getHeight() / 2)) * SENSITIVITY
-
-            local xmin = (-love.graphics.getWidth() / 2) * SENSITIVITY
-            local xmax = (love.graphics.getWidth() / 2) * SENSITIVITY
-            local ymin = (-love.graphics.getHeight() / 2) * SENSITIVITY
-            local ymax = (love.graphics.getHeight() / 2) * SENSITIVITY
-
-            local f = 90 / (math.pi / 2)
-
-            local dxn = ((dx - xmin) / (xmax - xmin)) * (f - -f) + -f
-            local dyn = ((dy - ymin) / (ymax - ymin)) * (f - -f) + -f
-
-            rotation = rotation - vec3.new(0, dxn, dyn)
-
-            local rayPos = vec3.new(
-                math.cos(math.rad(rotation.y)) * math.cos(math.rad(rotation.z)) * i, 
-                math.sin(math.rad(rotation.z)) * i, 
-                math.sin(math.rad(rotation.y)) * math.cos(math.rad(rotation.z)) * i
-            ) + camera.position
+        for _, platform in ipairs(platforms) do
+            if platform.selected then
+                if vec3.magnitude(rayPos - vec3.fromg3d(platform.moveHandles.x.model.translation)) <= 6 then
+                    platform.moveHandles.x.hovered = true
+                end
+            end
 
             if g3d.collisions.sphereIntersection(platform.model.verts, platform.model, rayPos.x, rayPos.z, rayPos.y, 0.1) then
                 if i <= dist then
@@ -106,9 +134,20 @@ function editor:update(dt, platforms)
             end
         end
     end
+    
+    if dist == 100 then chosenPlatform = nil end
 
     if chosenPlatform ~= nil then
-        chosenPlatform.selected = true
+        chosenPlatform.hovered = true
+
+        if love.mouse.isDown(1) then
+            for _, platform in ipairs(platforms) do
+                platform.selected = false
+                
+            end
+            selectedPlatform = chosenPlatform
+            chosenPlatform.selected = true
+        end
     end
         
     --end

@@ -347,7 +347,6 @@ function player:updateCameraDistance(platforms)
             if g3d.collisions.sphereIntersection(platform.model.verts, platform.model, camPos.x, camPos.z, camPos.y, 0.1) then
                 return i - 0.1
             end
-
         end
     end
 end
