@@ -19,6 +19,7 @@ local debugObjs = {}
 local Debug = require("objects.debug")
 
 local chosenPlatform, selectedPlatform
+local dragging = false
 
 function camRay(dist)
     local rotation = camera.rotation
@@ -56,16 +57,27 @@ function editor:mousemoved(x, y, dx, dy)
     end
 
     if love.mouse.isDown(1) then
-        if selectedPlatform.moveHandles.x.hovered then
-            local distance = (camera.position - vec3.fromg3d(selectedPlatform.moveHandles.x.model.translation)):magnitude()
+        for k, handle in pairs(selectedPlatform.moveHandles) do
+            if handle.hovered then
+                dragging = true
+                local distance = (camera.position - vec3.fromg3d(handle.model.translation)):magnitude()
 
-            local d = math.sqrt(dx ^ 2 + dy ^ 2)
-            local pos = camRay(distance)
-            local m = ((pos - vec3.fromg3d(selectedPlatform.moveHandles.x.model.translation)).x < 0) and -1 or 1
+                local d = math.sqrt(dx ^ 2 + dy ^ 2)
+                local pos = camRay(distance)
+                local sign = ((pos - vec3.fromg3d(handle.model.translation))[k] < 0) and -1 or 1
+                local move = d * (distance / 400 * sign)
+                
+                selectedPlatform.model:setTranslation((vec3.fromg3d(selectedPlatform.model.translation) + vec3.new(
+                    k == "x" and move or 0,
+                    k == "y" and move or 0,
+                    k == "z" and move or 0
+                )):getTuple())
 
-            selectedPlatform.model:setTranslation( (vec3.fromg3d(selectedPlatform.model.translation) + vec3.new(d * (distance / 700 * m), 0, 0)):getTuple() )
-            selectedPlatform.model:setTranslation( (vec3.fromg3d(selectedPlatform.model.translation) + vec3.new(d * (distance / 700 * m), 0, 0)):getTuple() )
+                return
+            end
         end
+    else
+        dragging = false
     end
 end
 
@@ -107,20 +119,26 @@ function editor:update(dt, platforms)
         -- welcome back to Lack of raycast hell
     for _, platform in ipairs(platforms) do
         platform.hovered = false
-        platform.moveHandles.x.hovered = false
+        for _, handle in pairs(platform.moveHandles) do
+            if not dragging then
+                handle.hovered = false
+            end
+        end
+
         platform:updateHandles()
     end
 
     local dist = 100
-    
-    
-    for i = 0.1, 50, 0.2 do
+ 
+    for i = 0.1, 100, 0.2 do
         local rayPos = camRay(i)
 
         for _, platform in ipairs(platforms) do
             if platform.selected then
-                if vec3.magnitude(rayPos - vec3.fromg3d(platform.moveHandles.x.model.translation)) <= 6 then
-                    platform.moveHandles.x.hovered = true
+                for _, handle in pairs(platform.moveHandles) do
+                    if vec3.magnitude(rayPos - vec3.fromg3d(handle.model.translation)) <= 8 and not dragging then
+                        handle.hovered = true
+                    end
                 end
             end
 
@@ -140,10 +158,9 @@ function editor:update(dt, platforms)
     if chosenPlatform ~= nil then
         chosenPlatform.hovered = true
 
-        if love.mouse.isDown(1) then
+        if love.mouse.isDown(1) and not dragging then
             for _, platform in ipairs(platforms) do
                 platform.selected = false
-                
             end
             selectedPlatform = chosenPlatform
             chosenPlatform.selected = true

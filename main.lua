@@ -30,8 +30,6 @@ function love.mousemoved(x,y, dx,dy)
     elseif scene == "editor" then
         Editor:mousemoved(x,y,dx,dy)
     end
-    
-
 end
 
 function love.wheelmoved(x, y)
