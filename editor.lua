@@ -243,7 +243,6 @@ function editor:createPlatform()
     local pos = camRay(10, 0, 0)
     platform = Platform:new(pos, vec3.new(7,7,7), PLATFORM_TYPE.default)
     table.insert(platforms, platform)
-    World:updateMesh()
 end
 
 return editor

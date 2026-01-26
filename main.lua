@@ -69,6 +69,7 @@ function love.keypressed(key)
     if key == "z" then
         love.mouse.setRelativeMode(true)
         scene = "game"
+        World:updateMesh()
     elseif key == "x" then
         scene = "editor"
     end

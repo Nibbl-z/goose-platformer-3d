@@ -252,6 +252,12 @@ function player:mousemoved(x, y, dx, dy)
 end
 
 function player:isGrounded(platforms)
+    local lava = g3d.collisions.sphereIntersection(WORLD_LAVA.verts, WORLD_LAVA, self.position.x, self.position.z, self.position.y - 1.5, 0.1)
+    if lava then
+        self:reset()
+        return
+    end
+
     local _, x, y, z = g3d.collisions.sphereIntersection(WORLD.verts, WORLD, self.position.x, self.position.z, self.position.y - 1.5, 0.1)
     if x ~= nil then
         -- if platform.platformType == PLATFORM_TYPE.lava then
@@ -262,6 +268,12 @@ function player:isGrounded(platforms)
 end
 
 function player:solveCollision(platforms, dt)
+    local lava = g3d.collisions.capsuleIntersection(WORLD_LAVA.verts, WORLD_LAVA, self.position.x, self.position.z, self.position.y - 1.5, self.position.x, self.position.z, self.position.y + 1.5, 1.0)
+    if lava then
+        self:reset()
+        return
+    end
+
     local distance, x, z, y, nx, nz = g3d.collisions.capsuleIntersection(WORLD.verts, WORLD, self.position.x, self.position.z, self.position.y - 1.5, self.position.x, self.position.z, self.position.y + 1.5, 1.0)
     
     if distance ~= nil then 
