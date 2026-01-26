@@ -94,13 +94,6 @@ function platform:updateHandles()
             handle[model]:setTranslation((position - offset):getTuple())
         end
     end
-
-    -- self.handles.x.positionModel:setTranslation((position - vec3.new(size.x / 2 + 3, 0, 0)):getTuple())
-    -- self.handles.y.positionModel:setTranslation((position + vec3.new(0, size.y / 2 + 3, 0)):getTuple())
-    -- self.handles.z.positionModel:setTranslation((position - vec3.new(0, 0, size.z / 2 + 3)):getTuple())
-    -- self.handles.x.scaleModel:setTranslation((position - vec3.new(size.x / 2 + 3, 0, 0)):getTuple())
-    -- self.handles.y.scaleModel:setTranslation((position + vec3.new(0, size.y / 2 + 3, 0)):getTuple())
-    -- self.handles.z.scaleModel:setTranslation((position - vec3.new(0, 0, size.z / 2 + 3)):getTuple())
 end
 
 local HANDLE_COLORS = {

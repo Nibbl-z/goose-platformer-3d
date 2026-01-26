@@ -58,6 +58,7 @@ function editor:mousemoved(x, y, dx, dy)
         camera.rotation.z = math.clamp(camera.rotation.z, -90, 90)
     end
 
+    if selectedPlatform == nil then return end
     if love.mouse.isDown(1) then
         for k, handle in pairs(selectedPlatform.handles) do
             if handle.hovered then
@@ -148,8 +149,7 @@ function editor:update(dt, platforms)
         direction.y = -1
     end
 
-    --if love.keyboard.isDown("1") then
-        -- welcome back to Lack of raycast hell
+    -- welcome back to Lack of raycast hell
     for _, platform in ipairs(platforms) do
         platform.hovered = false
         for _, handle in pairs(platform.handles) do
@@ -162,15 +162,17 @@ function editor:update(dt, platforms)
     end
 
     local dist = 100
- 
+    local handleDist = 100
+    local chosenHandle = nil
     for i = 0.1, 100, 0.2 do
         local rayPos = camRay(i)
 
         for _, platform in ipairs(platforms) do
             if platform.selected then
                 for _, handle in pairs(platform.handles) do
-                    if vec3.magnitude(rayPos - vec3.fromg3d(handle.positionModel.translation)) <= 8 and not dragging then
-                        handle.hovered = true
+                    if vec3.magnitude(rayPos - vec3.fromg3d(handle.positionModel.translation)) <= 6 and not dragging and i <= handleDist then
+                        handleDist = i
+                        chosenHandle = handle
                     end
                 end
             end
@@ -198,6 +200,10 @@ function editor:update(dt, platforms)
             selectedPlatform = chosenPlatform
             chosenPlatform.selected = true
         end
+    end
+
+    if chosenHandle ~= nil then
+        chosenHandle.hovered = true
     end
         
     -- todo: ui for this
