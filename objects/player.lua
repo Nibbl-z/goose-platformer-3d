@@ -258,11 +258,8 @@ function player:isGrounded(platforms)
         return
     end
 
-    local _, x, y, z = g3d.collisions.sphereIntersection(WORLD.verts, WORLD, self.position.x, self.position.z, self.position.y - 1.5, 0.1)
+    local _, x, y, z = g3d.collisions.sphereIntersection(WORLD.verts, WORLD, self.position.x, self.position.z, self.position.y - 1.5, 0.2)
     if x ~= nil then
-        -- if platform.platformType == PLATFORM_TYPE.lava then
-        --     self:reset()
-        -- end
         return x, y, z
     end
 end
@@ -277,14 +274,10 @@ function player:solveCollision(platforms, dt)
     local distance, x, z, y, nx, nz = g3d.collisions.capsuleIntersection(WORLD.verts, WORLD, self.position.x, self.position.z, self.position.y - 1.5, self.position.x, self.position.z, self.position.y + 1.5, 1.0)
     
     if distance ~= nil then 
-        -- if platform.platformType == PLATFORM_TYPE.lava then
-        --     self:reset()
-        --     return
-        -- end
         self.grounded = true
 
-        self.position.x = self.position.x + nx * math.clamp(dt, 0, 1) * RUN_SPEED
-        self.position.z = self.position.z + nz * math.clamp(dt, 0, 1) * RUN_SPEED
+        self.position.x = self.position.x + nx * math.clamp(dt, 0, 1) * RUN_SPEED * 2
+        self.position.z = self.position.z + nz * math.clamp(dt, 0, 1) * RUN_SPEED * 2
     end
 
     local above = g3d.collisions.sphereIntersection(WORLD.verts, WORLD, self.position.x, self.position.z, self.position.y + 1.5, 0.1)
