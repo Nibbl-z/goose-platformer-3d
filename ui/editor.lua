@@ -1,4 +1,5 @@
 require "yan"
+local Editor = require "editor"
 
 local ui = {}
 
@@ -41,6 +42,14 @@ function ui:init()
                     end,
                     mousebutton1up = function (v)
                         editorState.tool = EDITOR_TOOLS.scale
+                    end,
+                },
+                addtool = imagelabel:new {
+                    size = UDim2.new(0,32,0,32),
+                    image = "img/tool_add.png",
+                    backgroundcolor = Color.fromRgb(40,40,40),
+                    mousebutton1up = function (v)
+                        Editor:createPlatform()
                     end,
                 }
             }

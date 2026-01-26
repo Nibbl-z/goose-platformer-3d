@@ -1,4 +1,5 @@
 require "global"
+local Platform = require "objects.platform"
 
 local editor = {}
 
@@ -23,11 +24,11 @@ local Debug = require("objects.debug")
 local chosenPlatform, selectedPlatform
 local dragging = false
 
-function camRay(dist)
+function camRay(dist,x,y)
     local rotation = camera.rotation
 
-    local dx = (love.mouse.getX() - (love.graphics.getWidth() / 2)) * SENSITIVITY
-    local dy = (love.mouse.getY() - (love.graphics.getHeight() / 2)) * SENSITIVITY
+    local dx = (x or love.mouse.getX() - (love.graphics.getWidth() / 2)) * SENSITIVITY
+    local dy = (y or love.mouse.getY() - (love.graphics.getHeight() / 2)) * SENSITIVITY
 
     local xmin = (-love.graphics.getWidth() / 2) * SENSITIVITY
     local xmax = (love.graphics.getWidth() / 2) * SENSITIVITY
@@ -223,6 +224,14 @@ function editor:draw()
     for _, d in ipairs(debugObjs) do
         d:draw()
     end
+end
+
+-- external
+
+function editor:createPlatform()
+    local pos = camRay(10, 0, 0)
+    platform = Platform:new(pos, vec3.new(7,7,7), PLATFORM_TYPE.default)
+    table.insert(platforms, platform)
 end
 
 return editor
