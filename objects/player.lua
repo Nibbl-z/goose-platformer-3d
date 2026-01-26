@@ -274,6 +274,7 @@ function player:solveCollision(platforms, dt)
     local distance, x, z, y, nx, nz = g3d.collisions.capsuleIntersection(WORLD.verts, WORLD, self.position.x, self.position.z, self.position.y - 1.5, self.position.x, self.position.z, self.position.y + 1.5, 1.0)
     
     if distance ~= nil then 
+        self.airtime = 0
         self.grounded = true
 
         self.position.x = self.position.x + nx * math.clamp(dt, 0, 1) * RUN_SPEED * 2
@@ -336,14 +337,14 @@ function player:updateCameraDistance(platforms)
 
     -- thus enjoy this disaster
 
-    for i = 0, CAMERA_DISTANCE, 1 do
+    for i = 0, CAMERA_DISTANCE, 0.5 do
         local camPos = (vec3.new(
             math.cos(math.rad(self.camera.rotation.y)) * math.cos(math.rad(self.camera.rotation.z)) * -i, 
             math.sin(math.rad(self.camera.rotation.z)) * -i, 
             math.sin(math.rad(self.camera.rotation.y)) * math.cos(math.rad(self.camera.rotation.z)) * -i
         ) + self.position + vec3.new(0,1,0))
 
-        if g3d.collisions.sphereIntersection(WORLD.verts, WORLD, camPos.x, camPos.z, camPos.y, 0.1) then
+        if g3d.collisions.sphereIntersection(WORLD.verts, WORLD, camPos.x, camPos.z, camPos.y, 0.3) then
             return i - 1
         end
     end
