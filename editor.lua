@@ -66,33 +66,42 @@ function editor:mousemoved(x, y, dx, dy)
 
                 local d = math.sqrt(dx ^ 2 + dy ^ 2)
                 local pos = camRay(distance)
-                local sign = ((pos - vec3.fromg3d(handle.scaleModel.translation))[k] < 0) and -1 or 1
+                local sign = ((pos - vec3.fromg3d(handle.scaleModel.translation))[handle.axis] < 0) and -1 or 1
 
-                if editorState.tool == EDITOR_TOOLS.scale and k ~= "y" then -- i dont even know, i dont even want to know, 
+                if editorState.tool == EDITOR_TOOLS.scale and handle.axis ~= "y" then -- i dont even know, i dont even want to know, 
                     sign = sign * -1
                 end
+
+                
 
                 local move = d * (distance / 400 * sign)
                 
                 if editorState.tool == EDITOR_TOOLS.move then
                     selectedPlatform.model:setTranslation((vec3.fromg3d(selectedPlatform.model.translation) + vec3.new(
-                        k == "x" and move or 0,
-                        k == "y" and move or 0,
-                        k == "z" and move or 0
+                        handle.axis == "x" and move or 0,
+                        handle.axis == "y" and move or 0,
+                        handle.axis == "z" and move or 0
                     )):getTuple())
                 else
+                    if editorState.tool == EDITOR_TOOLS.scale and string.sub(k, 1, 1) == "n" then
+                        move = move * -1
+                    end
                     selectedPlatform.model:setScale((vec3.fromg3d(selectedPlatform.model.scale) + vec3.new(
-                        k == "x" and move or 0,
-                        k == "y" and move or 0,
-                        k == "z" and move or 0
+                        handle.axis == "x" and move or 0,
+                        handle.axis == "y" and move or 0,
+                        handle.axis == "z" and move or 0
                     )):getTuple())
 
                     selectedPlatform.model:setScale(math.abs(selectedPlatform.model.scale[1]), math.abs(selectedPlatform.model.scale[2]), math.abs(selectedPlatform.model.scale[3]))
+                    
+                    if editorState.tool == EDITOR_TOOLS.scale and string.sub(k, 1, 1) == "n" then
+                        move = move * -1
+                    end
 
                     selectedPlatform.model:setTranslation((vec3.fromg3d(selectedPlatform.model.translation) - vec3.new(
-                        k == "x" and move / 2 or 0,
-                        k == "y" and -move / 2 or 0,
-                        k == "z" and move / 2 or 0
+                        handle.axis == "x" and move / 2 or 0,
+                        handle.axis == "y" and -move / 2 or 0,
+                        handle.axis == "z" and move / 2 or 0
                     )):getTuple())
                 end
                 
