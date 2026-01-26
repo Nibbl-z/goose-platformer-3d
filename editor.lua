@@ -160,13 +160,23 @@ function editor:update(dt, platforms)
         platform:updateHandles()
     end
 
-    local dist = 100
-    local handleDist = 100
+    local dist = 75
+    local handleDist = 75
     local chosenHandle = nil
-    for i = 0.1, 100, 0.2 do
+
+    local optimizedPlatforms = {}
+
+    for _, v in ipairs(platforms) do
+        local pos = vec3.fromg3d(v.model.translation)
+        if (pos - camera.position):magnitude() <= 80 then
+            table.insert(optimizedPlatforms, v)
+        end
+    end
+
+    for i = 1, 75, 1 do
         local rayPos = camRay(i)
 
-        for _, platform in ipairs(platforms) do
+        for _, platform in ipairs(optimizedPlatforms) do
             if platform.selected then
                 for _, handle in pairs(platform.handles) do
                     if vec3.magnitude(rayPos - vec3.fromg3d(handle.positionModel.translation)) <= 6 and not dragging and i <= handleDist then
