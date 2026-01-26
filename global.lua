@@ -10,5 +10,6 @@ EDITOR_TOOLS = {
 }
 
 editorState = {
-    tool = EDITOR_TOOLS.move
+    tool = EDITOR_TOOLS.move,
+    camSpeed = 30
 }

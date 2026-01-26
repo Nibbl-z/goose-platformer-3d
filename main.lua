@@ -44,7 +44,11 @@ function love.mousemoved(x,y, dx,dy)
 end
 
 function love.wheelmoved(x, y)
-    player:wheelmoved(x,y)
+    if scene == "game" then
+        player:wheelmoved(x,y)
+    elseif scene == "editor" then
+        Editor:wheelmoved(x,y)
+    end
 end
 
 function love.update(dt)

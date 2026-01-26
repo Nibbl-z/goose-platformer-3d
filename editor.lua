@@ -16,7 +16,6 @@ local MOVE_DIRECTIONS = {
     s = 180,
     d = 270
 }
-local CAMERA_SPEED = 30
 
 local mouseX, mouseY = nil, nil
 local debugObjs = {}
@@ -200,7 +199,7 @@ function editor:update(dt, platforms)
     
     if dist == 100 then chosenPlatform = nil end
 
-    if chosenPlatform ~= nil then
+    if chosenPlatform ~= nil and chosenHandle == nil and not dragging then
         chosenPlatform.hovered = true
 
         if love.mouse.isDown(1) and not dragging then
@@ -226,7 +225,7 @@ function editor:update(dt, platforms)
         editorState.tool = EDITOR_TOOLS.scale
     end
 
-    camera.position = camera.position + direction:normalize() * dt * CAMERA_SPEED
+    camera.position = camera.position + direction:normalize() * dt * editorState.camSpeed
 
     g3d.camera.lookInDirection(camera.position.x, camera.position.z, camera.position.y, math.rad(camera.rotation.y), math.rad(camera.rotation.z))
 end
@@ -235,6 +234,10 @@ function editor:draw()
     for _, d in ipairs(debugObjs) do
         d:draw()
     end
+end
+
+function editor:wheelmoved(x, y)
+    editorState.camSpeed = math.clamp(editorState.camSpeed + y, 5, 100)
 end
 
 -- external
