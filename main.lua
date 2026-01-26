@@ -3,6 +3,7 @@ require "global"
 local Platform = require("objects.platform")
 local Player = require("objects.player")
 local Editor = require("editor")
+local World = require("objects.world")
 local scene = "editor"
 
 local ui = {
@@ -24,6 +25,8 @@ function love.load()
     table.insert(platforms, Platform:new(vec3.new(40,-28,0), vec3.new(30,1,30), PLATFORM_TYPE.default))
 
     table.insert(platforms, Platform:new(vec3.new(40,-28,40), vec3.new(10,50,10), PLATFORM_TYPE.lava))
+
+    World:updateMesh()
 
     player = Player:new()
 

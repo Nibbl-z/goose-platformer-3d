@@ -68,6 +68,7 @@ function platform:new(position, size, platformType)
     }
 
     setmetatable(object, self)
+    print(table.tostring(object.model.verts))
     return object
 end
 

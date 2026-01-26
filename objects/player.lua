@@ -241,6 +241,8 @@ function player:new()
 
     setmetatable(object, self)
 
+    
+
     return object
 end
 
@@ -250,42 +252,35 @@ function player:mousemoved(x, y, dx, dy)
 end
 
 function player:isGrounded(platforms)
-    -- This is probably bad.
-    for _, platform in ipairs(platforms) do
-        local _, x, y, z = g3d.collisions.sphereIntersection(platform.model.verts, platform.model, self.position.x, self.position.z, self.position.y - 1.5, 0.1)
-        if x ~= nil then
-            if platform.platformType == PLATFORM_TYPE.lava then
-                self:reset()
-            end
-            return x + platform.model.translation[1], y + platform.model.translation[3], z + platform.model.translation[2]
-        end
+    local _, x, y, z = g3d.collisions.sphereIntersection(WORLD.verts, WORLD, self.position.x, self.position.z, self.position.y - 1.5, 0.1)
+    if x ~= nil then
+        -- if platform.platformType == PLATFORM_TYPE.lava then
+        --     self:reset()
+        -- end
+        return x, y, z
     end
 end
 
 function player:solveCollision(platforms, dt)
-    -- This is probably worse.
+    local distance, x, z, y, nx, nz = g3d.collisions.capsuleIntersection(WORLD.verts, WORLD, self.position.x, self.position.z, self.position.y - 1.5, self.position.x, self.position.z, self.position.y + 1.5, 1.0)
+    
+    if distance ~= nil then 
+        -- if platform.platformType == PLATFORM_TYPE.lava then
+        --     self:reset()
+        --     return
+        -- end
+        self.grounded = true
 
-    for _, platform in ipairs(platforms) do
-        local distance, x, z, y, nx, nz = g3d.collisions.capsuleIntersection(platform.model.verts, platform.model, self.position.x, self.position.z, self.position.y - 1.5, self.position.x, self.position.z, self.position.y + 1.5, 1.0)
-        
-        if distance ~= nil then 
-            if platform.platformType == PLATFORM_TYPE.lava then
-                self:reset()
-                return
-            end
-            self.grounded = true
+        self.position.x = self.position.x + nx * math.clamp(dt, 0, 1) * RUN_SPEED
+        self.position.z = self.position.z + nz * math.clamp(dt, 0, 1) * RUN_SPEED
+    end
 
-            self.position.x = self.position.x + nx * math.clamp(dt, 0, 1) * RUN_SPEED
-            self.position.z = self.position.z + nz * math.clamp(dt, 0, 1) * RUN_SPEED
-        end
+    local above = g3d.collisions.sphereIntersection(WORLD.verts, WORLD, self.position.x, self.position.z, self.position.y + 1.5, 0.1)
 
-        local above = g3d.collisions.sphereIntersection(platform.model.verts, platform.model, self.position.x, self.position.z, self.position.y + 1.5, 0.1)
-
-        if above ~= nil then
-            self.grounded = false
-            self.velocity.y = -7
-            self.position.y = self.position.y - GRAVITY * dt
-        end
+    if above ~= nil then
+        self.grounded = false
+        self.velocity.y = -7
+        self.position.y = self.position.y - GRAVITY * dt
     end
 end
 
@@ -331,22 +326,20 @@ function player:updateModel()
 end
 
 function player:updateCameraDistance(platforms)
-    for _, platform in ipairs(platforms) do
-        -- i have suffered for so long.
-        -- rayIntersection just DOESNT WORK <3 YAY!!!!!!!!!!!!!!!!!!!
+    -- i have suffered for so long.
+    -- rayIntersection just DOESNT WORK <3 YAY!!!!!!!!!!!!!!!!!!!
 
-        -- thus enjoy this disaster
+    -- thus enjoy this disaster
 
-        for i = 0, CAMERA_DISTANCE, 0.1 do
-            local camPos = (vec3.new(
-                math.cos(math.rad(self.camera.rotation.y)) * math.cos(math.rad(self.camera.rotation.z)) * -i, 
-                math.sin(math.rad(self.camera.rotation.z)) * -i, 
-                math.sin(math.rad(self.camera.rotation.y)) * math.cos(math.rad(self.camera.rotation.z)) * -i
-            ) + self.position + vec3.new(0,1,0))
+    for i = 0, CAMERA_DISTANCE, 1 do
+        local camPos = (vec3.new(
+            math.cos(math.rad(self.camera.rotation.y)) * math.cos(math.rad(self.camera.rotation.z)) * -i, 
+            math.sin(math.rad(self.camera.rotation.z)) * -i, 
+            math.sin(math.rad(self.camera.rotation.y)) * math.cos(math.rad(self.camera.rotation.z)) * -i
+        ) + self.position + vec3.new(0,1,0))
 
-            if g3d.collisions.sphereIntersection(platform.model.verts, platform.model, camPos.x, camPos.z, camPos.y, 0.1) then
-                return i - 0.1
-            end
+        if g3d.collisions.sphereIntersection(WORLD.verts, WORLD, camPos.x, camPos.z, camPos.y, 0.1) then
+            return i - 1
         end
     end
 end
