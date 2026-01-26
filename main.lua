@@ -5,6 +5,10 @@ local Player = require("objects.player")
 local Editor = require("editor")
 local scene = "editor"
 
+local ui = {
+    editor = require("ui.editor")
+}
+
 platforms = {}
 
 function love.load()
@@ -22,6 +26,10 @@ function love.load()
     table.insert(platforms, Platform:new(vec3.new(40,-28,40), vec3.new(10,50,10), PLATFORM_TYPE.lava))
 
     player = Player:new()
+
+    for _, v in pairs(ui) do
+        v:init()
+    end
 end
 
 function love.mousemoved(x,y, dx,dy)
@@ -37,6 +45,8 @@ function love.wheelmoved(x, y)
 end
 
 function love.update(dt)
+    yan:update(dt)
+
     if scene == "game" then
         player.active = true
         player:update(dt, platforms)
@@ -46,7 +56,13 @@ function love.update(dt)
     end
 end
 
+function love.textinput(text)
+    yan:textinput(text)
+end
+
 function love.keypressed(key)
+    yan:keypressed(key)
+
     if key == "z" then
         love.mouse.setRelativeMode(true)
         scene = "game"
@@ -59,6 +75,8 @@ function love.keypressed(key)
 end
 
 function love.draw()
+    yan:draw()
+
     love.graphics.setBackgroundColor(0.1,0.1,0.1)
     for _, v in pairs(platforms) do
        v:draw()

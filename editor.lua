@@ -73,8 +73,6 @@ function editor:mousemoved(x, y, dx, dy)
                     sign = sign * -1
                 end
 
-                
-
                 local move = d * (distance / 400 * sign)
                 
                 if editorState.tool == EDITOR_TOOLS.move then
