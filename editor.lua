@@ -1,3 +1,5 @@
+require "global"
+
 local editor = {}
 
 local camera = {
@@ -57,21 +59,43 @@ function editor:mousemoved(x, y, dx, dy)
     end
 
     if love.mouse.isDown(1) then
-        for k, handle in pairs(selectedPlatform.moveHandles) do
+        for k, handle in pairs(selectedPlatform.handles) do
             if handle.hovered then
                 dragging = true
-                local distance = (camera.position - vec3.fromg3d(handle.model.translation)):magnitude()
+                local distance = (camera.position - vec3.fromg3d(handle.scaleModel.translation)):magnitude()
 
                 local d = math.sqrt(dx ^ 2 + dy ^ 2)
                 local pos = camRay(distance)
-                local sign = ((pos - vec3.fromg3d(handle.model.translation))[k] < 0) and -1 or 1
+                local sign = ((pos - vec3.fromg3d(handle.scaleModel.translation))[k] < 0) and -1 or 1
+
+                if editorState.tool == EDITOR_TOOLS.scale and k ~= "y" then -- i dont even know, i dont even want to know, 
+                    sign = sign * -1
+                end
+
                 local move = d * (distance / 400 * sign)
                 
-                selectedPlatform.model:setTranslation((vec3.fromg3d(selectedPlatform.model.translation) + vec3.new(
-                    k == "x" and move or 0,
-                    k == "y" and move or 0,
-                    k == "z" and move or 0
-                )):getTuple())
+                if editorState.tool == EDITOR_TOOLS.move then
+                    selectedPlatform.model:setTranslation((vec3.fromg3d(selectedPlatform.model.translation) + vec3.new(
+                        k == "x" and move or 0,
+                        k == "y" and move or 0,
+                        k == "z" and move or 0
+                    )):getTuple())
+                else
+                    selectedPlatform.model:setScale((vec3.fromg3d(selectedPlatform.model.scale) + vec3.new(
+                        k == "x" and move or 0,
+                        k == "y" and move or 0,
+                        k == "z" and move or 0
+                    )):getTuple())
+
+                    selectedPlatform.model:setScale(math.abs(selectedPlatform.model.scale[1]), math.abs(selectedPlatform.model.scale[2]), math.abs(selectedPlatform.model.scale[3]))
+
+                    selectedPlatform.model:setTranslation((vec3.fromg3d(selectedPlatform.model.translation) - vec3.new(
+                        k == "x" and move / 2 or 0,
+                        k == "y" and -move / 2 or 0,
+                        k == "z" and move / 2 or 0
+                    )):getTuple())
+                end
+                
 
                 return
             end
@@ -119,7 +143,7 @@ function editor:update(dt, platforms)
         -- welcome back to Lack of raycast hell
     for _, platform in ipairs(platforms) do
         platform.hovered = false
-        for _, handle in pairs(platform.moveHandles) do
+        for _, handle in pairs(platform.handles) do
             if not dragging then
                 handle.hovered = false
             end
@@ -135,8 +159,8 @@ function editor:update(dt, platforms)
 
         for _, platform in ipairs(platforms) do
             if platform.selected then
-                for _, handle in pairs(platform.moveHandles) do
-                    if vec3.magnitude(rayPos - vec3.fromg3d(handle.model.translation)) <= 8 and not dragging then
+                for _, handle in pairs(platform.handles) do
+                    if vec3.magnitude(rayPos - vec3.fromg3d(handle.positionModel.translation)) <= 8 and not dragging then
                         handle.hovered = true
                     end
                 end
@@ -167,8 +191,16 @@ function editor:update(dt, platforms)
         end
     end
         
-    --end
-    
+    -- todo: ui for this
+
+    if love.keyboard.isDown("1") then
+        editorState.tool = EDITOR_TOOLS.move
+    end
+
+    if love.keyboard.isDown("2") then
+        editorState.tool = EDITOR_TOOLS.scale
+    end
+
     camera.position = camera.position + direction:normalize() * dt * CAMERA_SPEED
 
     g3d.camera.lookInDirection(camera.position.x, camera.position.z, camera.position.y, math.rad(camera.rotation.y), math.rad(camera.rotation.z))

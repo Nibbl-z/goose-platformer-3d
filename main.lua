@@ -47,6 +47,12 @@ function love.update(dt)
 end
 
 function love.keypressed(key)
+    if key == "z" then
+        love.mouse.setRelativeMode(true)
+        scene = "game"
+    elseif key == "x" then
+        scene = "editor"
+    end
     if key == "space" and (player.grounded or player.airtime <= 0.2) then
         player.jumpPressed = true
     end
