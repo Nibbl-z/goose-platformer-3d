@@ -79,6 +79,42 @@ function ui:init()
                     textcolor = Color.new(1,1,1,1)
                 }
             }
+        },
+
+        rightclick = uibase:new {
+            backgroundcolor = Color.fromRgb(30,30,30),
+            
+            visible = function ()
+                return editorState.rightClicked
+            end,
+            position = function ()
+                return editorState.rightClickPos
+            end,
+            leftpadding = UDim.new(0,4),
+            rightpadding = UDim.new(0,4),
+            toppadding = UDim.new(0,4),
+            bottompadding = UDim.new(0,4),
+            children = {
+                delete = textlabel:new {
+                    size = UDim2.new(1,0,0,25),
+                    textsize = 20,
+                    halign = "right",
+                    text = "Delete",
+                    textcolor = Color.new(1,1,1,1),
+                    backgroundcolor = Color.new(0,0,0,0),
+                    children = {
+                        icon = imagelabel:new {
+                            image = "img/delete.png",
+                            size = UDim2.new(0,25,0,25),
+                            backgroundcolor = Color.new(0,0,0,0)
+                        }
+                    },
+                    mousebutton1up = function ()
+                        Editor:deletePlatforms()
+                        editorState.rightClicked = false
+                    end
+                }
+            }
         }
     }
 end

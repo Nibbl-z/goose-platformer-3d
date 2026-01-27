@@ -26,6 +26,7 @@ local chosenPlatform, selectedPlatform
 local chosenHandle = nil
 local extraSelected = {}
 local dragging = false
+local cameraTurning = false
 
 local history = {}
 local stateBeforeUndo = {}
@@ -34,6 +35,9 @@ local MAX_HISTORY = 100
 local currentHistory = 0
 
 local keybinds = {}
+
+local mouse1, mouse2 = false, false
+local mouse1reset, mouse2reset = false, false
 
 function editor:init()
     -- Ctrl+Z (undo)
@@ -80,6 +84,11 @@ function editor:init()
             local platform = Platform:new(data.position, data.size, data.platformType)
             table.insert(platforms, platform)
         end
+    end))
+
+    -- Delete
+    table.insert(keybinds, Keybind:new("delete", false, false, function ()
+        self:deletePlatforms()
     end))
 end
 
@@ -137,20 +146,24 @@ function updateHistory()
 end
 
 function editor:mousemoved(x, y, dx, dy)
+    love.mouse.setRelativeMode(love.mouse.isDown(2))
+    love.mouse.setGrabbed(love.mouse.isDown(2))
     if love.mouse.isDown(2) then
+        cameraTurning = true
+        chosenPlatform = nil
         if mouseX ~= nil then
             love.mouse.setPosition(mouseX, mouseY)
         end
 
         camera.rotation = camera.rotation - vec3.new(0, dx * SENSITIVITY, dy * SENSITIVITY)
         camera.rotation.z = math.clamp(camera.rotation.z, -90, 90)
+    else
+        cameraTurning = false
     end
 
     if selectedPlatform == nil then return end
     
     if love.mouse.isDown(1) and chosenHandle ~= nil then
-        print(#extraSelected)
-        print(#{selectedPlatform, unpack(extraSelected)})
         for _, platform in ipairs({selectedPlatform, unpack(extraSelected)}) do
             if chosenHandle.hovered then
                 if not dragging then
@@ -206,9 +219,6 @@ function editor:mousemoved(x, y, dx, dy)
 end
 
 function editor:updateMovement(dt)
-    love.mouse.setRelativeMode(love.mouse.isDown(2))
-    love.mouse.setGrabbed(love.mouse.isDown(2))
-
     local direction = vec3.new(0,0,0)
 
     if love.mouse.isDown(2) and mouseX == nil and mouseY == nil then
@@ -245,6 +255,13 @@ function editor:updateMovement(dt)
 end
 
 function editor:update(dt, platforms)
+    -- love2d, add a love.mouse.isDownThisDamnFrameOnlyOnce and my life is yours
+    mouse1 = not love.mouse.isDown(1) and not mouse1reset
+    mouse1reset = not love.mouse.isDown(1)
+    
+    mouse2 = not love.mouse.isDown(2) and not mouse2reset
+    mouse2reset = not love.mouse.isDown(2)
+
     self:updateMovement(dt)
 
     -- update platform selection and handle selection
@@ -286,7 +303,6 @@ function editor:update(dt, platforms)
             end
 
             if g3d.collisions.sphereIntersection(platform.model.verts, platform.model, rayPos.x, rayPos.z, rayPos.y, 0.1) then
-                
                 if i <= dist then
                     dist = i
                     chosenPlatform = platform
@@ -296,13 +312,11 @@ function editor:update(dt, platforms)
             end
         end
     end
-    
-    if dist == 100 then chosenPlatform = nil end
 
     if chosenPlatform ~= nil and chosenHandle == nil and not dragging then
         chosenPlatform.hovered = true
 
-        if love.mouse.isDown(1) and not dragging then
+        if (mouse1 or (mouse2 and not cameraTurning)) and not dragging then
             if selectedPlatform ~= nil and love.keyboard.isDown("lshift") and chosenPlatform.selected == false then
                 table.insert(extraSelected, chosenPlatform) 
                 print("multi select")
@@ -314,8 +328,12 @@ function editor:update(dt, platforms)
                 selectedPlatform = chosenPlatform
             end
             
-            
             chosenPlatform.selected = true
+        end
+
+        if mouse2 and not cameraTurning then
+            editorState.rightClicked = true
+            editorState.rightClickPos = UDim2.new(0, love.mouse.getX(), 0, love.mouse.getY())
         end
     end
 
@@ -366,6 +384,17 @@ function editor:createPlatform()
     platform = Platform:new(pos, vec3.new(7,7,7), PLATFORM_TYPE.default)
     updateHistory()
     table.insert(platforms, platform)
+end
+
+function editor:deletePlatforms()
+    updateHistory()
+
+    for i, platform in ipairs(platforms) do
+        if platform.selected then
+            table.remove(platforms, i)
+            platform:destroy()
+        end
+    end
 end
 
 return editor

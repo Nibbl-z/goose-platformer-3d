@@ -11,5 +11,7 @@ EDITOR_TOOLS = {
 
 editorState = {
     tool = EDITOR_TOOLS.move,
-    camSpeed = 30
+    camSpeed = 30,
+    rightClicked = false,
+    rightClickPos = UDim2.new(0,0,0,0)
 }
