@@ -68,8 +68,14 @@ function platform:new(position, size, platformType)
     }
 
     setmetatable(object, self)
-    print(table.tostring(object.model.verts))
+
     return object
+end
+
+function platform:destroy()
+    self.model = nil
+    self.handles = nil
+    self = nil
 end
 
 
@@ -104,6 +110,7 @@ local HANDLE_COLORS = {
 }
 
 function platform:draw()
+    if self.model == nil then return end
     self.model:draw((self.hovered or self.selected) and selectionShader or nil)
     if self.selected then
         for k, handle in pairs(self.handles) do

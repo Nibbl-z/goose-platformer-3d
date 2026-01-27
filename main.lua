@@ -70,11 +70,11 @@ end
 function love.keypressed(key)
     yan:keypressed(key)
 
-    if key == "z" then
+    if key == "," then
         love.mouse.setRelativeMode(true)
         scene = "game"
         World:updateMesh()
-    elseif key == "x" then
+    elseif key == "." then
         scene = "editor"
     end
     if key == "space" and (player.grounded or player.airtime <= 0.2) then

@@ -24,6 +24,11 @@ local Debug = require("objects.debug")
 local chosenPlatform, selectedPlatform
 local dragging = false
 
+local history = {}
+local MAX_HISTORY = 100
+
+local currentHistory = 1
+
 function camRay(dist,x,y)
     local rotation = camera.rotation
 
@@ -49,6 +54,27 @@ function camRay(dist,x,y)
     ) + camera.position
 end
 
+function updateHistory()
+    local historyPlatforms = {}
+
+    for _, platform in ipairs(platforms) do
+        -- todo: this might be painful for when i add more properties to platforms.
+        -- maybe there can just be like all the normal properties on a platform
+        -- and then stuff like model and handles and selected can be in a _interal table, which isnt transfered
+        table.insert(historyPlatforms, {
+            position = vec3.fromg3d(platform.model.translation),
+            size = vec3.fromg3d(platform.model.scale),
+            platformType = platform.platformType
+        })
+    end
+
+    table.insert(history, 1, historyPlatforms)
+    
+    if #history >= MAX_HISTORY then
+        table.remove(history, 100)
+    end
+end
+
 function editor:mousemoved(x, y, dx, dy)
     if love.mouse.isDown(2) then
         if mouseX ~= nil then
@@ -60,9 +86,13 @@ function editor:mousemoved(x, y, dx, dy)
     end
 
     if selectedPlatform == nil then return end
+    
     if love.mouse.isDown(1) then
         for k, handle in pairs(selectedPlatform.handles) do
             if handle.hovered then
+                if not dragging then
+                    updateHistory()
+                end
                 dragging = true
                 local distance = (camera.position - vec3.fromg3d(handle.scaleModel.translation)):magnitude()
 
@@ -214,6 +244,8 @@ function editor:update(dt, platforms)
     if chosenHandle ~= nil then
         chosenHandle.hovered = true
     end
+
+    
         
     -- todo: ui for this
 
@@ -223,6 +255,23 @@ function editor:update(dt, platforms)
 
     if love.keyboard.isDown("2") then
         editorState.tool = EDITOR_TOOLS.scale
+    end
+
+    if love.keyboard.isDown("lctrl") and love.keyboard.isDown("z") then
+        print("undo")
+        if #history == 0 then return end
+        currentHistory = math.clamp(currentHistory + 1, 1, #history)
+
+        for _, v in ipairs(platforms) do
+            v:destroy()
+        end
+
+        table.clear(platforms)
+
+        for _, data in ipairs(history[currentHistory]) do
+            local platform = Platform:new(data.position, data.size, data.platformType)
+            table.insert(platforms, platform)
+        end
     end
 
     camera.position = camera.position + direction:normalize() * dt * editorState.camSpeed
@@ -245,6 +294,7 @@ end
 function editor:createPlatform()
     local pos = camRay(10, 0, 0)
     platform = Platform:new(pos, vec3.new(7,7,7), PLATFORM_TYPE.default)
+    updateHistory()
     table.insert(platforms, platform)
 end
 

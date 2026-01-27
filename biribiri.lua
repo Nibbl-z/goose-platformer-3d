@@ -56,11 +56,12 @@ end
 --- Clears a table
 --- @param t table The table to clear
 table.clear = function (t)
-    for _, v in pairs(t) do
-        table.remove(t, #t - 1)
-    end
-    table.remove(t, 1)
+    repeat
+        table.remove(t, 1)
+    until #t == 0
 end
+
+-- love how this function never actually worked very cool <3
 
 --- Finds a value inside of a table, returns the index if it is found, and returns nil otherwise
 --- @param haystack table The table to search
