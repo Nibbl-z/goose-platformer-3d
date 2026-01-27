@@ -236,22 +236,24 @@ function editor:updateMovement(dt)
         mouseY = nil
     end
 
-    for key, r in pairs(MOVE_DIRECTIONS) do
-        if love.keyboard.isDown(key) then
-            direction = direction + vec3.new(
-                math.cos(math.rad(camera.rotation.y + r)),
-                (key == "a" or key == "d") and 0 or math.sin(math.rad(camera.rotation.z + r)),
-                math.sin(math.rad(camera.rotation.y + r))
-            )
+    if not love.keyboard.isDown("lshift") and not love.keyboard.isDown("lctrl") then
+        for key, r in pairs(MOVE_DIRECTIONS) do
+            if love.keyboard.isDown(key) then
+                direction = direction + vec3.new(
+                    math.cos(math.rad(camera.rotation.y + r)),
+                    (key == "a" or key == "d") and 0 or math.sin(math.rad(camera.rotation.z + r)),
+                    math.sin(math.rad(camera.rotation.y + r))
+                )
+            end
         end
-    end
-
-    if love.keyboard.isDown("e") then
-        direction.y = 1
-    end
-
-    if love.keyboard.isDown("q") then
-        direction.y = -1
+    
+        if love.keyboard.isDown("e") then
+            direction.y = 1
+        end
+    
+        if love.keyboard.isDown("q") then
+            direction.y = -1
+        end
     end
 
     camera.position = camera.position + direction:normalize() * dt * editorState.camSpeed
