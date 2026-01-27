@@ -23,6 +23,8 @@ local Debug = require("objects.debug")
 local Keybind = require("objects.keybind")
 
 local chosenPlatform, selectedPlatform
+local chosenHandle = nil
+local extraSelected = {}
 local dragging = false
 
 local history = {}
@@ -146,60 +148,60 @@ function editor:mousemoved(x, y, dx, dy)
 
     if selectedPlatform == nil then return end
     
-    if love.mouse.isDown(1) then
-        for k, handle in pairs(selectedPlatform.handles) do
-            if handle.hovered then
+    if love.mouse.isDown(1) and chosenHandle ~= nil then
+        print(#extraSelected)
+        print(#{selectedPlatform, unpack(extraSelected)})
+        for _, platform in ipairs({selectedPlatform, unpack(extraSelected)}) do
+            if chosenHandle.hovered then
                 if not dragging then
                     updateHistory()
                 end
                 dragging = true
-                local distance = (camera.position - vec3.fromg3d(handle.scaleModel.translation)):magnitude()
+                local distance = (camera.position - vec3.fromg3d(chosenHandle.scaleModel.translation)):magnitude()
 
                 local d = math.sqrt(dx ^ 2 + dy ^ 2)
                 local pos = camRay(distance)
-                local sign = ((pos - vec3.fromg3d(handle.scaleModel.translation))[handle.axis] < 0) and -1 or 1
+                local sign = ((pos - vec3.fromg3d(chosenHandle.scaleModel.translation))[chosenHandle.axis] < 0) and -1 or 1
 
-                if editorState.tool == EDITOR_TOOLS.scale and handle.axis ~= "y" then -- i dont even know, i dont even want to know, 
+                if editorState.tool == EDITOR_TOOLS.scale and chosenHandle.axis ~= "y" then -- i dont even know, i dont even want to know, 
                     sign = sign * -1
                 end
 
                 local move = d * (distance / 400 * sign)
                 
                 if editorState.tool == EDITOR_TOOLS.move then
-                    selectedPlatform.model:setTranslation((vec3.fromg3d(selectedPlatform.model.translation) + vec3.new(
-                        handle.axis == "x" and move or 0,
-                        handle.axis == "y" and move or 0,
-                        handle.axis == "z" and move or 0
+                    platform.model:setTranslation((vec3.fromg3d(platform.model.translation) + vec3.new(
+                        chosenHandle.axis == "x" and move or 0,
+                        chosenHandle.axis == "y" and move or 0,
+                        chosenHandle.axis == "z" and move or 0
                     )):getTuple())
                 else
-                    if editorState.tool == EDITOR_TOOLS.scale and string.sub(k, 1, 1) == "n" then
+                    if editorState.tool == EDITOR_TOOLS.scale and chosenHandle.negative == true then
                         move = move * -1
                     end
-                    selectedPlatform.model:setScale((vec3.fromg3d(selectedPlatform.model.scale) + vec3.new(
-                        handle.axis == "x" and move or 0,
-                        handle.axis == "y" and move or 0,
-                        handle.axis == "z" and move or 0
+                    platform.model:setScale((vec3.fromg3d(platform.model.scale) + vec3.new(
+                        chosenHandle.axis == "x" and move or 0,
+                        chosenHandle.axis == "y" and move or 0,
+                        chosenHandle.axis == "z" and move or 0
                     )):getTuple())
 
-                    selectedPlatform.model:setScale(math.abs(selectedPlatform.model.scale[1]), math.abs(selectedPlatform.model.scale[2]), math.abs(selectedPlatform.model.scale[3]))
+                    platform.model:setScale(math.abs(platform.model.scale[1]), math.abs(platform.model.scale[2]), math.abs(platform.model.scale[3]))
                     
-                    if editorState.tool == EDITOR_TOOLS.scale and string.sub(k, 1, 1) == "n" then
+                    if editorState.tool == EDITOR_TOOLS.scale and chosenHandle.negative == true then
                         move = move * -1
                     end
 
-                    selectedPlatform.model:setTranslation((vec3.fromg3d(selectedPlatform.model.translation) - vec3.new(
-                        handle.axis == "x" and move / 2 or 0,
-                        handle.axis == "y" and -move / 2 or 0,
-                        handle.axis == "z" and move / 2 or 0
+                    platform.model:setTranslation((vec3.fromg3d(platform.model.translation) - vec3.new(
+                        chosenHandle.axis == "x" and move / 2 or 0,
+                        chosenHandle.axis == "y" and -move / 2 or 0,
+                        chosenHandle.axis == "z" and move / 2 or 0
                     )):getTuple())
                 end
-                
-
-                return
             end
         end
     else
         dragging = false
+        chosenHandle = nil
     end
 end
 
@@ -259,7 +261,7 @@ function editor:update(dt, platforms)
     
     local dist = 75
     local handleDist = 75
-    local chosenHandle = nil
+    
 
     local optimizedPlatforms = {}
 
@@ -284,6 +286,7 @@ function editor:update(dt, platforms)
             end
 
             if g3d.collisions.sphereIntersection(platform.model.verts, platform.model, rayPos.x, rayPos.z, rayPos.y, 0.1) then
+                
                 if i <= dist then
                     dist = i
                     chosenPlatform = platform
@@ -300,10 +303,18 @@ function editor:update(dt, platforms)
         chosenPlatform.hovered = true
 
         if love.mouse.isDown(1) and not dragging then
-            for _, platform in ipairs(platforms) do
-                platform.selected = false
+            if selectedPlatform ~= nil and love.keyboard.isDown("lshift") and chosenPlatform.selected == false then
+                table.insert(extraSelected, chosenPlatform) 
+                print("multi select")
+            elseif not love.keyboard.isDown("lshift") and chosenPlatform.selected == false then
+                for _, platform in ipairs(platforms) do
+                    platform.selected = false
+                end
+                table.clear(extraSelected)
+                selectedPlatform = chosenPlatform
             end
-            selectedPlatform = chosenPlatform
+            
+            
             chosenPlatform.selected = true
         end
     end

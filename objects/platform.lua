@@ -45,6 +45,7 @@ function platform:new(position, size, platformType)
             },
             nx = {
                 axis = "x",
+                negative = true,
                 positionModel = g3d.newModel("models/movehandle.obj", assets["img/goog.png"], (position - vec3.new(size.x / 2 + 3, 0, 0)):get(), vec3.new(0,math.rad(270),0):get(), vec3.new(0.5,0.5,0.5):get()),
                 scaleModel = g3d.newModel("models/scalehandle.obj", assets["img/goog.png"], (position - vec3.new(size.x / 2 + 3, 0, 0)):get(), vec3.new(0,math.rad(270),0):get(), vec3.new(0.5,0.5,0.5):get()),
                 shader = love.graphics.newShader(g3d.shaderpath, "shaders/solid.glsl"),
@@ -52,6 +53,7 @@ function platform:new(position, size, platformType)
             },
             ny = {
                 axis = "y",
+                negative = true,
                 positionModel = g3d.newModel("models/movehandle.obj", assets["img/goog.png"], (position + vec3.new(0, size.y / 2 + 3, 0)):get(), vec3.new(math.rad(270),0,0):get(), vec3.new(0.5,0.5,0.5):get()),
                 scaleModel = g3d.newModel("models/scalehandle.obj", assets["img/goog.png"], (position + vec3.new(0, size.y / 2 + 3, 0)):get(), vec3.new(math.rad(270),0,0):get(), vec3.new(0.5,0.5,0.5):get()),
                 shader = love.graphics.newShader(g3d.shaderpath, "shaders/solid.glsl"),
@@ -59,6 +61,7 @@ function platform:new(position, size, platformType)
             },
             nz = {
                 axis = "z",
+                negative = true,
                 positionModel = g3d.newModel("models/movehandle.obj", assets["img/goog.png"], (position + vec3.new(0, size.y / 2 + 3, 0)):get(), vec3.new(0,math.rad(0),0):get(), vec3.new(0.5,0.5,0.5):get()),
                 scaleModel = g3d.newModel("models/scalehandle.obj", assets["img/goog.png"], (position - vec3.new(0, 0, size.z / 2 + 3)):get(), vec3.new(0,math.rad(0),0):get(), vec3.new(0.5,0.5,0.5):get()),
                 shader = love.graphics.newShader(g3d.shaderpath, "shaders/solid.glsl"),
