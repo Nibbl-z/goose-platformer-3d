@@ -5,6 +5,28 @@ local ui = {}
 
 local lastCamSpeed = editorState.camSpeed
 
+function RightClickButton(text, image, callback)
+    return textlabel:new {
+        size = UDim2.new(1,0,0,25),
+        textsize = 15,
+        halign = "right",
+        text = text,
+        textcolor = Color.new(1,1,1,1),
+        backgroundcolor = Color.new(0,0,0,0),
+        children = {
+            icon = imagelabel:new {
+                image = image,
+                size = UDim2.new(0,25,0,25),
+                backgroundcolor = Color.new(0,0,0,0)
+            }
+        },
+        mousebutton1up = function ()
+            callback()
+            editorState.rightClicked = false
+        end
+    }
+end
+
 function ui:init()
     self.screen = screen:new {
         topbar = uibase:new {
@@ -82,6 +104,7 @@ function ui:init()
         },
 
         rightclick = uibase:new {
+            size = UDim2.new(0,150,0,300),
             backgroundcolor = Color.fromRgb(30,30,30),
             
             visible = function ()
@@ -94,26 +117,16 @@ function ui:init()
             rightpadding = UDim.new(0,4),
             toppadding = UDim.new(0,4),
             bottompadding = UDim.new(0,4),
+            layout = "list",
+            listpadding = 4,
+            listdirection = "vertical",
             children = {
-                delete = textlabel:new {
-                    size = UDim2.new(1,0,0,25),
-                    textsize = 20,
-                    halign = "right",
-                    text = "Delete",
-                    textcolor = Color.new(1,1,1,1),
-                    backgroundcolor = Color.new(0,0,0,0),
-                    children = {
-                        icon = imagelabel:new {
-                            image = "img/delete.png",
-                            size = UDim2.new(0,25,0,25),
-                            backgroundcolor = Color.new(0,0,0,0)
-                        }
-                    },
-                    mousebutton1up = function ()
-                        Editor:deletePlatforms()
-                        editorState.rightClicked = false
-                    end
-                }
+                delete = RightClickButton("Delete", "img/delete.png", function ()
+                    Editor:deletePlatforms()
+                end),
+                duplicate = RightClickButton("Duplicate", "img/copy.png", function ()
+                    Editor:duplicatePlatforms()
+                end)
             }
         }
     }

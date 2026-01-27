@@ -90,6 +90,10 @@ function editor:init()
     table.insert(keybinds, Keybind:new("delete", false, false, function ()
         self:deletePlatforms()
     end))
+
+    table.insert(keybinds, Keybind:new("d", false, true, function ()
+        self:duplicatePlatforms()
+    end))
 end
 
 function camRay(dist,x,y)
@@ -150,6 +154,7 @@ function editor:mousemoved(x, y, dx, dy)
     love.mouse.setGrabbed(love.mouse.isDown(2))
     if love.mouse.isDown(2) then
         cameraTurning = true
+        editorState.rightClicked = false
         chosenPlatform = nil
         if mouseX ~= nil then
             love.mouse.setPosition(mouseX, mouseY)
@@ -317,6 +322,8 @@ function editor:update(dt, platforms)
         chosenPlatform.hovered = true
 
         if (mouse1 or (mouse2 and not cameraTurning)) and not dragging then
+            if not mouse2 then editorState.rightClicked = false end
+
             if selectedPlatform ~= nil and love.keyboard.isDown("lshift") and chosenPlatform.selected == false then
                 table.insert(extraSelected, chosenPlatform) 
                 print("multi select")
@@ -394,6 +401,36 @@ function editor:deletePlatforms()
             table.remove(platforms, i)
             platform:destroy()
         end
+    end
+end
+
+function editor:duplicatePlatforms()
+    updateHistory()
+
+    table.clear(extraSelected)
+    selectedPlatform = nil
+
+    local newPlatforms = {}
+
+    for i, platform in ipairs(platforms) do
+        if platform.selected then
+            platform.selected = false
+            local pos = vec3.fromg3d(platform.model.translation)
+            local size = vec3.fromg3d(platform.model.scale)
+            local newPlatform = Platform:new(pos + vec3.new(0, size.y, 0), size, platform.platformType)
+            newPlatform.selected = true
+            table.insert(newPlatforms, newPlatform)
+
+            if #newPlatforms == 1 then
+                selectedPlatform = newPlatform
+            else
+                table.insert(extraSelected, newPlatform)
+            end
+        end
+    end
+
+    for _, v in ipairs(newPlatforms) do
+        table.insert(platforms, v)
     end
 end
 
