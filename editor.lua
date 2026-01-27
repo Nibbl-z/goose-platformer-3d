@@ -20,14 +20,66 @@ local MOVE_DIRECTIONS = {
 local mouseX, mouseY = nil, nil
 local debugObjs = {}
 local Debug = require("objects.debug")
+local Keybind = require("objects.keybind")
 
 local chosenPlatform, selectedPlatform
 local dragging = false
 
 local history = {}
+local stateBeforeUndo = {}
 local MAX_HISTORY = 100
 
-local currentHistory = 1
+local currentHistory = 0
+
+local keybinds = {}
+
+function editor:init()
+    -- Ctrl+Z (undo)
+    table.insert(keybinds, Keybind:new("z", false, true, function ()
+        if #history == 0 then return end
+        if currentHistory == 0 then
+            for _, platform in ipairs(platforms) do
+                table.clear(stateBeforeUndo)
+                table.insert(stateBeforeUndo, {
+                    position = vec3.fromg3d(platform.model.translation),
+                    size = vec3.fromg3d(platform.model.scale),
+                    platformType = platform.platformType
+                })
+            end
+        end
+        currentHistory = math.clamp(currentHistory + 1, 1, #history)
+
+        table.clear(platforms)
+
+        for _, data in ipairs(history[currentHistory]) do
+            local platform = Platform:new(data.position, data.size, data.platformType)
+            table.insert(platforms, platform)
+        end
+    end))
+
+    -- Ctrl+Shift+Z (redo)
+    table.insert(keybinds, Keybind:new("z", true, true, function ()
+        if #history == 0 then return end
+        if currentHistory == 0 then return end
+
+        if currentHistory == 1 then
+            currentHistory = 0
+            for _, data in ipairs(stateBeforeUndo) do
+                local platform = Platform:new(data.position, data.size, data.platformType)
+                table.insert(platforms, platform)
+            end
+            return
+        end
+
+        currentHistory = math.clamp(currentHistory - 1, 1, #history)
+        table.clear(platforms)
+
+        for _, data in ipairs(history[currentHistory]) do
+            local platform = Platform:new(data.position, data.size, data.platformType)
+            table.insert(platforms, platform)
+        end
+    end))
+end
 
 function camRay(dist,x,y)
     local rotation = camera.rotation
@@ -55,6 +107,13 @@ function camRay(dist,x,y)
 end
 
 function updateHistory()
+    if currentHistory ~= 0 then
+        for i = currentHistory, 1, -1 do
+            table.remove(history, i)
+        end
+        currentHistory = 0
+    end
+
     local historyPlatforms = {}
 
     for _, platform in ipairs(platforms) do
@@ -144,7 +203,7 @@ function editor:mousemoved(x, y, dx, dy)
     end
 end
 
-function editor:update(dt, platforms)
+function editor:updateMovement(dt)
     love.mouse.setRelativeMode(love.mouse.isDown(2))
     love.mouse.setGrabbed(love.mouse.isDown(2))
 
@@ -178,7 +237,15 @@ function editor:update(dt, platforms)
         direction.y = -1
     end
 
-    -- welcome back to Lack of raycast hell
+    camera.position = camera.position + direction:normalize() * dt * editorState.camSpeed
+
+    g3d.camera.lookInDirection(camera.position.x, camera.position.z, camera.position.y, math.rad(camera.rotation.y), math.rad(camera.rotation.z))
+end
+
+function editor:update(dt, platforms)
+    self:updateMovement(dt)
+
+    -- update platform selection and handle selection
     for _, platform in ipairs(platforms) do
         platform.hovered = false
         for _, handle in pairs(platform.handles) do
@@ -189,7 +256,7 @@ function editor:update(dt, platforms)
 
         platform:updateHandles()
     end
-
+    
     local dist = 75
     local handleDist = 75
     local chosenHandle = nil
@@ -245,9 +312,11 @@ function editor:update(dt, platforms)
         chosenHandle.hovered = true
     end
 
-    
-        
-    -- todo: ui for this
+    ---
+
+    for _, keybind in ipairs(keybinds) do
+        keybind:update()
+    end
 
     if love.keyboard.isDown("1") then
         editorState.tool = EDITOR_TOOLS.move
@@ -256,30 +325,20 @@ function editor:update(dt, platforms)
     if love.keyboard.isDown("2") then
         editorState.tool = EDITOR_TOOLS.scale
     end
-
-    if love.keyboard.isDown("lctrl") and love.keyboard.isDown("z") then
-        print("undo")
-        if #history == 0 then return end
-        currentHistory = math.clamp(currentHistory + 1, 1, #history)
-
-        for _, v in ipairs(platforms) do
-            v:destroy()
-        end
-
-        table.clear(platforms)
-
-        for _, data in ipairs(history[currentHistory]) do
-            local platform = Platform:new(data.position, data.size, data.platformType)
-            table.insert(platforms, platform)
-        end
-    end
-
-    camera.position = camera.position + direction:normalize() * dt * editorState.camSpeed
-
-    g3d.camera.lookInDirection(camera.position.x, camera.position.z, camera.position.y, math.rad(camera.rotation.y), math.rad(camera.rotation.z))
 end
 
 function editor:draw()
+    -- debugging renderer i used for making undo/redo history work, just gonna keep this just in case
+    -- love.graphics.print(tostring(currentHistory).."::"..tostring(#history), 100, 50)
+    -- for i, v in ipairs(history) do
+    --     if #history - currentHistory >= i then
+    --         love.graphics.setColor(1,0,0,1)
+    --     else
+    --         love.graphics.setColor(1,1,1,1)
+    --     end
+    --     love.graphics.print(tostring(i)..table.tostring(v), 100, 100 + i * 20)
+    -- end
+
     for _, d in ipairs(debugObjs) do
         d:draw()
     end

@@ -30,8 +30,15 @@ function world:updateMesh()
         end
     end
 
-    WORLD = g3d.newModel(verts, "img/goog.png")
-    WORLD_LAVA = g3d.newModel(lavaVerts, "img/goog.png")
+    if #verts > 0 then
+        WORLD = g3d.newModel(verts, "img/goog.png")
+    end
+
+    if #lavaVerts > 0 then
+        WORLD_LAVA = g3d.newModel(lavaVerts, "img/goog.png")
+    end
+   
+    
 end
 
 return world

@@ -30,6 +30,8 @@ function love.load()
 
     player = Player:new()
 
+    Editor:init()
+
     for _, v in pairs(ui) do
         v:init()
     end
