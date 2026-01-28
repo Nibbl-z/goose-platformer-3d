@@ -93,6 +93,14 @@ function platform:update()
     self.data.position = vec3.fromg3d(self.model.translation)
     self.data.size = vec3.fromg3d(self.model.scale)
 
+    for k, v in pairs(self.data.position) do
+        self.data.position[k] = math.round(v, 0.0001)
+    end
+
+    for k, v in pairs(self.data.size) do
+        self.data.size[k] = math.round(v, 0.0001)
+    end
+
     for k, handle in pairs(self.handles) do
         for _, model in ipairs({"positionModel", "scaleModel"}) do
             local offset = vec3.new(0,0,0)

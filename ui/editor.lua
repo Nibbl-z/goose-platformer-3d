@@ -27,6 +27,90 @@ function RightClickButton(text, image, callback)
     }
 end
 
+function PropertiesVec3(property)
+    function setAxis(axis, value)
+        for _, platform in ipairs(platforms) do
+            if platform.selected then
+                -- this is becoming a disaster but whatever
+                local funcs = {position = platform.model.setTranslation, size = platform.model.setScale}
+                -- this is what happens when i try to force my desired ways of doing stuff upon g3d
+                -- and now we have this mess
+                platform.data[property][axis] = value
+                funcs[property](platform.model, platform.data[property]:getTuple()) -- <3
+    
+                -- please enjoy
+            end
+        end
+    end
+
+    return uibase:new {
+        size = UDim2.new(1,0,0,100),
+        backgroundcolor = Color.new(0,0,0,0),
+        layout = "list",
+        children = {
+            title = textlabel:new {
+                size = UDim2.new(1,0,0,25),
+                textcolor = Color.new(0.8,0.8,0.8,1),
+                backgroundcolor = Color.new(0,0,0,0),
+                textsize = 14,
+                text = property,
+                halign = "left"
+            }, 
+            -- X
+            x = textinput:new {
+                size = UDim2.new(1,0,0,25),
+                textcolor = Color.new(1,0,0,1),
+                backgroundcolor = Color.fromRgb(50,50,50),
+                placeholdertext = "x",
+                textsize = 16,
+                placeholdertextcolor = Color.new(0.5,0,0,1),
+                halign = "left",
+                onenter = function (self)
+                    if tonumber(self.text) == nil then
+                        ui:updateProperties()
+                    else
+                        setAxis("x", tonumber(self.text))
+                    end
+                end
+            }, 
+            -- Y
+            y = textinput:new {
+                size = UDim2.new(1,0,0,25),
+                textcolor = Color.new(0,1,0,1),
+                backgroundcolor = Color.fromRgb(50,50,50),
+                placeholdertext = "y",
+                textsize = 16,
+                placeholdertextcolor = Color.new(0,0.5,0,1),
+                halign = "left",
+                onenter = function (self)
+                    if tonumber(self.text) == nil then
+                        ui:updateProperties()
+                    else
+                        setAxis("y", tonumber(self.text))
+                    end
+                end
+            }, 
+            -- Z
+            z = textinput:new {
+                size = UDim2.new(1,0,0,25),
+                textcolor = Color.new(0,0,1,1),
+                backgroundcolor = Color.fromRgb(50,50,50),
+                placeholdertext = "z",
+                textsize = 16,
+                placeholdertextcolor = Color.new(0,0,0.5,1),
+                halign = "left",
+                onenter = function (self)
+                    if tonumber(self.text) == nil then
+                        ui:updateProperties()
+                    else
+                        setAxis("z", tonumber(self.text))
+                    end
+                end
+            }
+        }
+    }
+end
+
 function ui:init()
     self.screen = screen:new {
         topbar = uibase:new {
@@ -138,8 +222,62 @@ function ui:init()
                     Editor:pastePlatforms()
                 end),
             }
+        },
+
+        properties = uibase:new {
+            anchorpoint = Vector2.new(1,1),
+            position = UDim2.new(1,0,1,0),
+            size = UDim2.new(0,150,0,300),
+            backgroundcolor = Color.fromRgb(30,30,30),
+            layout = "list",
+            children = {
+                header = textlabel:new {
+                    text = function ()
+                        local selectedText = ""
+                        if #editorState.selectedPlatforms > 0 then
+                            selectedText = " - "..tostring(#editorState.selectedPlatforms).." platform"..(#editorState.selectedPlatforms == 1 and "" or "s")
+                        end
+
+                        return "Properties"..selectedText
+                    end,
+                    size = UDim2.new(1,0,0,25),
+                    textsize = 12,
+                    backgroundcolor = Color.new(0,0,0,0),
+                    textcolor = Color.new(1,1,1,1)
+                },
+
+                position = PropertiesVec3("position")
+            }
         }
     }
+end
+
+function ui:updateProperties()
+    local px, py, pz
+    local sx, sy, sz
+
+    for i, platform in ipairs(editorState.selectedPlatforms) do
+        local pos = platform.data.position
+        local size = platform.data.size
+
+        if i == 1 then
+            px, pz, py = pos:getTuple()
+            sx, sz, sy = size:getTuple()
+        else
+            if px ~= pos.x then px = nil end
+            if py ~= pos.y then py = nil end
+            if pz ~= pos.z then pz = nil end
+            if sx ~= size.x then sx = nil end
+            if sy ~= size.y then sy = nil end
+            if sz ~= size.z then sz = nil end
+        end
+    end
+
+    local pos = self.screen:get("properties"):get("position")
+
+    pos:get("x").text = tostring(px or "")
+    pos:get("y").text = tostring(py or "")
+    pos:get("z").text = tostring(pz or "")
 end
 
 return ui

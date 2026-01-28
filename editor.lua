@@ -162,6 +162,7 @@ function updateHistory()
 end
 
 function editor:mousemoved(x, y, dx, dy)
+    local ui = require("ui.editor")
     love.mouse.setRelativeMode(love.mouse.isDown(2))
     love.mouse.setGrabbed(love.mouse.isDown(2))
     if love.mouse.isDown(2) then
@@ -227,6 +228,8 @@ function editor:mousemoved(x, y, dx, dy)
                         chosenHandle.axis == "z" and move / 2 or 0
                     )):getTuple())
                 end
+
+                ui:updateProperties()
             end
         end
     else
@@ -283,8 +286,13 @@ function editor:update(dt, platforms)
 
     self:updateMovement(dt)
 
+    table.clear(editorState.selectedPlatforms)
+
     -- update platform selection and handle selection
     for _, platform in ipairs(platforms) do
+        if platform.selected then
+            table.insert(editorState.selectedPlatforms, platform)
+        end
         platform.hovered = false
         for _, handle in pairs(platform.handles) do
             if not dragging then

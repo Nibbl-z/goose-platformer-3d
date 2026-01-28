@@ -18,6 +18,7 @@ local utf8 = require("utf8")
 ---@field _shader? love.Shader
 ---@field _lastFontpath? string
 ---@field _lastTextsize? number
+---@field onenter? function
 textinput = uibase:new({})
 textinput.__index = textinput
 
@@ -33,7 +34,8 @@ function textinput:new(props)
         textcolor = Color.new(0,0,0,1),
         textborder = Color.new(0,0,0,0),
         placeholdertextcolor = Color.new(0.5, 0.5, 0.5, 1),
-        typingindicatorenabled = true
+        typingindicatorenabled = true,
+        onenter = function () end
     }, "TextInput")
     setmetatable(object, self)
     
@@ -161,6 +163,7 @@ function textinput:keypressed(key)
         end
     elseif key == "return" then
         self._typing = false
+        self:onenter() -- love it when i forget to add stuff to the libary
     end
 end
 
