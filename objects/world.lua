@@ -9,7 +9,6 @@ function world:updateMesh()
     local lavaVerts = {}
 
     for _, platform in pairs(platforms) do
-        
         local px = platform.model.translation[1]
         local py = platform.model.translation[2]
         local pz = platform.model.translation[3]
@@ -18,10 +17,9 @@ function world:updateMesh()
         local sz = platform.model.scale[3]
 
         for _, v in ipairs(platform.model.verts) do
-            
             local vert = {v[1]*sx+px, v[2]*sy+py, v[3]*sz+pz, v[4], v[5], v[6], v[7], v[8]}
 
-            if platform.platformType == PLATFORM_TYPE.default then
+            if platform.data.type == PLATFORM_TYPE.default then
                 table.insert(verts, vert)
             else
                 table.insert(lavaVerts, vert)

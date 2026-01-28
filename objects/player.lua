@@ -241,8 +241,6 @@ function player:new()
 
     setmetatable(object, self)
 
-    
-
     return object
 end
 
@@ -252,49 +250,57 @@ function player:mousemoved(x, y, dx, dy)
 end
 
 function player:isGrounded(platforms)
-    local lava = g3d.collisions.sphereIntersection(WORLD_LAVA.verts, WORLD_LAVA, self.position.x, self.position.z, self.position.y - 1.5, 0.1)
-    if lava then
-        self:reset()
-        return
+    if WORLD_LAVA ~= nil then
+        local lava = g3d.collisions.sphereIntersection(WORLD_LAVA.verts, WORLD_LAVA, self.position.x, self.position.z, self.position.y - 1.5, 0.1)
+        if lava then
+            self:reset()
+            return
+        end
     end
 
-    local _, x, y, z = g3d.collisions.sphereIntersection(WORLD.verts, WORLD, self.position.x, self.position.z, self.position.y - 1.5, 0.2)
-    if x ~= nil then
-        return x, y, z
+    if WORLD ~= nil then
+        local _, x, y, z = g3d.collisions.sphereIntersection(WORLD.verts, WORLD, self.position.x, self.position.z, self.position.y - 1.5, 0.2)
+        if x ~= nil then
+            return x, y, z
+        end
     end
 end
 
 function player:solveCollision(platforms, dt)
-    local lava = g3d.collisions.capsuleIntersection(WORLD_LAVA.verts, WORLD_LAVA, self.position.x, self.position.z, self.position.y - 1.5, self.position.x, self.position.z, self.position.y + 1.5, 1.0)
-    if lava then
-        self:reset()
-        return
+    if WORLD_LAVA ~= nil then
+        local lava = g3d.collisions.capsuleIntersection(WORLD_LAVA.verts, WORLD_LAVA, self.position.x, self.position.z, self.position.y - 1.5, self.position.x, self.position.z, self.position.y + 1.5, 1.0)
+        if lava then
+            self:reset()
+            return
+        end
     end
 
-    local distance, x, z, y, nx, nz = g3d.collisions.capsuleIntersection(WORLD.verts, WORLD, self.position.x, self.position.z, self.position.y - 1.5, self.position.x, self.position.z, self.position.y + 1.5, 1.0)
+    if WORLD ~= nil then
+        local distance, x, z, y, nx, nz = g3d.collisions.capsuleIntersection(WORLD.verts, WORLD, self.position.x, self.position.z, self.position.y - 1.5, self.position.x, self.position.z, self.position.y + 1.5, 1.0)
+        
+        if distance ~= nil then 
+            self.airtime = 0
+            self.grounded = true
     
-    if distance ~= nil then 
-        self.airtime = 0
-        self.grounded = true
-
-        self.position.x = self.position.x + nx * math.clamp(dt, 0, 1) * RUN_SPEED * 2
-        self.position.z = self.position.z + nz * math.clamp(dt, 0, 1) * RUN_SPEED * 2
+            self.position.x = self.position.x + nx * math.clamp(dt, 0, 1) * RUN_SPEED * 2
+            self.position.z = self.position.z + nz * math.clamp(dt, 0, 1) * RUN_SPEED * 2
+        end
+    
+        local above = g3d.collisions.sphereIntersection(WORLD.verts, WORLD, self.position.x, self.position.z, self.position.y + 1.5, 0.1)
+    
+        if above ~= nil then
+            self.grounded = false
+            self.velocity.y = -7
+            self.position.y = self.position.y - GRAVITY * dt
+        end
     end
 
-    local above = g3d.collisions.sphereIntersection(WORLD.verts, WORLD, self.position.x, self.position.z, self.position.y + 1.5, 0.1)
-
-    if above ~= nil then
-        self.grounded = false
-        self.velocity.y = -7
-        self.position.y = self.position.y - GRAVITY * dt
-    end
 end
 
 function player:reset()
     self.position = vec3.new(0,0,0)
     self.grounded = false
     self.airtime = 0
-
 end
 
 function player:updateModel()
@@ -336,6 +342,8 @@ function player:updateCameraDistance(platforms)
     -- rayIntersection just DOESNT WORK <3 YAY!!!!!!!!!!!!!!!!!!!
 
     -- thus enjoy this disaster
+
+    if WORLD == nil then return CAMERA_DISTANCE end
 
     for i = 0, CAMERA_DISTANCE, 0.5 do
         local camPos = (vec3.new(
