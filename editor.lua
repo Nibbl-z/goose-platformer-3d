@@ -162,7 +162,6 @@ function updateHistory()
 end
 
 function editor:mousemoved(x, y, dx, dy)
-    local ui = require("ui.editor")
     love.mouse.setRelativeMode(love.mouse.isDown(2))
     love.mouse.setGrabbed(love.mouse.isDown(2))
     if love.mouse.isDown(2) then
@@ -228,8 +227,6 @@ function editor:mousemoved(x, y, dx, dy)
                         chosenHandle.axis == "z" and move / 2 or 0
                     )):getTuple())
                 end
-
-                ui:updateProperties()
             end
         end
     else
@@ -290,9 +287,6 @@ function editor:update(dt, platforms)
 
     -- update platform selection and handle selection
     for _, platform in ipairs(platforms) do
-        if platform.selected then
-            table.insert(editorState.selectedPlatforms, platform)
-        end
         platform.hovered = false
         for _, handle in pairs(platform.handles) do
             if not dragging then
@@ -340,10 +334,13 @@ function editor:update(dt, platforms)
         end
     end
 
+    
+    
     if chosenPlatform ~= nil and chosenHandle == nil and not dragging then
         chosenPlatform.hovered = true
 
         if (mouse1 or (mouse2 and not cameraTurning)) and not dragging then
+            
             if not mouse2 then editorState.rightClicked = false end
 
             if selectedPlatform ~= nil and love.keyboard.isDown("lshift") and chosenPlatform.selected == false then
@@ -358,6 +355,8 @@ function editor:update(dt, platforms)
             end
             
             chosenPlatform.selected = true
+
+            
         end
 
         if mouse2 and not cameraTurning then
@@ -365,6 +364,16 @@ function editor:update(dt, platforms)
             editorState.rightClickPos = UDim2.new(0, love.mouse.getX(), 0, love.mouse.getY())
         end
     end
+
+    for _, platform in ipairs(platforms) do
+        if platform.selected then
+            table.insert(editorState.selectedPlatforms, platform)
+        end
+        
+    end
+
+    local ui = require("ui.editor")
+    ui:updateProperties()
 
     if chosenHandle ~= nil then
         chosenHandle.hovered = true

@@ -28,15 +28,19 @@ function RightClickButton(text, image, callback)
 end
 
 function PropertiesVec3(property)
-    function setAxis(axis, value)
+    function setAxis(prop, axis, value)
+        -- uggghhh
+
+        if prop == "size" and value <= 0 then return end
+
         for _, platform in ipairs(platforms) do
             if platform.selected then
                 -- this is becoming a disaster but whatever
                 local funcs = {position = platform.model.setTranslation, size = platform.model.setScale}
                 -- this is what happens when i try to force my desired ways of doing stuff upon g3d
                 -- and now we have this mess
-                platform.data[property][axis] = value
-                funcs[property](platform.model, platform.data[property]:getTuple()) -- <3
+                platform.data[prop][axis] = value
+                funcs[prop](platform.model, platform.data[prop]:getTuple()) -- <3
     
                 -- please enjoy
             end
@@ -66,10 +70,8 @@ function PropertiesVec3(property)
                 placeholdertextcolor = Color.new(0.5,0,0,1),
                 halign = "left",
                 onenter = function (self)
-                    if tonumber(self.text) == nil then
-                        ui:updateProperties()
-                    else
-                        setAxis("x", tonumber(self.text))
+                    if tonumber(self.text) ~= nil then
+                        setAxis(property, "x", tonumber(self.text))
                     end
                 end
             }, 
@@ -83,10 +85,8 @@ function PropertiesVec3(property)
                 placeholdertextcolor = Color.new(0,0.5,0,1),
                 halign = "left",
                 onenter = function (self)
-                    if tonumber(self.text) == nil then
-                        ui:updateProperties()
-                    else
-                        setAxis("y", tonumber(self.text))
+                    if tonumber(self.text) ~= nil then
+                        setAxis(property, "y", tonumber(self.text))
                     end
                 end
             }, 
@@ -100,10 +100,8 @@ function PropertiesVec3(property)
                 placeholdertextcolor = Color.new(0,0,0.5,1),
                 halign = "left",
                 onenter = function (self)
-                    if tonumber(self.text) == nil then
-                        ui:updateProperties()
-                    else
-                        setAxis("z", tonumber(self.text))
+                    if tonumber(self.text) ~= nil then
+                        setAxis(property, "z", tonumber(self.text))
                     end
                 end
             }
@@ -246,7 +244,8 @@ function ui:init()
                     textcolor = Color.new(1,1,1,1)
                 },
 
-                position = PropertiesVec3("position")
+                position = PropertiesVec3("position"),
+                size = PropertiesVec3("size"),
             }
         }
     }
@@ -275,9 +274,15 @@ function ui:updateProperties()
 
     local pos = self.screen:get("properties"):get("position")
 
-    pos:get("x").text = tostring(px or "")
-    pos:get("y").text = tostring(py or "")
-    pos:get("z").text = tostring(pz or "")
+    if pos:get("x")._typing == false then pos:get("x").text = tostring(px or "") end
+    if pos:get("y")._typing == false then pos:get("y").text = tostring(py or "") end
+    if pos:get("z")._typing == false then pos:get("z").text = tostring(pz or "") end
+
+    local size = self.screen:get("properties"):get("size")
+
+    if size:get("x")._typing == false then size:get("x").text = tostring(sx or "") end
+    if size:get("y")._typing == false then size:get("y").text = tostring(sy or "") end
+    if size:get("z")._typing == false then size:get("z").text = tostring(sz or "") end
 end
 
 return ui
