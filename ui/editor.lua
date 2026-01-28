@@ -109,6 +109,38 @@ function PropertiesVec3(property)
     }
 end
 
+function PropertiesCheckbox(title, callbackOn, callbackOff, condition)
+    return uibase:new {
+        size = UDim2.new(1,0,0,25),
+        backgroundcolor = Color.new(0,0,0,0),
+        children = {
+            title = textlabel:new {
+                size = UDim2.new(1,0,0,25),
+                textcolor = Color.new(0.8,0.8,0.8,1),
+                backgroundcolor = Color.new(0,0,0,0),
+                textsize = 14,
+                text = title,
+                halign = "left"
+            },
+            checkbox = imagelabel:new {
+                size = UDim2.new(0,25,0,25),
+                position = UDim2.new(1,0,0,0),
+                anchorpoint = Vector2.new(1,0),
+                image = function ()
+                    return condition() and "img/checkbox_on.png" or "img/checkbox_off.png"
+                end,
+                mousebutton1up = function (self)
+                    if condition() then
+                        callbackOff()
+                    else
+                        callbackOn()
+                    end
+                end
+            }
+        }
+    }
+end
+
 function ui:init()
     self.screen = screen:new {
         topbar = uibase:new {
@@ -246,6 +278,23 @@ function ui:init()
 
                 position = PropertiesVec3("position"),
                 size = PropertiesVec3("size"),
+                isLava = PropertiesCheckbox("Lava", function ()
+                    for _, platform in ipairs(editorState.selectedPlatforms) do
+                        platform.data.type = PLATFORM_TYPE.lava
+                    end
+                end, function ()
+                    for _, platform in ipairs(editorState.selectedPlatforms) do
+                        platform.data.type = PLATFORM_TYPE.default
+                    end
+                end, function ()
+                    local condition = true
+
+                    for _, platform in ipairs(editorState.selectedPlatforms) do
+                        condition = platform.data.type == PLATFORM_TYPE.lava
+                    end
+
+                    return condition
+                end)
             }
         }
     }

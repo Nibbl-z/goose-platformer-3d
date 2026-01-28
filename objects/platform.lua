@@ -9,12 +9,13 @@ PLATFORM_TYPE = {
 }
 
 local selectionShader = love.graphics.newShader(g3d.shaderpath, "shaders/selection.glsl")
+local textureLookup = {
+    [0] = "img/stone.png",
+    [1] = "img/lava.png"
+}
 
 function platform:new(data)
-    local textureLookup = {
-        [0] = "img/stone.png",
-        [1] = "img/lava.png"
-    }
+    
 
     local object = {
         data = {
@@ -117,6 +118,8 @@ function platform:update()
             handle[model]:setTranslation((self.data.position - offset):getTuple())
         end
     end
+
+    self.model.mesh:setTexture(assets[textureLookup[self.data.type]])
 end
 
 local HANDLE_COLORS = {
