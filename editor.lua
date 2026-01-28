@@ -58,7 +58,7 @@ function editor:init()
         table.clear(platforms)
 
         for _, data in ipairs(history[currentHistory]) do
-            local platform = Platform:new(data.position, data.size, data.platformType)
+            local platform = Platform:new(data)
             table.insert(platforms, platform)
         end
     end))
@@ -71,7 +71,7 @@ function editor:init()
         if currentHistory == 1 then
             currentHistory = 0
             for _, data in ipairs(stateBeforeUndo) do
-                local platform = Platform:new(data.position, data.size, data.platformType)
+                local platform = Platform:new(data)
                 table.insert(platforms, platform)
             end
             return
@@ -81,7 +81,7 @@ function editor:init()
         table.clear(platforms)
 
         for _, data in ipairs(history[currentHistory]) do
-            local platform = Platform:new(data.position, data.size, data.platformType)
+            local platform = Platform:new(data)
             table.insert(platforms, platform)
         end
     end))
@@ -132,14 +132,7 @@ function updateHistory()
     local historyPlatforms = {}
 
     for _, platform in ipairs(platforms) do
-        -- todo: this might be painful for when i add more properties to platforms.
-        -- maybe there can just be like all the normal properties on a platform
-        -- and then stuff like model and handles and selected can be in a _interal table, which isnt transfered
-        table.insert(historyPlatforms, {
-            position = vec3.fromg3d(platform.model.translation),
-            size = vec3.fromg3d(platform.model.scale),
-            platformType = platform.platformType
-        })
+        table.insert(historyPlatforms, platform.data)
     end
 
     table.insert(history, 1, historyPlatforms)
@@ -280,7 +273,7 @@ function editor:update(dt, platforms)
             end
         end
 
-        platform:updateHandles()
+        platform:update()
     end
     
     local dist = 75
@@ -390,7 +383,11 @@ end
 
 function editor:createPlatform()
     local pos = camRay(10, 0, 0)
-    platform = Platform:new(pos, vec3.new(7,7,7), PLATFORM_TYPE.default)
+    platform = Platform:new({
+        position = pos, 
+        size = vec3.new(7,7,7), 
+        type = PLATFORM_TYPE.default
+    })
     updateHistory()
     table.insert(platforms, platform)
 end
@@ -417,9 +414,9 @@ function editor:duplicatePlatforms()
     for i, platform in ipairs(platforms) do
         if platform.selected then
             platform.selected = false
-            local pos = vec3.fromg3d(platform.model.translation)
-            local size = vec3.fromg3d(platform.model.scale)
-            local newPlatform = Platform:new(pos + vec3.new(0, size.y, 0), size, platform.platformType)
+            data = platform.data
+            data.position = data.position + vec3.new(0, data.size.y, 0)
+            local newPlatform = Platform:new(data)
             newPlatform.selected = true
             table.insert(newPlatforms, newPlatform)
 

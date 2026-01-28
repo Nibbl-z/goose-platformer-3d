@@ -10,60 +10,64 @@ PLATFORM_TYPE = {
 
 local selectionShader = love.graphics.newShader(g3d.shaderpath, "shaders/selection.glsl")
 
-function platform:new(position, size, platformType)
+function platform:new(data)
     local textureLookup = {
         [0] = "img/stone.png",
         [1] = "img/lava.png"
     }
 
     local object = {
-        model = g3d.newModel("models/cube.obj", assets[textureLookup[platformType]], position:get(), vec3.new(0,0,0):get(), size:get()),
-        platformType = platformType,
+        data = {
+            position = data.position,
+            size = data.size,
+            type = data.type
+        },
+        model = g3d.newModel("models/cube.obj", assets[textureLookup[data.type]], data.position:get(), vec3.new(0,0,0):get(), data.size:get()),
         hovered = false,
         selected = false,
         handles = {
             x = {
                 axis = "x",
-                positionModel = g3d.newModel("models/movehandle.obj", assets["img/goog.png"], (position - vec3.new(size.x / 2 + 3, 0, 0)):get(), vec3.new(0,math.rad(90),0):get(), vec3.new(0.5,0.5,0.5):get()),
-                scaleModel = g3d.newModel("models/scalehandle.obj", assets["img/goog.png"], (position - vec3.new(size.x / 2 + 3, 0, 0)):get(), vec3.new(0,math.rad(90),0):get(), vec3.new(0.5,0.5,0.5):get()),
+                positionModel = g3d.newModel("models/movehandle.obj", assets["img/goog.png"], (data.position - vec3.new(data.size.x / 2 + 3, 0, 0)):get(), vec3.new(0,math.rad(90),0):get(), vec3.new(0.5,0.5,0.5):get()),
+                scaleModel = g3d.newModel("models/scalehandle.obj", assets["img/goog.png"], (data.position - vec3.new(data.size.x / 2 + 3, 0, 0)):get(), vec3.new(0,math.rad(90),0):get(), vec3.new(0.5,0.5,0.5):get()),
                 shader = love.graphics.newShader(g3d.shaderpath, "shaders/solid.glsl"),
                 hovered = false
             },
             y = {
                 axis = "y",
-                positionModel = g3d.newModel("models/movehandle.obj", assets["img/goog.png"], (position + vec3.new(0, size.y / 2 + 3, 0)):get(), vec3.new(math.rad(90),0,0):get(), vec3.new(0.5,0.5,0.5):get()),
-                scaleModel = g3d.newModel("models/scalehandle.obj", assets["img/goog.png"], (position + vec3.new(0, size.y / 2 + 3, 0)):get(), vec3.new(math.rad(90),0,0):get(), vec3.new(0.5,0.5,0.5):get()),
+                positionModel = g3d.newModel("models/movehandle.obj", assets["img/goog.png"], (data.position + vec3.new(0, data.size.y / 2 + 3, 0)):get(), vec3.new(math.rad(90),0,0):get(), vec3.new(0.5,0.5,0.5):get()),
+                scaleModel = g3d.newModel("models/scalehandle.obj", assets["img/goog.png"], (data.position + vec3.new(0, data.size.y / 2 + 3, 0)):get(), vec3.new(math.rad(90),0,0):get(), vec3.new(0.5,0.5,0.5):get()),
                 shader = love.graphics.newShader(g3d.shaderpath, "shaders/solid.glsl"),
                 hovered = false
             },
             z = {
                 axis = "z",
-                positionModel = g3d.newModel("models/movehandle.obj", assets["img/goog.png"], (position + vec3.new(0, size.y / 2 + 3, 0)):get(), vec3.new(0,math.rad(180),0):get(), vec3.new(0.5,0.5,0.5):get()),
-                scaleModel = g3d.newModel("models/scalehandle.obj", assets["img/goog.png"], (position - vec3.new(0, 0, size.z / 2 + 3)):get(), vec3.new(0,math.rad(180),0):get(), vec3.new(0.5,0.5,0.5):get()),
+                positionModel = g3d.newModel("models/movehandle.obj", assets["img/goog.png"], (data.position + vec3.new(0, data.size.y / 2 + 3, 0)):get(), vec3.new(0,math.rad(180),0):get(), vec3.new(0.5,0.5,0.5):get()),
+                scaleModel = g3d.newModel("models/scalehandle.obj", assets["img/goog.png"], (data.position - vec3.new(0, 0, data.size.z / 2 + 3)):get(), vec3.new(0,math.rad(180),0):get(), vec3.new(0.5,0.5,0.5):get()),
                 shader = love.graphics.newShader(g3d.shaderpath, "shaders/solid.glsl"),
                 hovered = false
             },
             nx = {
                 axis = "x",
                 negative = true,
-                positionModel = g3d.newModel("models/movehandle.obj", assets["img/goog.png"], (position - vec3.new(size.x / 2 + 3, 0, 0)):get(), vec3.new(0,math.rad(270),0):get(), vec3.new(0.5,0.5,0.5):get()),
-                scaleModel = g3d.newModel("models/scalehandle.obj", assets["img/goog.png"], (position - vec3.new(size.x / 2 + 3, 0, 0)):get(), vec3.new(0,math.rad(270),0):get(), vec3.new(0.5,0.5,0.5):get()),
+                positionModel = g3d.newModel("models/movehandle.obj", assets["img/goog.png"], (data.position - vec3.new(data.size.x / 2 + 3, 0, 0)):get(), vec3.new(0,math.rad(270),0):get(), vec3.new(0.5,0.5,0.5):get()),
+                scaleModel = g3d.newModel("models/scalehandle.obj", assets["img/goog.png"], (data.position - vec3.new(data.size.x / 2 + 3, 0, 0)):get(), vec3.new(0,math.rad(270),0):get(), vec3.new(0.5,0.5,0.5):get()),
                 shader = love.graphics.newShader(g3d.shaderpath, "shaders/solid.glsl"),
                 hovered = false
             },
             ny = {
                 axis = "y",
                 negative = true,
-                positionModel = g3d.newModel("models/movehandle.obj", assets["img/goog.png"], (position + vec3.new(0, size.y / 2 + 3, 0)):get(), vec3.new(math.rad(270),0,0):get(), vec3.new(0.5,0.5,0.5):get()),
-                scaleModel = g3d.newModel("models/scalehandle.obj", assets["img/goog.png"], (position + vec3.new(0, size.y / 2 + 3, 0)):get(), vec3.new(math.rad(270),0,0):get(), vec3.new(0.5,0.5,0.5):get()),
+                positionModel = g3d.newModel("models/movehandle.obj", assets["img/goog.png"], (data.position + vec3.new(0, data.size.y / 2 + 3, 0)):get(), vec3.new(math.rad(270),0,0):get(), vec3.new(0.5,0.5,0.5):get()),
+                scaleModel = g3d.newModel("models/scalehandle.obj", assets["img/goog.png"], (data.position + vec3.new(0, data.size.y / 2 + 3, 0)):get(), vec3.new(math.rad(270),0,0):get(), vec3.new(0.5,0.5,0.5):get()),
                 shader = love.graphics.newShader(g3d.shaderpath, "shaders/solid.glsl"),
                 hovered = false
             },
             nz = {
                 axis = "z",
                 negative = true,
-                positionModel = g3d.newModel("models/movehandle.obj", assets["img/goog.png"], (position + vec3.new(0, size.y / 2 + 3, 0)):get(), vec3.new(0,math.rad(0),0):get(), vec3.new(0.5,0.5,0.5):get()),
-                scaleModel = g3d.newModel("models/scalehandle.obj", assets["img/goog.png"], (position - vec3.new(0, 0, size.z / 2 + 3)):get(), vec3.new(0,math.rad(0),0):get(), vec3.new(0.5,0.5,0.5):get()),
+                positionModel = g3d.newModel("models/movehandle.obj", assets["img/goog.png"], (data.position + vec3.new(0, data.size.y / 2 + 3, 0)):get(), vec3.new(0,math.rad(0),0):get(), vec3.new(0.5,0.5,0.5):get()),
+                scaleModel = g3d.newModel("models/scalehandle.obj", assets["img/goog.png"], (data.position - vec3.new(0, 0, data.size.z / 2 + 3)):get(), vec3.new(0,math.rad(0),0):get(), vec3.new(0.5,0.5,0.5):get()),
                 shader = love.graphics.newShader(g3d.shaderpath, "shaders/solid.glsl"),
                 hovered = false
             },
@@ -82,16 +86,17 @@ function platform:destroy()
 end
 
 
-function platform:updateHandles()
-    local position = vec3.fromg3d(self.model.translation)
-    local size = vec3.fromg3d(self.model.scale)
+function platform:update()
     -- "this is horrible but there wont be any other handle types. I THINK"
     -- he was quickly proven wrong
+
+    self.data.position = vec3.fromg3d(self.model.translation)
+    self.data.size = vec3.fromg3d(self.model.scale)
 
     for k, handle in pairs(self.handles) do
         for _, model in ipairs({"positionModel", "scaleModel"}) do
             local offset = vec3.new(0,0,0)
-            offset[handle.axis] = size[handle.axis] / 2 + 3
+            offset[handle.axis] = self.data.size[handle.axis] / 2 + 3
 
             if handle.axis == "y" then
                 offset[handle.axis] = offset[handle.axis] * -1
@@ -101,7 +106,7 @@ function platform:updateHandles()
                 offset[handle.axis] = offset[handle.axis] * -1
             end
 
-            handle[model]:setTranslation((position - offset):getTuple())
+            handle[model]:setTranslation((self.data.position - offset):getTuple())
         end
     end
 end
