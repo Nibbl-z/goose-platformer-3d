@@ -117,6 +117,17 @@ table.length = function (t)
     return count
 end
 
+-- Yo
+table.clone = function (t)
+    local cloned = {}
+
+    for k, v in pairs(t) do
+        cloned[k] = v
+    end
+
+    return cloned
+end
+
 local function TableToString(t)
     local str = "{"
     local index = 1

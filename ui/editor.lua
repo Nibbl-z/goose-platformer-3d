@@ -126,7 +126,17 @@ function ui:init()
                 end),
                 duplicate = RightClickButton("Duplicate", "img/copy.png", function ()
                     Editor:duplicatePlatforms()
-                end)
+                end),
+                copy = RightClickButton("Copy", "img/copy.png", function ()
+                    Editor:copyPlatforms()
+                end),
+                cut = RightClickButton("Cut", "img/cut.png", function ()
+                    Editor:copyPlatforms()
+                    Editor:deletePlatforms()
+                end),
+                paste = RightClickButton("Paste", "img/paste.png", function ()
+                    Editor:pastePlatforms()
+                end),
             }
         }
     }

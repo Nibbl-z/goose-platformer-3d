@@ -39,6 +39,8 @@ local keybinds = {}
 local mouse1, mouse2 = false, false
 local mouse1reset, mouse2reset = false, false
 
+local clipboard = {}
+
 function editor:init()
     -- Ctrl+Z (undo)
     table.insert(keybinds, Keybind:new("z", false, true, function ()
@@ -91,8 +93,25 @@ function editor:init()
         self:deletePlatforms()
     end))
 
+    -- Duplicate
     table.insert(keybinds, Keybind:new("d", false, true, function ()
         self:duplicatePlatforms()
+    end))
+
+    -- Copy
+    table.insert(keybinds, Keybind:new("c", false, true, function ()
+        self:copyPlatforms()
+    end))
+
+    -- Paste
+    table.insert(keybinds, Keybind:new("v", false, true, function ()
+        self:pastePlatforms()
+    end))
+
+    -- Cut
+    table.insert(keybinds, Keybind:new("x", false, true, function ()
+        self:copyPlatforms()
+        self:deletePlatforms()
     end))
 end
 
@@ -395,12 +414,21 @@ end
 function editor:deletePlatforms()
     updateHistory()
 
-    for i, platform in ipairs(platforms) do
+    for _, platform in ipairs(platforms) do
         if platform.selected then
-            table.remove(platforms, i)
+            table.remove(platforms, table.find(platforms, platform))
             platform:destroy()
         end
     end
+
+    for _, platform in ipairs(platforms) do
+        if platform.selected then
+            table.remove(platforms, table.find(platforms, platform))
+            platform:destroy()
+        end
+    end
+
+    -- i dont know
 end
 
 function editor:duplicatePlatforms()
@@ -411,7 +439,7 @@ function editor:duplicatePlatforms()
 
     local newPlatforms = {}
 
-    for i, platform in ipairs(platforms) do
+    for _, platform in ipairs(platforms) do
         if platform.selected then
             platform.selected = false
             data = platform.data
@@ -430,6 +458,41 @@ function editor:duplicatePlatforms()
 
     for _, v in ipairs(newPlatforms) do
         table.insert(platforms, v)
+    end
+end
+
+function editor:copyPlatforms()
+    table.clear(clipboard)
+
+    for _, platform in ipairs(platforms) do
+        if platform.selected then
+            table.insert(clipboard, table.clone(platform.data))
+        end
+    end
+end
+
+function editor:pastePlatforms()
+    updateHistory()
+
+    table.clear(extraSelected)
+    selectedPlatform = nil
+
+    for _, platform in ipairs(platforms) do
+        platform.selected = false
+    end
+
+    for i, data in ipairs(clipboard) do
+        local newPlatform = Platform:new(data)
+        newPlatform.selected = true
+        table.insert(newPlatform, platform)
+
+        if i == 1 then
+            selectedPlatform = newPlatform
+        else
+            table.insert(extraSelected, newPlatform)
+        end
+
+        table.insert(platforms, newPlatform)
     end
 end
 
