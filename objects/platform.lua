@@ -21,7 +21,8 @@ function platform:new(data)
         data = {
             position = data.position,
             size = data.size,
-            type = data.type
+            type = data.type or PLATFORM_TYPE.default,
+            collision = data.collision or true
         },
         model = g3d.newModel("models/cube.obj", assets[textureLookup[data.type]], data.position:get(), vec3.new(0,0,0):get(), data.size:get()),
         hovered = false,

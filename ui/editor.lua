@@ -294,6 +294,23 @@ function ui:init()
                     end
 
                     return condition
+                end),
+                collision = PropertiesCheckbox("Collision", function ()
+                    for _, platform in ipairs(editorState.selectedPlatforms) do
+                        platform.data.collision = true
+                    end
+                end, function ()
+                    for _, platform in ipairs(editorState.selectedPlatforms) do
+                        platform.data.collision = false
+                    end
+                end, function ()
+                    local condition = true
+
+                    for _, platform in ipairs(editorState.selectedPlatforms) do
+                        condition = platform.data.collision
+                    end
+
+                    return condition
                 end)
             }
         }
