@@ -364,9 +364,9 @@ function ui:updateProperties()
             if sx ~= size.x then sx = nil end
             if sy ~= size.y then sy = nil end
             if sz ~= size.z then sz = nil end
-            if r ~= color.r then r = nil end
-            if g ~= color.g then g = nil end
-            if b ~= color.b then b = nil end
+            if r ~= math.ceil(color.r * 255) then r = nil end
+            if g ~= math.ceil(color.g * 255) then g = nil end
+            if b ~= math.ceil(color.b * 255) then b = nil end
         end
     end
 
