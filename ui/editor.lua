@@ -3,8 +3,6 @@ local Editor = require "editor"
 
 local ui = {}
 
-local lastCamSpeed = editorState.camSpeed
-
 function RightClickButton(text, image, callback)
     return textlabel:new {
         size = UDim2.new(1,0,0,25),
@@ -27,20 +25,28 @@ function RightClickButton(text, image, callback)
     }
 end
 
-function PropertiesVec3(property)
-    function setAxis(prop, axis, value)
+function PropertiesVec3(property, isVector)
+    function setAxis(prop, axis, value, isv)
         -- uggghhh
 
         if prop == "size" and value <= 0 then return end
-
+        if prop == "color" then
+            value = math.clamp(value, 0, 255)
+        end
         for _, platform in ipairs(platforms) do
             if platform.selected then
-                -- this is becoming a disaster but whatever
-                local funcs = {position = platform.model.setTranslation, size = platform.model.setScale}
-                -- this is what happens when i try to force my desired ways of doing stuff upon g3d
-                -- and now we have this mess
-                platform.data[prop][axis] = value
-                funcs[prop](platform.model, platform.data[prop]:getTuple()) -- <3
+                if isv then
+                    -- this is becoming a disaster but whatever
+                    local funcs = {position = platform.model.setTranslation, size = platform.model.setScale}
+                    -- this is what happens when i try to force my desired ways of doing stuff upon g3d
+                    -- and now we have this mess
+                    platform.data[prop][axis] = value
+                    funcs[prop](platform.model, platform.data[prop]:getTuple()) -- <3
+                else
+                    -- i love assuming itll only be an rgb because thats all im adding anyway
+                    platform.data[prop][axis] = value / 255
+                end
+                
     
                 -- please enjoy
             end
@@ -63,45 +69,45 @@ function PropertiesVec3(property)
             -- X
             x = textinput:new {
                 size = UDim2.new(1,0,0,25),
-                textcolor = Color.new(1,0,0,1),
+                textcolor = Color.new(1,0.2,0.2,1),
                 backgroundcolor = Color.fromRgb(50,50,50),
-                placeholdertext = "x",
+                placeholdertext = isVector and "x" or "r",
                 textsize = 16,
-                placeholdertextcolor = Color.new(0.5,0,0,1),
+                placeholdertextcolor = Color.new(0.5,0.2,0.2,1),
                 halign = "left",
                 onenter = function (self)
                     if tonumber(self.text) ~= nil then
-                        setAxis(property, "x", tonumber(self.text))
+                        setAxis(property, isVector and "x" or "r", tonumber(self.text), isVector)
                     end
                 end
             }, 
             -- Y
             y = textinput:new {
                 size = UDim2.new(1,0,0,25),
-                textcolor = Color.new(0,1,0,1),
+                textcolor = Color.new(0.2,1,0.2,1),
                 backgroundcolor = Color.fromRgb(50,50,50),
-                placeholdertext = "y",
+                placeholdertext = isVector and "y" or "g",
                 textsize = 16,
-                placeholdertextcolor = Color.new(0,0.5,0,1),
+                placeholdertextcolor = Color.new(0.2,0.5,0.2,1),
                 halign = "left",
                 onenter = function (self)
                     if tonumber(self.text) ~= nil then
-                        setAxis(property, "y", tonumber(self.text))
+                        setAxis(property, isVector and "y" or "g", tonumber(self.text), isVector)
                     end
                 end
             }, 
             -- Z
             z = textinput:new {
                 size = UDim2.new(1,0,0,25),
-                textcolor = Color.new(0,0,1,1),
+                textcolor = Color.new(0.2,0.2,1,1),
                 backgroundcolor = Color.fromRgb(50,50,50),
-                placeholdertext = "z",
+                placeholdertext = isVector and "z" or "b",
                 textsize = 16,
-                placeholdertextcolor = Color.new(0,0,0.5,1),
+                placeholdertextcolor = Color.new(0.2,0.2,0.5,1),
                 halign = "left",
                 onenter = function (self)
                     if tonumber(self.text) ~= nil then
-                        setAxis(property, "z", tonumber(self.text))
+                        setAxis(property, isVector and "z" or "b", tonumber(self.text), isVector)
                     end
                 end
             }
@@ -255,11 +261,14 @@ function ui:init()
         },
 
         properties = uibase:new {
-            anchorpoint = Vector2.new(1,1),
-            position = UDim2.new(1,0,1,0),
-            size = UDim2.new(0,150,0,300),
+            anchorpoint = Vector2.new(1,0),
+            position = UDim2.new(1,0,0,50),
+            size = UDim2.new(0,160,0,500),
             backgroundcolor = Color.fromRgb(30,30,30),
             layout = "list",
+            listpadding = 5,
+            leftpadding = UDim.new(0,5),
+            rightpadding = UDim.new(0,5),
             children = {
                 header = textlabel:new {
                     text = function ()
@@ -276,8 +285,8 @@ function ui:init()
                     textcolor = Color.new(1,1,1,1)
                 },
 
-                position = PropertiesVec3("position"),
-                size = PropertiesVec3("size"),
+                position = PropertiesVec3("position", true),
+                size = PropertiesVec3("size", true),
                 isLava = PropertiesCheckbox("Lava", function ()
                     for _, platform in ipairs(editorState.selectedPlatforms) do
                         platform.data.type = PLATFORM_TYPE.lava
@@ -311,23 +320,43 @@ function ui:init()
                     end
 
                     return condition
-                end)
+                end),
+                color = PropertiesVec3("color", false),
+                colorpicker = uibase:new {
+                    size = UDim2.new(1,0,0,100),
+                    backgroundcolor = Color.new(0,0,0,0),
+                    children = {
+                        sv = uibase:new {
+                            size = UDim2.new(0,120,0,120)
+                        },
+                        h = uibase:new {
+                            size = UDim2.new(0,25,0,120),
+                            position = UDim2.new(0,125,0,0)
+                        }
+                    }
+                }
             }
-        }
+        },
     }
 end
 
 function ui:updateProperties()
     local px, py, pz
     local sx, sy, sz
+    local r, g, b
 
     for i, platform in ipairs(editorState.selectedPlatforms) do
         local pos = platform.data.position
         local size = platform.data.size
+        local color = platform.data.color
 
         if i == 1 then
             px, pz, py = pos:getTuple()
             sx, sz, sy = size:getTuple()
+            r, g, b = color:get()
+            r = math.ceil(r * 255)
+            g = math.ceil(g * 255)
+            b = math.ceil(b * 255)
         else
             if px ~= pos.x then px = nil end
             if py ~= pos.y then py = nil end
@@ -335,6 +364,9 @@ function ui:updateProperties()
             if sx ~= size.x then sx = nil end
             if sy ~= size.y then sy = nil end
             if sz ~= size.z then sz = nil end
+            if r ~= color.r then r = nil end
+            if g ~= color.g then g = nil end
+            if b ~= color.b then b = nil end
         end
     end
 
@@ -349,6 +381,12 @@ function ui:updateProperties()
     if size:get("x")._typing == false then size:get("x").text = tostring(sx or "") end
     if size:get("y")._typing == false then size:get("y").text = tostring(sy or "") end
     if size:get("z")._typing == false then size:get("z").text = tostring(sz or "") end
+
+    local color = self.screen:get("properties"):get("color")
+
+    if color:get("x")._typing == false then color:get("x").text = tostring(r or "") end
+    if color:get("y")._typing == false then color:get("y").text = tostring(g or "") end
+    if color:get("z")._typing == false then color:get("z").text = tostring(b or "") end
 end
 
 return ui

@@ -27,6 +27,8 @@ Vector2 = require "yan.datatypes.vector2"
 EasingStyle = require "yan.datatypes.easingstyle"
 TweenInfo = require "yan.datatypes.tweeninfo"
 
+common = require "yan.common" -- whatever just take it
+
 local registry = require "yan.registry"
 
 --- Updates yan. Call this in `love.update`.

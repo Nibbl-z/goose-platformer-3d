@@ -85,6 +85,7 @@ function love.keypressed(key)
 end
 
 function love.draw()
+    love.graphics.setColor(1,1,1)
     love.graphics.print(tostring(love.timer.getFPS()), 0, 100)
 
     yan:draw()

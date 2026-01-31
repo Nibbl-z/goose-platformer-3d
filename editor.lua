@@ -41,7 +41,14 @@ local mouse1reset, mouse2reset = false, false
 
 local clipboard = {}
 
+local saturationValueShader = love.graphics.newShader("shaders/saturationvalue.glsl")
+local hueShader = love.graphics.newShader("shaders/hue.glsl")
+
+local hm, sm, vm = 0, 0, 0
+
 function editor:init()
+    saturationValueShader:send("hue", 0)
+
     -- Ctrl+Z (undo)
     table.insert(keybinds, Keybind:new("z", false, true, function ()
         if #history == 0 then return end
@@ -379,7 +386,26 @@ function editor:update(dt, platforms)
         chosenHandle.hovered = true
     end
 
-    ---
+    local hueX, hueY = ui.screen:get("properties"):get("colorpicker"):get("h"):getdrawingcoordinates()
+    local svX, svY = ui.screen:get("properties"):get("colorpicker"):get("sv"):getdrawingcoordinates()
+    -- woo hardcoding again
+    if common:checkcollision(hueX, hueY - 5, 30, 125, love.mouse.getX(), love.mouse.getY(), 1, 1) and love.mouse.isDown(1) then
+        local my = math.clamp(love.mouse.getY(), hueY, hueY + 120)
+        local _, s, v = self:getPlatformColors()
+        local h = 1 - (hueY + 120 - my) / 120
+        hm = h
+        self:setPlatformColors(h, s, v)
+    end
+
+    if common:checkcollision(svX - 15, svY - 15, 140, 150, love.mouse.getX(), love.mouse.getY(), 1, 1) and love.mouse.isDown(1) then
+        local mx, my = math.clamp(love.mouse.getX(), svX, svX + 120), math.clamp(love.mouse.getY(), svY, svY + 120)
+
+        local s = 1 - (svX + 120 - mx) / 120
+        local v = (svY + 120 - my) / 120
+        sm = s
+        vm = v
+        self:setPlatformColors(hm, s, v)
+    end
 
     for _, keybind in ipairs(keybinds) do
         keybind:update()
@@ -395,6 +421,8 @@ function editor:update(dt, platforms)
 end
 
 function editor:draw()
+    local ui = require("ui.editor")
+
     -- debugging renderer i used for making undo/redo history work, just gonna keep this just in case
     -- love.graphics.print(tostring(currentHistory).."::"..tostring(#history), 100, 50)
     -- for i, v in ipairs(history) do
@@ -409,6 +437,21 @@ function editor:draw()
     for _, d in ipairs(debugObjs) do
         d:draw()
     end
+
+    saturationValueShader:send("hue", hm)
+
+    love.graphics.setShader(saturationValueShader)
+
+    local x, y = ui.screen:get("properties"):get("colorpicker"):get("sv"):getdrawingcoordinates()
+    local x1, y1 = ui.screen:get("properties"):get("colorpicker"):get("h"):getdrawingcoordinates()
+    
+    love.graphics.draw(assets["img/goog.png"], x, y, 0, 120/128)
+    love.graphics.setShader(hueShader)
+    love.graphics.draw(assets["img/goog.png"], x1, y1, 0, 25/128, 120/128)
+    love.graphics.setShader()
+
+    love.graphics.circle("fill", x + (sm * 120), y + ((1 - vm) * 120), 2)
+    love.graphics.rectangle("fill", x1, y1 + (hm * 120), 25, 2)
 end
 
 function editor:wheelmoved(x, y)
@@ -510,6 +553,30 @@ function editor:pastePlatforms()
         end
 
         table.insert(platforms, newPlatform)
+    end
+end
+
+function editor:getPlatformColors()
+    local h, s, v = 1, 1, 1
+
+    for i, platform in ipairs(platforms) do
+        if i == 1 then
+            h, s, v = rgbToHsv(platform.data.color:get())
+        else
+            local h2, s2, v2 = rgbToHsv(platform.data.color:get())
+            if h2 ~= h then h = 1 end
+            if s2 ~= s then s = 1 end
+            if v2 ~= v then v = 1 end
+        end
+    end
+
+    return h, s, v
+end
+
+function editor:setPlatformColors(h, s, v)
+    local r, g, b = hsvToRgb(h, s, v)
+    for i, platform in ipairs(platforms) do
+        platform.data.color = Color.new(r, g, b, 1)
     end
 end
 

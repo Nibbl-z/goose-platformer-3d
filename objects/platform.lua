@@ -120,8 +120,6 @@ function platform:update()
     end
 
     self.model.mesh:setTexture(assets[textureLookup[self.data.type]])
-
-    
 end
 
 local HANDLE_COLORS = {
