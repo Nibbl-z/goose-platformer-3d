@@ -576,7 +576,9 @@ end
 function editor:setPlatformColors(h, s, v)
     local r, g, b = hsvToRgb(h, s, v)
     for i, platform in ipairs(platforms) do
-        platform.data.color = Color.new(r, g, b, 1)
+        if platform.selected then
+            platform.data.color = Color.new(r, g, b, 1)
+        end
     end
 end
 
