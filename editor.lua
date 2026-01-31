@@ -309,8 +309,9 @@ function editor:update(dt, platforms)
     
 
     local optimizedPlatforms = {}
-
+    chosenPlatform = nil
     for _, v in ipairs(platforms) do
+        v.hovered = false
         local pos = vec3.fromg3d(v.model.translation)
         if (pos - camera.position):magnitude() <= 80 then
             table.insert(optimizedPlatforms, v)
@@ -330,7 +331,7 @@ function editor:update(dt, platforms)
                 end
             end
 
-            if g3d.collisions.sphereIntersection(platform.model.verts, platform.model, rayPos.x, rayPos.z, rayPos.y, 0.1) then
+            if g3d.collisions.sphereIntersection(platform.model.verts, platform.model, rayPos.x, rayPos.z, rayPos.y, 1) then
                 if i <= dist then
                     dist = i
                     chosenPlatform = platform
@@ -352,18 +353,18 @@ function editor:update(dt, platforms)
 
             if selectedPlatform ~= nil and love.keyboard.isDown("lshift") and chosenPlatform.selected == false then
                 table.insert(extraSelected, chosenPlatform) 
-                print("multi select")
             elseif not love.keyboard.isDown("lshift") and chosenPlatform.selected == false then
                 for _, platform in ipairs(platforms) do
                     platform.selected = false
                 end
                 table.clear(extraSelected)
                 selectedPlatform = chosenPlatform
+                
             end
             
             chosenPlatform.selected = true
 
-            
+            hm, sm, vm = self:getPlatformColors()
         end
 
         if mouse2 and not cameraTurning then
@@ -558,15 +559,18 @@ end
 
 function editor:getPlatformColors()
     local h, s, v = 1, 1, 1
-
-    for i, platform in ipairs(platforms) do
-        if i == 1 then
-            h, s, v = rgbToHsv(platform.data.color:get())
-        else
-            local h2, s2, v2 = rgbToHsv(platform.data.color:get())
-            if h2 ~= h then h = 1 end
-            if s2 ~= s then s = 1 end
-            if v2 ~= v then v = 1 end
+    local i = 1
+    for _, platform in ipairs(platforms) do
+        if platform.selected then
+            if i == 1 then
+                h, s, v = rgbToHsv(platform.data.color:get())
+            else
+                local h2, s2, v2 = rgbToHsv(platform.data.color:get())
+                if h2 ~= h then h = 1 end
+                if s2 ~= s then s = 1 end
+                if v2 ~= v then v = 1 end
+            end
+            i = i + 1
         end
     end
 
