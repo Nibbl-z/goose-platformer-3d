@@ -20,7 +20,7 @@ function platform:new(data)
             size = data.size,
             type = data.type or PLATFORM_TYPE.default,
             collision = data.collision or true,
-            color = Color.fromRgb(70,70,70)
+            color = data.color or Color.fromRgb(70,70,70)
         },
         model = g3d.newModel("models/cube.obj", assets[textureLookup[data.type]], data.position:get(), vec3.new(0,0,0):get(), data.size:get()),
         shader = love.graphics.newShader(g3d.shaderpath, "shaders/platform.glsl"),

@@ -530,6 +530,8 @@ function editor:copyPlatforms()
             table.insert(clipboard, table.clone(platform.data))
         end
     end
+
+    print(table.tostring(clipboard))
 end
 
 function editor:pastePlatforms()
@@ -578,6 +580,8 @@ function editor:getPlatformColors()
 end
 
 function editor:setPlatformColors(h, s, v)
+    updateHistory()
+
     local r, g, b = hsvToRgb(h, s, v)
     for i, platform in ipairs(platforms) do
         if platform.selected then
