@@ -274,7 +274,7 @@ function ui:init()
 
         properties = uibase:new {
             anchorpoint = Vector2.new(1,0),
-            position = UDim2.new(1,0,0,50),
+            position = UDim2.new(1,0,0,0),
             size = UDim2.new(0,160,0,500),
             backgroundcolor = Color.fromRgb(30,30,30),
             layout = "list",
@@ -299,7 +299,7 @@ function ui:init()
 
                 position = PropertiesVec3("position", true),
                 size = PropertiesVec3("size", true),
-                isLava = PropertiesCheckbox("Lava", function ()
+                isLava = PropertiesCheckbox("lava", function ()
                     for _, platform in ipairs(editorState.selectedPlatforms) do
                         platform.data.type = PLATFORM_TYPE.lava
                     end
@@ -316,7 +316,7 @@ function ui:init()
 
                     return condition
                 end),
-                collision = PropertiesCheckbox("Collision", function ()
+                collision = PropertiesCheckbox("collision", function ()
                     for _, platform in ipairs(editorState.selectedPlatforms) do
                         platform.data.collision = true
                     end
@@ -335,7 +335,7 @@ function ui:init()
                 end),
                 color = PropertiesVec3("color", false),
                 colorpicker = uibase:new {
-                    size = UDim2.new(1,0,0,100),
+                    size = UDim2.new(1,0,0,120),
                     backgroundcolor = Color.new(0,0,0,0),
                     children = {
                         sv = uibase:new {
@@ -346,7 +346,71 @@ function ui:init()
                             position = UDim2.new(0,125,0,0)
                         }
                     }
+                },
+                materialLabel = textlabel:new {
+                    size = UDim2.new(1,0,0,25),
+                    textcolor = Color.new(0.8,0.8,0.8,1),
+                    backgroundcolor = Color.new(0,0,0,0),
+                    textsize = 14,
+                    text = "material",
+                    halign = "left"
+                },
+                materialPicker = uibase:new {
+                    size = UDim2.new(1,0,0,25),
+                    backgroundcolor = Color.new(0,0,0,0),
+                    children = {
+                        left = textlabel:new {
+                            text = "<",
+                            textsize = 14,
+                            size = UDim2.new(0,25,0,25),
+                            textcolor = Color.new(0.8,0.8,0.8,1),
+                            backgroundcolor = Color.new(0,0,0,0),
+                            mousebutton1up = function ()
+                                cycleMaterial(-1)
+                            end
+                        },
+                        right = textlabel:new {
+                            text = ">",
+                            position = UDim2.new(1,0,0,0),
+                            anchorpoint = Vector2.new(1,0),
+                            textsize = 14,
+                            size = UDim2.new(0,25,0,25),
+                            textcolor = Color.new(0.8,0.8,0.8,1),
+                            backgroundcolor = Color.new(0,0,0,0),
+                            mousebutton1up = function ()
+                                cycleMaterial(1)
+                            end
+                        },
+                        material = textlabel:new {
+                            text = function ()
+                                local material = ""
+                                local i = 1
+                                for _, v in ipairs(platforms) do
+                                    if v.selected then
+                                        if i == 1 then
+                                            material = v.data.material
+                                        else
+                                            if v.data.material ~= material then
+                                                material = ""
+                                                break
+                                            end
+                                        end
+                                        i = i + 1
+                                    end
+                                end
+
+                                return material
+                            end,
+                            position = UDim2.new(.5,0,0,0),
+                            anchorpoint = Vector2.new(.5,0),
+                            textsize = 14,
+                            size = UDim2.new(0,100,0,25),
+                            textcolor = Color.new(0.8,0.8,0.8,1),
+                            backgroundcolor = Color.new(0,0,0,0),
+                        },
+                    }
                 }
+
             }
         },
     }
@@ -399,6 +463,38 @@ function ui:updateProperties()
     if color:get("x")._typing == false then color:get("x").text = tostring(r or "") end
     if color:get("y")._typing == false then color:get("y").text = tostring(g or "") end
     if color:get("z")._typing == false then color:get("z").text = tostring(b or "") end
+end
+
+function cycleMaterial(direction)
+    Editor:updateHistory()
+    local material = "stone"
+    local i = 1
+
+    for _, v in ipairs(platforms) do
+        if v.selected then
+            if i == 1 then
+                material = v.data.material
+            else
+                if v.data.material ~= material then
+                    material = "stone"
+                    break
+                end
+            end
+            i = i + 1
+        end
+    end
+
+    local id = table.find(MATERIAL, material)
+    id = id + direction
+
+    if id == 0 then id = #MATERIAL end
+    if id > #MATERIAL then id = 1 end
+
+    for _, v in ipairs(platforms) do
+        if v.selected then
+            v.data.material = MATERIAL[id]
+        end
+    end
 end
 
 return ui

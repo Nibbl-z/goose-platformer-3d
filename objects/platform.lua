@@ -8,10 +8,27 @@ PLATFORM_TYPE = {
     lava = 1
 }
 
+MATERIAL = {
+    "stone",
+    "plastic",
+    "wood",
+    "planks",
+    "metal",
+    "sheet_metal"
+}
+
 local textureLookup = {
     [0] = "img/stone.png",
     [1] = "img/lava.png"
 }
+
+local function getTexture(p)
+    if p.data.type == PLATFORM_TYPE.lava then
+        return "img/lava.png"
+    else
+        return "img/"..p.data.material..".png"
+    end
+end
 
 function platform:new(data)
     local object = {
@@ -20,7 +37,8 @@ function platform:new(data)
             size = data.size,
             type = data.type or PLATFORM_TYPE.default,
             collision = data.collision or true,
-            color = data.color or Color.fromRgb(70,70,70)
+            color = data.color or Color.fromRgb(70,70,70),
+            material = data.material or MATERIAL[1]
         },
         model = g3d.newModel("models/cube.obj", assets[textureLookup[data.type]], data.position:get(), vec3.new(0,0,0):get(), data.size:get()),
         shader = love.graphics.newShader(g3d.shaderpath, "shaders/platform.glsl"),
@@ -122,7 +140,7 @@ function platform:update(dt)
         end
     end
 
-    self.model.mesh:setTexture(assets[textureLookup[self.data.type]])
+    self.model.mesh:setTexture(assets[getTexture(self)])
 end
 
 local HANDLE_COLORS = {
