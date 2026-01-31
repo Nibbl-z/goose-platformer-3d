@@ -8,23 +8,22 @@ PLATFORM_TYPE = {
     lava = 1
 }
 
-local selectionShader = love.graphics.newShader(g3d.shaderpath, "shaders/selection.glsl")
 local textureLookup = {
     [0] = "img/stone.png",
     [1] = "img/lava.png"
 }
 
 function platform:new(data)
-    
-
     local object = {
         data = {
             position = data.position,
             size = data.size,
             type = data.type or PLATFORM_TYPE.default,
-            collision = data.collision or true
+            collision = data.collision or true,
+            color = Color.fromRgb(70,70,70)
         },
         model = g3d.newModel("models/cube.obj", assets[textureLookup[data.type]], data.position:get(), vec3.new(0,0,0):get(), data.size:get()),
+        shader = love.graphics.newShader(g3d.shaderpath, "shaders/platform.glsl"),
         hovered = false,
         selected = false,
         handles = {
@@ -121,6 +120,8 @@ function platform:update()
     end
 
     self.model.mesh:setTexture(assets[textureLookup[self.data.type]])
+
+    
 end
 
 local HANDLE_COLORS = {
@@ -131,7 +132,14 @@ local HANDLE_COLORS = {
 
 function platform:draw()
     if self.model == nil then return end
-    self.model:draw((self.hovered or self.selected) and selectionShader or nil)
+    --love.graphics.setColor(1,0,0,1)
+    
+    self.shader:send("tintColor", self.data.type == PLATFORM_TYPE.default and {self.data.color:get()} or {1.0,1.0,1.0,1.0})
+    self.shader:send("hovered", self.hovered)
+    self.shader:send("selected", self.selected)
+
+    self.model:draw(self.shader)
+    --love.graphics.setColor(1,1,1,1)
     if self.selected then
         for k, handle in pairs(self.handles) do
             handle.shader:send("color", {HANDLE_COLORS[handle.axis][1], HANDLE_COLORS[handle.axis][2], HANDLE_COLORS[handle.axis][3], handle.hovered and 1 or 0.4})
