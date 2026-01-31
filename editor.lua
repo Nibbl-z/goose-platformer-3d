@@ -301,7 +301,7 @@ function editor:update(dt, platforms)
             end
         end
 
-        platform:update()
+        platform:update(dt)
     end
     
     local dist = 75

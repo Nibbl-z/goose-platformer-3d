@@ -26,6 +26,7 @@ function platform:new(data)
         shader = love.graphics.newShader(g3d.shaderpath, "shaders/platform.glsl"),
         hovered = false,
         selected = false,
+        time = 0.0,
         handles = {
             x = {
                 axis = "x",
@@ -87,9 +88,11 @@ function platform:destroy()
 end
 
 
-function platform:update()
+function platform:update(dt)
     -- "this is horrible but there wont be any other handle types. I THINK"
     -- he was quickly proven wrong
+    self.time = self.time + dt
+    self.shader:send("time", self.time)
 
     self.data.position = vec3.fromg3d(self.model.translation)
     self.data.size = vec3.fromg3d(self.model.scale)
