@@ -63,7 +63,6 @@ function editor:init()
         table.clear(platforms)
 
         for _, data in ipairs(history[currentHistory]) do
-            print(table.tostring(data))
             local platform = Platform:new(data)
             table.insert(platforms, platform)
         end
@@ -73,6 +72,7 @@ function editor:init()
     table.insert(keybinds, Keybind:new("z", true, true, function ()
         if #history == 0 then return end
         if currentHistory == 0 then return end
+        table.clear(platforms)
 
         if currentHistory == 1 then
             currentHistory = 0
@@ -84,7 +84,6 @@ function editor:init()
         end
 
         currentHistory = math.clamp(currentHistory - 1, 1, #history)
-        table.clear(platforms)
 
         for _, data in ipairs(history[currentHistory]) do
             local platform = Platform:new(data)
