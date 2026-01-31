@@ -36,8 +36,8 @@ local currentHistory = 0
 
 local keybinds = {}
 
-local mouse1, mouse2 = false, false
-local mouse1reset, mouse2reset = false, false
+local mouse1, mouse2, mouse1down = false, false, false
+local mouse1reset, mouse2reset, mouse1downreset = false, false, false
 
 local clipboard = {}
 
@@ -55,11 +55,7 @@ function editor:init()
         if currentHistory == 0 then
             for _, platform in ipairs(platforms) do
                 table.clear(stateBeforeUndo)
-                table.insert(stateBeforeUndo, {
-                    position = vec3.fromg3d(platform.model.translation),
-                    size = vec3.fromg3d(platform.model.scale),
-                    platformType = platform.platformType
-                })
+                table.insert(stateBeforeUndo, platform.data)
             end
         end
         currentHistory = math.clamp(currentHistory + 1, 1, #history)
@@ -67,6 +63,7 @@ function editor:init()
         table.clear(platforms)
 
         for _, data in ipairs(history[currentHistory]) do
+            print(table.tostring(data))
             local platform = Platform:new(data)
             table.insert(platforms, platform)
         end
@@ -147,7 +144,8 @@ function camRay(dist,x,y)
     ) + camera.position
 end
 
-function updateHistory()
+function editor:updateHistory()
+    print("storing history")
     if currentHistory ~= 0 then
         for i = currentHistory, 1, -1 do
             table.remove(history, i)
@@ -158,7 +156,7 @@ function updateHistory()
     local historyPlatforms = {}
 
     for _, platform in ipairs(platforms) do
-        table.insert(historyPlatforms, platform.data)
+        table.insert(historyPlatforms, table.clone(platform.data))
     end
 
     table.insert(history, 1, historyPlatforms)
@@ -191,7 +189,7 @@ function editor:mousemoved(x, y, dx, dy)
         for _, platform in ipairs({selectedPlatform, unpack(extraSelected)}) do
             if chosenHandle.hovered then
                 if not dragging then
-                    updateHistory()
+                    self:updateHistory()
                 end
                 dragging = true
                 local distance = (camera.position - vec3.fromg3d(chosenHandle.scaleModel.translation)):magnitude()
@@ -284,7 +282,9 @@ function editor:update(dt, platforms)
     -- love2d, add a love.mouse.isDownThisDamnFrameOnlyOnce and my life is yours
     mouse1 = not love.mouse.isDown(1) and not mouse1reset
     mouse1reset = not love.mouse.isDown(1)
-    
+
+    mouse1down = love.mouse.isDown(1) and not mouse1downreset
+    mouse1downreset = love.mouse.isDown(1)
     mouse2 = not love.mouse.isDown(2) and not mouse2reset
     mouse2reset = not love.mouse.isDown(2)
 
@@ -395,7 +395,7 @@ function editor:update(dt, platforms)
         local _, s, v = self:getPlatformColors()
         local h = 1 - (hueY + 120 - my) / 120
         hm = h
-        self:setPlatformColors(h, s, v)
+        self:setPlatformColors(h, s, v, mouse1down)
     end
 
     if common:checkcollision(svX - 15, svY - 15, 140, 150, love.mouse.getX(), love.mouse.getY(), 1, 1) and love.mouse.isDown(1) then
@@ -405,7 +405,7 @@ function editor:update(dt, platforms)
         local v = (svY + 120 - my) / 120
         sm = s
         vm = v
-        self:setPlatformColors(hm, s, v)
+        self:setPlatformColors(hm, s, v, mouse1down)
     end
 
     for _, keybind in ipairs(keybinds) do
@@ -468,12 +468,12 @@ function editor:createPlatform()
         size = vec3.new(7,7,7), 
         type = PLATFORM_TYPE.default
     })
-    updateHistory()
+    self:updateHistory()
     table.insert(platforms, platform)
 end
 
 function editor:deletePlatforms()
-    updateHistory()
+    self:updateHistory()
 
     for _, platform in ipairs(platforms) do
         if platform.selected then
@@ -493,7 +493,7 @@ function editor:deletePlatforms()
 end
 
 function editor:duplicatePlatforms()
-    updateHistory()
+    self:updateHistory()
 
     table.clear(extraSelected)
     selectedPlatform = nil
@@ -535,7 +535,7 @@ function editor:copyPlatforms()
 end
 
 function editor:pastePlatforms()
-    updateHistory()
+    self:updateHistory()
 
     table.clear(extraSelected)
     selectedPlatform = nil
@@ -579,8 +579,8 @@ function editor:getPlatformColors()
     return h, s, v
 end
 
-function editor:setPlatformColors(h, s, v)
-    updateHistory()
+function editor:setPlatformColors(h, s, v, update)
+    if update then self:updateHistory() end
 
     local r, g, b = hsvToRgb(h, s, v)
     for i, platform in ipairs(platforms) do

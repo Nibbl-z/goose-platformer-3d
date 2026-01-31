@@ -28,6 +28,7 @@ end
 function PropertiesVec3(property, isVector)
     function setAxis(prop, axis, value, isv)
         -- uggghhh
+        Editor:updateHistory()
 
         if prop == "size" and value <= 0 then return end
         if prop == "color" then
@@ -40,11 +41,21 @@ function PropertiesVec3(property, isVector)
                     local funcs = {position = platform.model.setTranslation, size = platform.model.setScale}
                     -- this is what happens when i try to force my desired ways of doing stuff upon g3d
                     -- and now we have this mess
-                    platform.data[prop][axis] = value
+
+                    -- hi, it's getting worse :heart:
+
+                    local vector = vec3.new(platform.data[prop].x, platform.data[prop].y, platform.data[prop].z)
+                    vector[axis] = value
+
+                    platform.data[prop] = vector
+
                     funcs[prop](platform.model, platform.data[prop]:getTuple()) -- <3
                 else
                     -- i love assuming itll only be an rgb because thats all im adding anyway
-                    platform.data[prop][axis] = value / 255
+                    local color = Color.new(platform.data[prop].r, platform.data[prop].g, platform.data[prop].b)
+                    color[axis] = value
+
+                    platform.data[prop] = color
                 end
                 
     
@@ -136,6 +147,7 @@ function PropertiesCheckbox(title, callbackOn, callbackOff, condition)
                     return condition() and "img/checkbox_on.png" or "img/checkbox_off.png"
                 end,
                 mousebutton1up = function (self)
+                    Editor:updateHistory()
                     if condition() then
                         callbackOff()
                     else
