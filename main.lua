@@ -4,6 +4,7 @@ local Platform = require("objects.platform")
 local Player = require("objects.player")
 local Editor = require("editor")
 local World = require("objects.world")
+local skybox = require("objects.skybox")
 local scene = "editor"
 
 local ui = {
@@ -29,6 +30,7 @@ function love.load()
     World:updateMesh()
 
     player = Player:new()
+    Skybox = skybox:new()
 
     Editor:init()
 
@@ -59,9 +61,11 @@ function love.update(dt)
     if scene == "game" then
         player.active = true
         player:update(dt, platforms)
+        Skybox:update(player.camera.position)
     elseif scene == "editor" then
         Editor:update(dt, platforms)
         player.active = false
+        Skybox:update(Editor:getCam().position)
     end
 end
 
@@ -95,6 +99,7 @@ function love.draw()
        v:draw()
     end
 
+    Skybox:draw()
     player:draw()
     Editor:draw()
 end

@@ -589,4 +589,8 @@ function editor:setPlatformColors(h, s, v, update)
     end
 end
 
+function editor:getCam()
+    return camera
+end
+
 return editor

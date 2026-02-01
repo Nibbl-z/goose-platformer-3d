@@ -275,7 +275,7 @@ function ui:init()
         properties = uibase:new {
             anchorpoint = Vector2.new(1,0),
             position = UDim2.new(1,0,0,0),
-            size = UDim2.new(0,160,0,500),
+            size = UDim2.new(0,160,0,600),
             backgroundcolor = Color.fromRgb(30,30,30),
             layout = "list",
             listpadding = 5,
