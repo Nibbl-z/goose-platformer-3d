@@ -202,6 +202,7 @@ local ANIM_LENGTHS = {}
 function player:new()
     local object = {
         active = true,
+        menuMode = false,
         root = g3d.newModel(g3d.loadObj("models/goose.obj", false, true), assets["img/goose.skin.png"], vec3.new(0,0,0):get(), vec3.new(0,0,0):get()),
         leftLeg = g3d.newModel(g3d.loadObj("models/leftleg.obj", false, true), assets["img/goose.skin.png"], vec3.new(0,0,0):get(), vec3.new(0,0,0):get()),
         rightLeg = g3d.newModel(g3d.loadObj("models/rightleg.obj", false, true), assets["img/goose.skin.png"], vec3.new(0,0,0):get(), vec3.new(0,0,0):get()),
@@ -361,12 +362,14 @@ end
 function player:update(dt, platforms)
     if not self.active then return end
 
-    local distance = self:updateCameraDistance(platforms) or CAMERA_DISTANCE
-    self.camera.position = vec3.new(
-        math.cos(math.rad(self.camera.rotation.y)) * math.cos(math.rad(self.camera.rotation.z)) * -distance, 
-        math.sin(math.rad(self.camera.rotation.z)) * -distance, 
-        math.sin(math.rad(self.camera.rotation.y)) * math.cos(math.rad(self.camera.rotation.z)) * -distance
-    ) + self.lerpPosition + vec3.new(0,1,0)
+    if not self.menuMode then
+        local distance = self:updateCameraDistance(platforms) or CAMERA_DISTANCE
+        self.camera.position = vec3.new(
+            math.cos(math.rad(self.camera.rotation.y)) * math.cos(math.rad(self.camera.rotation.z)) * -distance, 
+            math.sin(math.rad(self.camera.rotation.z)) * -distance, 
+            math.sin(math.rad(self.camera.rotation.y)) * math.cos(math.rad(self.camera.rotation.z)) * -distance
+        ) + self.lerpPosition + vec3.new(0,1,0)
+    end
 
     local direction = vec3.new(0,0,0)
     local keysDown = 0
@@ -443,7 +446,9 @@ function player:update(dt, platforms)
 
     self.lerpPosition:lerp(self.position, 0.4)
 
-    g3d.camera.lookInDirection(self.camera.position.x, self.camera.position.z, self.camera.position.y, math.rad(self.camera.rotation.y), math.rad(self.camera.rotation.z))
+    if not self.menuMode then
+        g3d.camera.lookInDirection(self.camera.position.x, self.camera.position.z, self.camera.position.y, math.rad(self.camera.rotation.y), math.rad(self.camera.rotation.z))
+    end
     self:solveCollision(platforms, dt)
     
     self.currentFrameTimer = self.currentFrameTimer + dt
