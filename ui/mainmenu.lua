@@ -2,7 +2,7 @@ require "yan"
 
 local ui = {}
 
-function MenuButton(color, text, position)
+function MenuButton(color, text, position, callback)
     return imagelabel:new {
         size = UDim2.new(0, 300, 0, 100),
         position = position,
@@ -33,8 +33,28 @@ function MenuButton(color, text, position)
         mousebutton1up = function (btn)
             btn.image = "img/btn_"..color..".png"
             tween:new(btn, TweenInfo.new(0.2, EasingStyle.CubicOut), {size = UDim2.new(0, 305, 0, 105)}):play()
+            callback()
         end
     }
+end
+
+function ui:enterAnim()
+    self.screen:get("play").position = UDim2.new(0,-150,0,300)
+    self.screen:get("create").position = UDim2.new(0,-150,0,410)
+    self.screen:get("quit").position = UDim2.new(0,-150,0,520)
+    self.screen:get("logo").position = UDim2.new(0.5,0,0,-150)
+
+    tween:new(self.screen:get("play"), TweenInfo.new(1, EasingStyle.CubicOut), {position = UDim2.new(0,200,0,300)}):play()
+
+    tween:new(self.screen:get("logo"), TweenInfo.new(1, EasingStyle.CubicOut), {position = UDim2.new(0.5,0,0,25)}):play()
+
+    biribiri:CreateAndStartTimer(0.1, function ()
+        tween:new(self.screen:get("create"), TweenInfo.new(1, EasingStyle.CubicOut), {position = UDim2.new(0,200,0,410)}):play()
+    end)
+
+    biribiri:CreateAndStartTimer(0.2, function ()
+        tween:new(self.screen:get("quit"), TweenInfo.new(1, EasingStyle.CubicOut), {position = UDim2.new(0,200,0,520)}):play()
+    end)
 end
 
 function ui:init()
@@ -47,12 +67,18 @@ function ui:init()
             backgroundcolor = Color.new(0,0,0,0)
         },
 
-        play = MenuButton("green", "Play Levels", UDim2.new(0,200,0,300)),
-        create = MenuButton("blue", "Create Levels", UDim2.new(0,200,0,410)),
-        quit = MenuButton("red", "Exit", UDim2.new(0,200,0,520))
+        play = MenuButton("green", "Play Levels", UDim2.new(0,200,0,300), function ()
+            currentScene = "game"
+        end),
+        create = MenuButton("blue", "Create Levels", UDim2.new(0,200,0,410), function ()
+            currentScene = "editor"
+        end),
+        quit = MenuButton("red", "Exit", UDim2.new(0,200,0,520), function ()
+            love.event.quit()
+        end)
     }
 
-    
+    self:enterAnim()
 end
 
 return ui

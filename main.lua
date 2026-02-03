@@ -17,7 +17,8 @@ local ui = {
 platforms = {}
 
 local SCENES = {}
-local currentScene = "mainmenu"
+currentScene = "mainmenu"
+local lastScene = nil
 
 function love.load()
     uiCanvas = love.graphics.newCanvas()
@@ -28,18 +29,7 @@ function love.load()
     Skybox = skybox:new()
     Editor:init()
 
-    Player.position = vec3.new(4.5,20,-2)
-    Player.modelDirection = 1.8
-    table.insert(platforms, Platform:new({
-        position = vec3.new(5,-7,-2.2),
-        size = vec3.new(4,10,4),
-    }))
-
-    for _, v in ipairs(platforms) do
-        v:update(0.1)
-    end
-
-    World:updateMesh()
+    
 
     for _, v in pairs(ui) do
         v:init()
@@ -47,9 +37,33 @@ function love.load()
 
     SCENES["mainmenu"] = Scene:new(
         ui.mainmenu, 
+        -- Init
+        function ()
+            ui.mainmenu:enterAnim()
+
+            Player.position = vec3.new(4.5,20,-2)
+            Player.modelDirection = 1.8
+
+            g3d.camera.lookAt(0,0,0,5,0,0)
+
+            table.clear(platforms)
+
+            table.insert(platforms, Platform:new({
+                position = vec3.new(5,-7,-2.2),
+                size = vec3.new(4,10,4),
+            }))
+
+            for _, v in ipairs(platforms) do
+                v:update(0.1)
+            end
+
+            World:updateMesh()
+        end,
         -- Update
         function (dt)
             Player.menuMode = true
+            Player.active = true
+            love.mouse.setRelativeMode(false)
             Player:update(dt, platforms)
         end, 
         -- Draw
@@ -73,9 +87,15 @@ function love.load()
 
     SCENES["game"] = Scene:new(
         ui.game, 
+        -- Init
+        function ()
+            
+        end,
         -- Update
         function (dt)
             Player.active = true
+            Player.menuMode = false
+            love.mouse.setRelativeMode(true)
             Player:update(dt, platforms)
             Skybox:update(Player.camera.position)
         end, 
@@ -93,6 +113,10 @@ function love.load()
 
     SCENES["editor"] = Scene:new(
         ui.editor, 
+        -- Init
+        function ()
+            
+        end,
         -- Update
         function (dt)
             Player.active = false
@@ -129,7 +153,14 @@ function love.wheelmoved(x, y)
 end
 
 function love.update(dt)
+    biribiri:Update(dt)
     yan:update(dt)
+
+    if lastScene ~= currentScene then
+        SCENES[currentScene]:init()
+    end
+
+    lastScene = currentScene
 
     for k, scene in pairs(SCENES) do
         if k == currentScene then
@@ -137,7 +168,6 @@ function love.update(dt)
             scene:update(dt)
         else
             scene.ui.screen.enabled = false
-            -- ..?
         end
     end
 
@@ -165,6 +195,8 @@ function love.keypressed(key)
         World:updateMesh()
     elseif key == "." then
         currentScene = "editor"
+    elseif key == "/" then
+        currentScene = "mainmenu"
     end
     if key == "space" and (Player.grounded or Player.airtime <= 0.2) then
         Player.jumpPressed = true
@@ -179,7 +211,7 @@ end
 
 function love.draw()
     love.graphics.setColor(1,1,1)
-    love.graphics.print(tostring(love.timer.getFPS()), 0, 100)
+    --love.graphics.print(tostring(love.timer.getFPS()), 0, 100)
     love.graphics.setBackgroundColor(0.1,0.1,0.1,1)
 
     for k, scene in pairs(SCENES) do

@@ -3,10 +3,11 @@ require "global"
 local scene = {}
 scene.__index = scene
 
-function scene:new(ui, update, draw, miscObjects)
+function scene:new(ui, init, update, draw, miscObjects)
     local object = {
         ui = ui,
         updateFunc = update,
+        initFunc = init,
         drawFunc = draw,
         miscObjects = miscObjects
     }
@@ -21,6 +22,10 @@ end
 
 function scene:draw()
     self.drawFunc()
+end
+
+function scene:init()
+    self.initFunc()
 end
 
 function scene:wheelmoved(x,y)
@@ -38,5 +43,6 @@ function scene:mousemoved(x,y,dx,dy)
         end
     end
 end
+
 
 return scene

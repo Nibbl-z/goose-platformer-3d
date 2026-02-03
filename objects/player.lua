@@ -373,14 +373,17 @@ function player:update(dt, platforms)
 
     local direction = vec3.new(0,0,0)
     local keysDown = 0
-    for key, r in pairs(MOVE_DIRECTIONS) do
-        if love.keyboard.isDown(key) then
-            keysDown = keysDown + 1
-            direction = direction + vec3.new(
-                math.cos(math.rad(self.camera.rotation.y + r)),
-                0,
-                math.sin(math.rad(self.camera.rotation.y + r))
-            )
+
+    if self.menuMode == false then   
+        for key, r in pairs(MOVE_DIRECTIONS) do
+            if love.keyboard.isDown(key) then
+                keysDown = keysDown + 1
+                direction = direction + vec3.new(
+                    math.cos(math.rad(self.camera.rotation.y + r)),
+                    0,
+                    math.sin(math.rad(self.camera.rotation.y + r))
+                )
+            end
         end
     end
 
@@ -422,7 +425,7 @@ function player:update(dt, platforms)
         end
     end
 
-    if (self.grounded or self.airtime <= 0.2) and self.jumpPressed then
+    if (self.grounded or self.airtime <= 0.2) and self.jumpPressed and self.menuMode == false then
         self.jumpPressed = false
         self.grounded = false
         self.velocity.y = JUMP_HEIGHT
