@@ -69,8 +69,8 @@ function love.load()
         -- Draw
         function ()
             -- this should probably be a yan feature, but alas
-            if ui.mainmenu.screen:get("logo")._loadedImage then
-                ui.mainmenu.screen:get("logo")._loadedImage:setFilter("nearest", "nearest")
+            if ui.mainmenu.screen:get("main"):get("logo")._loadedImage then
+                ui.mainmenu.screen:get("main"):get("logo")._loadedImage:setFilter("nearest", "nearest")
             end
             --love.graphics.setCanvas({uiCanvas, depth=true})
             --love.graphics.clear(0,0,0,0)

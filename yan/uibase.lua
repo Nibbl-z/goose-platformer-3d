@@ -312,7 +312,18 @@ function uibase:stencil(parent)
 
     if parent.clipdescendants then
         love.graphics.stencil(function ()
-            love.graphics.rectangle("fill", parent:getdrawingcoordinates())
+            local pX, pY, sX, sY = parent:getdrawingcoordinates()
+
+            local rX = math.min(sX / 2, parent.cornerradius.offset + parent.cornerradius.scale * (sX / 2))
+            local rY = math.min(sY / 2, parent.cornerradius.offset + parent.cornerradius.scale * (sY / 2))
+
+            --if parent.bordersize > 0 then
+                
+                --love.graphics.rectangle("fill", pX - parent.bordersize, pY - parent.bordersize, sX + parent.bordersize * 2, sY + parent.bordersize * 2, rX + parent.bordersize, rY + parent.bordersize)
+            --else
+            love.graphics.rectangle("fill", pX, pY, sX, sY, rX, rY)
+            --end
+
         end, "replace", 1)
 
         love.graphics.setStencilTest("greater", 0)
