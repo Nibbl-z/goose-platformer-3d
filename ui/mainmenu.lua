@@ -2,9 +2,9 @@ require "yan"
 
 local ui = {}
 
-function MenuButton(color, text, position, callback)
+function Button(color, text, position, callback, size, textSize)
     return imagelabel:new {
-        size = UDim2.new(0, 300, 0, 100),
+        size = size or UDim2.new(0, 300, 0, 100),
         position = position,
         anchorpoint = Vector2.new(0.5, 0.5),
         image = "img/btn_"..color..".png",
@@ -13,28 +13,73 @@ function MenuButton(color, text, position, callback)
             label = textlabel:new {
                 text = text,
                 size = UDim2.new(1,0,1,0),
-                textsize = 45,
+                textsize = textSize or 45,
                 fontpath = "LTSuperior.ttf",
                 backgroundcolor = Color.new(0,0,0,0),
                 textcolor = Color.new(1,1,1,1)
             }
         },
         mouseenter = function (btn)
-            tween:new(btn, TweenInfo.new(0.2, EasingStyle.CubicOut), {size = UDim2.new(0, 305, 0, 105)}):play()
+            tween:new(btn, TweenInfo.new(0.2, EasingStyle.CubicOut), {size = (size and (size + UDim2.new(0, 5, 0, 5))) or UDim2.new(0, 305, 0, 105)}):play()
         end,
         mouseexit = function (btn)
             btn.image = "img/btn_"..color..".png"
-            tween:new(btn, TweenInfo.new(0.2, EasingStyle.CubicOut), {size = UDim2.new(0, 300, 0, 100)}):play()
+            tween:new(btn, TweenInfo.new(0.2, EasingStyle.CubicOut), {size = size or UDim2.new(0, 300, 0, 100)}):play()
         end,
         mousebutton1down = function (btn)
             btn.image = "img/btn_"..color.."_pressed.png"
-            tween:new(btn, TweenInfo.new(0.2, EasingStyle.CubicOut), {size = UDim2.new(0, 290, 0, 95)}):play()
+            tween:new(btn, TweenInfo.new(0.2, EasingStyle.CubicOut), {size = (size and (size - UDim2.new(0, 10, 0, 5))) or UDim2.new(0, 290, 0, 95)}):play()
         end,
         mousebutton1up = function (btn)
             btn.image = "img/btn_"..color..".png"
-            tween:new(btn, TweenInfo.new(0.2, EasingStyle.CubicOut), {size = UDim2.new(0, 305, 0, 105)}):play()
+            tween:new(btn, TweenInfo.new(0.2, EasingStyle.CubicOut), {size = (size and (size + UDim2.new(0, 5, 0, 5))) or UDim2.new(0, 305, 0, 105)}):play()
             callback(btn)
         end
+    }
+end
+
+function LevelCard(name, desc, creator)
+    return uibase:new {
+        size = UDim2.new(1,0,1,0),
+        backgroundcolor = Color.new(0,0,0,0),
+        toppadding = UDim.new(0,5),
+        bottompadding = UDim.new(0,5),
+        leftpadding = UDim.new(0,5),
+        rightpadding = UDim.new(0,5),
+        children = {
+            title = textlabel:new {
+                text = name,
+                size = UDim2.new(1,0,0.2,0),
+                textsize = 40,
+                fontpath = "LTSuperior.ttf",
+                textcolor = Color.new(1,1,1,1),
+                backgroundcolor = Color.new(0,0,0,0)
+            },
+            creator = textlabel:new {
+                text = "Made by: "..creator,
+                size = UDim2.new(1,0,0.15,0),
+                position = UDim2.new(0,0,0.2,5),
+                textsize = 30,
+                halign = "left",
+                fontpath = "LTSuperior.ttf",
+                textcolor = Color.new(0.9,0.9,0.9,1),
+                backgroundcolor = Color.new(0,0,0,0)
+            },
+            description = textlabel:new {
+                text = desc,
+                size = UDim2.new(1,0,0.5,0),
+                position = UDim2.new(0,0,0.35,10),
+                textsize = 30,
+                fontpath = "LTSuperior.ttf",
+                halign = "left",
+                valign = "top",
+                textcolor = Color.new(0.8,0.8,0.8,1),
+                backgroundcolor = Color.new(0,0,0,0)
+            },
+            Button("green", "Play", UDim2.new(0,100,1.2,-80), function ()
+                
+            end, UDim2.new(0,200,0,70), 30),
+        }
     }
 end
 
@@ -57,7 +102,30 @@ function ui:enterAnim()
     end)
 end
 
+function ui:populateLevels()
+    local scroller = self.screen:get("levels"):get("levelContainer"):get("scroller")
+
+    table.clear(scroller.children)
+
+    for _, level in ipairs({
+        {
+            name = "test1",
+            desc = "this is the first description its so cool",
+            creator = "nibblesss"
+        },
+        {
+            name = "test2",
+            desc = "this is the SECOND description it even cooler, im putting more words and stuff",
+            creator = "nibblesss"
+        }
+    }) do
+        LevelCard(level.name, level.desc, level.creator):setparent(scroller)
+    end
+end
+
 function ui:init()
+    self.currentLevel = 1
+
     self.screen = screen:new {
         main = uibase:new {
             size = UDim2.new(1,0,1,0),
@@ -71,14 +139,14 @@ function ui:init()
                     backgroundcolor = Color.new(0,0,0,0)
                 },
         
-                play = MenuButton("green", "Play Levels", UDim2.new(0,200,0,300), function (btn)
+                play = Button("green", "Play Levels", UDim2.new(0,200,0,300), function (btn)
                     tween:new(btn.parent, TweenInfo.new(1, EasingStyle.CubicOut), {position = UDim2.new(-1,0,0,0)}):play()
                     tween:new(self.screen:get("levels"), TweenInfo.new(1, EasingStyle.CubicOut), {position = UDim2.new(0,0,0,0)}):play()
                 end),
-                create = MenuButton("blue", "Create Levels", UDim2.new(0,200,0,410), function ()
+                create = Button("blue", "Create Levels", UDim2.new(0,200,0,410), function ()
                     currentScene = "editor"
                 end),
-                quit = MenuButton("red", "Exit", UDim2.new(0,200,0,520), function ()
+                quit = Button("red", "Exit", UDim2.new(0,200,0,520), function ()
                     love.event.quit()
                 end)
             }
@@ -103,25 +171,54 @@ function ui:init()
                             size = UDim2.new(1,0,1,0),
                             cornerradius = UDim.new(0,16),
                             bordercolor = Color.new(1,1,1,0.5),
-                            position = UDim2.new(-0.04,0,0,0),
+                            position = UDim2.new(0,0,0,0),
                             backgroundcolor = Color.new(0,0,0,0),
                             children = {
-                                level = uibase:new {
-                                    size = UDim2.new(0.2,0,1,0)
-                                },
-                                level2 = uibase:new {
-                                    size = UDim2.new(0.2,0,1.5,0),
-                                    backgroundcolor = Color.new(1,0,0,1)
-                                }
+
                             }
                         }
                     }
+                },
+
+                levelLeft = textlabel:new {
+                    size = UDim2.new(0,40,0.4,0),
+                    position = UDim2.new(0,10,0,40),
+                    backgroundcolor = Color.new(0,0,0,0),
+                    textcolor = Color.new(1,1,1,1),
+                    text = "<",
+                    textsize = 29, -- i dont know
+                    mousebutton1down = function (btn)
+                        btn.textsize = 20
+                    end,
+                    mousebutton1up = function (btn)
+                        btn.textsize = 30
+                        self.currentLevel = self.currentLevel - 1
+                        tween:new(self.screen:get("levels"):get("levelContainer"):get("scroller"), TweenInfo.new(0.3, EasingStyle.CubicOut), {position = UDim2.new(-self.currentLevel + 1, 0, 0, 0)}):play()
+                    end
+                },
+
+                levelRight = textlabel:new {
+                    size = UDim2.new(0,40,0.4,0),
+                    position = UDim2.new(1,-50,0,40),
+                    backgroundcolor = Color.new(0,0,0,0),
+                    textcolor = Color.new(1,1,1,1),
+                    text = ">",
+                    textsize = 29,
+                    mousebutton1down = function (btn)
+                        btn.textsize = 20
+                    end,
+                    mousebutton1up = function (btn)
+                        btn.textsize = 30
+                        self.currentLevel = self.currentLevel + 1
+                        tween:new(self.screen:get("levels"):get("levelContainer"):get("scroller"), TweenInfo.new(0.3, EasingStyle.CubicOut), {position = UDim2.new(-self.currentLevel + 1, 0, 0, 0)}):play()
+                    end
                 }
             }
         }
     }
 
     self:enterAnim()
+    self:populateLevels()
 end
 
 return ui
