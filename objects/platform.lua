@@ -33,14 +33,14 @@ end
 function platform:new(data)
     local object = {
         data = {
-            position = data.position,
-            size = data.size,
+            position = vec3.new(data.position.x, data.position.y, data.position.z),
+            size = vec3.new(data.size.x, data.size.y, data.size.z),
             type = data.type or PLATFORM_TYPE.default,
             collision = data.collision or true,
-            color = data.color or Color.fromRgb(70,70,70),
+            color = (data.color and Color.new(data.color.r, data.color.g, data.color.b, data.color.a)) or Color.fromRgb(70,70,70),
             material = data.material or MATERIAL[1]
         },
-        model = g3d.newModel("models/cube.obj", assets[textureLookup[data.type]], data.position:get(), vec3.new(0,0,0):get(), data.size:get()),
+        model = g3d.newModel("models/cube.obj", assets[textureLookup[data.type]], {data.position.x, data.position.z, data.position.y}, vec3.new(0,0,0):get(), {data.size.x, data.size.z, data.size.y}),
         shader = love.graphics.newShader(g3d.shaderpath, "shaders/platform.glsl"),
         hovered = false,
         selected = false,
@@ -93,6 +93,8 @@ function platform:new(data)
             },
         }
     }
+
+    object.model.mesh:setTexture(assets[getTexture(object)])
 
     setmetatable(object, self)
 

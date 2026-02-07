@@ -1,4 +1,5 @@
 require "global"
+local level = require "level"
 
 local Platform = require("objects.platform")
 local player = require("objects.player")
@@ -28,8 +29,6 @@ function love.load()
     Player = player:new()
     Skybox = skybox:new()
     Editor:init()
-
-    
 
     for _, v in pairs(ui) do
         v:init()
@@ -80,7 +79,6 @@ function love.load()
             Skybox:draw()
             Player:draw()
             love.graphics.setCanvas()
-            
         end,
         {}
     )
@@ -89,7 +87,9 @@ function love.load()
         ui.game, 
         -- Init
         function ()
-            
+            Player.position = vec3.new(0,0,0)
+            Player.velocity = vec3.new(0,0,0)
+            World:updateMesh()
         end,
         -- Update
         function (dt)
@@ -200,6 +200,19 @@ function love.keypressed(key)
     end
     if key == "space" and (Player.grounded or Player.airtime <= 0.2) then
         Player.jumpPressed = true
+    end
+
+    if key == "=" then
+        print(level:export("level"..tostring(love.math.random(1,100000))))
+    end
+
+    if key == "-" then
+        local result = level:load()
+        if type(result) == "table" then
+            table.clear(platforms)
+            print(table.tostring(result.platforms))
+            
+        end
     end
 
     if key == "m" then

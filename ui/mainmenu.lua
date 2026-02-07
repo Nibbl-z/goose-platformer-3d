@@ -1,6 +1,8 @@
 require "yan"
+local Level = require "level"
 
 local ui = {}
+local levels = {}
 
 function Button(color, text, position, callback, size, textSize)
     return imagelabel:new {
@@ -38,7 +40,7 @@ function Button(color, text, position, callback, size, textSize)
     }
 end
 
-function LevelCard(name, desc, creator)
+function LevelCard(level)
     return uibase:new {
         size = UDim2.new(1,0,1,0),
         backgroundcolor = Color.new(0,0,0,0),
@@ -48,7 +50,7 @@ function LevelCard(name, desc, creator)
         rightpadding = UDim.new(0,5),
         children = {
             title = textlabel:new {
-                text = name,
+                text = level.name,
                 size = UDim2.new(1,0,0.2,0),
                 textsize = 40,
                 fontpath = "LTSuperior.ttf",
@@ -56,7 +58,7 @@ function LevelCard(name, desc, creator)
                 backgroundcolor = Color.new(0,0,0,0)
             },
             creator = textlabel:new {
-                text = "Made by: "..creator,
+                text = "Made by: "..level.creator,
                 size = UDim2.new(1,0,0.15,0),
                 position = UDim2.new(0,0,0.2,5),
                 textsize = 30,
@@ -66,7 +68,7 @@ function LevelCard(name, desc, creator)
                 backgroundcolor = Color.new(0,0,0,0)
             },
             description = textlabel:new {
-                text = desc,
+                text = level.desc,
                 size = UDim2.new(1,0,0.5,0),
                 position = UDim2.new(0,0,0.35,10),
                 textsize = 30,
@@ -77,7 +79,7 @@ function LevelCard(name, desc, creator)
                 backgroundcolor = Color.new(0,0,0,0)
             },
             Button("green", "Play", UDim2.new(0,100,1.2,-80), function ()
-                
+                Level:loadGame(level)
             end, UDim2.new(0,200,0,70), 30),
         }
     }
@@ -107,19 +109,21 @@ function ui:populateLevels()
 
     table.clear(scroller.children)
 
-    for _, level in ipairs({
-        {
-            name = "test1",
-            desc = "this is the first description its so cool",
-            creator = "nibblesss"
-        },
-        {
-            name = "test2",
-            desc = "this is the SECOND description it even cooler, im putting more words and stuff",
-            creator = "nibblesss"
-        }
-    }) do
-        LevelCard(level.name, level.desc, level.creator):setparent(scroller)
+    love.filesystem.setIdentity("goose-platformer-3d")
+
+    table.clear(levels)
+
+    for _, filename in ipairs(love.filesystem.getDirectoryItems("")) do
+        if filename:match("^.+(%..+)$") == ".goose3d" then
+            local level = Level:load(filename) 
+            if type(level) == "table" then
+                table.insert(levels, level)
+            end
+        end
+    end
+
+    for _, level in ipairs(levels) do
+        LevelCard(level):setparent(scroller)
     end
 end
 
@@ -140,6 +144,7 @@ function ui:init()
                 },
         
                 play = Button("green", "Play Levels", UDim2.new(0,200,0,300), function (btn)
+                    self:populateLevels()
                     tween:new(btn.parent, TweenInfo.new(1, EasingStyle.CubicOut), {position = UDim2.new(-1,0,0,0)}):play()
                     tween:new(self.screen:get("levels"), TweenInfo.new(1, EasingStyle.CubicOut), {position = UDim2.new(0,0,0,0)}):play()
                 end),
@@ -156,9 +161,13 @@ function ui:init()
             backgroundcolor = Color.new(0,0,0,0),
             position = UDim2.new(1,0,0,0),
             children = {
+                back = Button("red", "Back", UDim2.new(0,105,0,40), function ()
+                    tween:new(self.screen:get("main"), TweenInfo.new(1, EasingStyle.CubicOut), {position = UDim2.new(0,0,0,0)}):play()
+                    tween:new(self.screen:get("levels"), TweenInfo.new(1, EasingStyle.CubicOut), {position = UDim2.new(1,0,0,0)}):play()
+                end, UDim2.new(0,200,0,60)),
                 levelContainer = uibase:new {
                     size = UDim2.new(1,-120,0.4,0),
-                    position = UDim2.new(0,60,0,40),
+                    position = UDim2.new(0,60,0,80),
                     backgroundcolor = Color.new(0.1,0.1,0.1,0.98),
                     cornerradius = UDim.new(0,16),
                     bordercolor = Color.new(1,1,1,0.5),
