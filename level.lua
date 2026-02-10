@@ -1,21 +1,21 @@
 local level = {}
 local Platform = require("objects.platform")
 
-function level:export(filename)
+function level:export(data)
     local contents = {
-        name = filename,
-        description = "this is the description, so cool",
-        creator = "nibbles !",
+        name = data.name,
+        description = data.description,
+        creator = data.creator,
         platforms = {}
     }
 
-    for _, platform in ipairs(platforms) do
+    for _, platform in ipairs(data.platforms) do
         table.insert(contents.platforms, table.clone(platform.data))
     end
 
     love.filesystem.setIdentity("goose-platformer-3d")
 
-    local file = love.filesystem.newFile(filename..".goose3d")
+    local file = love.filesystem.newFile(data.name..".goose3d")
     
     local ok, err = file:open("w")
     print(ok, err)

@@ -4,7 +4,9 @@ local Level = require "level"
 local ui = {}
 local levels = {}
 
-function Button(color, text, position, callback, size, textSize)
+local popupOpen = false
+
+function Button(color, text, position, callback, size, textSize, isPopup)
     return imagelabel:new {
         size = size or UDim2.new(0, 300, 0, 100),
         position = position,
@@ -15,13 +17,14 @@ function Button(color, text, position, callback, size, textSize)
             label = textlabel:new {
                 text = text,
                 size = UDim2.new(1,0,1,0),
-                textsize = textSize or 45,
+                textsize = textSize or 40,
                 fontpath = "LTSuperior.ttf",
                 backgroundcolor = Color.new(0,0,0,0),
                 textcolor = Color.new(1,1,1,1)
             }
         },
         mouseenter = function (btn)
+            if popupOpen and not isPopup then return end
             tween:new(btn, TweenInfo.new(0.2, EasingStyle.CubicOut), {size = (size and (size + UDim2.new(0, 5, 0, 5))) or UDim2.new(0, 305, 0, 105)}):play()
         end,
         mouseexit = function (btn)
@@ -29,10 +32,12 @@ function Button(color, text, position, callback, size, textSize)
             tween:new(btn, TweenInfo.new(0.2, EasingStyle.CubicOut), {size = size or UDim2.new(0, 300, 0, 100)}):play()
         end,
         mousebutton1down = function (btn)
+            if popupOpen and not isPopup then return end
             btn.image = "img/btn_"..color.."_pressed.png"
             tween:new(btn, TweenInfo.new(0.2, EasingStyle.CubicOut), {size = (size and (size - UDim2.new(0, 10, 0, 5))) or UDim2.new(0, 290, 0, 95)}):play()
         end,
         mousebutton1up = function (btn)
+            if popupOpen and not isPopup then return end
             btn.image = "img/btn_"..color..".png"
             tween:new(btn, TweenInfo.new(0.2, EasingStyle.CubicOut), {size = (size and (size + UDim2.new(0, 5, 0, 5))) or UDim2.new(0, 305, 0, 105)}):play()
             callback(btn)
@@ -85,7 +90,113 @@ function LevelCard(level)
     }
 end
 
+local INPUT_FIELD = {
+    TextField = 1
+}
+
+function Popup(data)
+    local title = data.title
+    local buttonText = data.buttonText
+    local callback = data.callback
+    local inputs = data.inputs
+
+    popupOpen = true
+
+    local function TextField(labelText)
+        return uibase:new {
+            size = UDim2.new(1,0,0,40),
+            backgroundcolor = Color.new(0,0,0,0),
+            children = {
+                input = textinput:new {
+                    size = UDim2.new(0.7,0,1,0),
+                    position = UDim2.new(0.3,0,0,0),
+                    fontpath = "LTSuperior.ttf",
+                    backgroundcolor = Color.new(0,0,0,0.5),
+                    textcolor = Color.new(1,1,1,1),
+                    textsize = 16,
+                },
+                label = textlabel:new {
+                    size = UDim2.new(0.25,0,1,0),
+                    backgroundcolor = Color.new(0,0,0,0),
+                    text = labelText,
+                    fontpath = "LTSuperior.ttf",
+                    textcolor = Color.new(1,1,1,1),
+                    textsize = 16,
+                }
+            }
+        }
+    end
+
+    local popup = uibase:new {
+        size = UDim2.new(0.5,0,0.5,0),
+        position = UDim2.new(0.5,0,0.5,30),
+        anchorpoint = Vector2.new(0.5, 0.5),
+        backgroundcolor = Color.new(0.1,0.1,0.1,0.98),
+        cornerradius = UDim.new(0,16),
+        bordercolor = Color.new(1,1,1,0.5),
+        bordersize = 4,
+        zindex = 15,
+        children = {
+            title = textlabel:new {
+                text = title,
+                textsize = 40,
+                fontpath = "LTSuperior.ttf",
+                textcolor = Color.new(1,1,1,1),
+                backgroundcolor = Color.new(0,0,0,0),
+                size = UDim2.new(1,0,0.2,0)
+            },
+            inputs = uibase:new {
+                size = UDim2.new(1,0,0.8,-70),
+                position = UDim2.new(0,0,0.2,0),
+                layout = "list",
+                listpadding = 2,
+                backgroundcolor = Color.new(0,0,0,0),
+                children = {
+                    -- name = TextField("Level Name"),
+                    -- description = TextField("Description"),
+                    -- creator = TextField("Level Creator (that's you!)")
+                }
+            },
+            play = Button("green", buttonText, UDim2.new(0.5,0,1,-35), function (btn)
+                popupOpen = false
+                table.clear(btn.parent.parent.children)
+
+                local inputValues = {}
+
+                for _, v in pairs(btn.parent:get("inputs").children) do
+                    if v:get("input") ~= nil then
+                        inputValues[v.name] = v:get("input").text
+                    end
+                end
+
+                callback(inputValues)
+            end, UDim2.new(0.5,0,0,60), nil, true),
+        }
+    }
+
+    local i = 1
+
+    for k, input in pairs(inputs) do
+        local lookup = {
+            [INPUT_FIELD.TextField] = TextField
+        }
+
+        local instance = lookup[input.type](input.label)
+        instance.name = k
+        instance.layoutorder = i
+        instance:setparent(popup:get("inputs"))
+        i = i + 1
+    end
+
+    tween:new(popup, TweenInfo.new(0.4, EasingStyle.CubicOut), {position = UDim2.new(0.5,0,0.5,0)}):play()
+
+    return popup
+end
+
 function ui:enterAnim()
+    self.screen:get("main").position = UDim2.new(0,0,0,0)
+    self.screen:get("levels").position = UDim2.new(1,0,0,0)
+
     self.screen:get("main"):get("play").position = UDim2.new(0,-150,0,300)
     self.screen:get("main"):get("create").position = UDim2.new(0,-150,0,410)
     self.screen:get("main"):get("quit").position = UDim2.new(0,-150,0,520)
@@ -127,10 +238,22 @@ function ui:populateLevels()
     end
 end
 
+function ui:createPopup(data)
+    Popup(data):setparent(self.screen:get("popup"))
+end
+
 function ui:init()
     self.currentLevel = 1
 
     self.screen = screen:new {
+        popupTint = uibase:new {
+            size = UDim2.new(1,0,1,0),
+            backgroundcolor = Color.new(0,0,0,0.8),
+            zindex = 2,
+            visible = function ()
+                return popupOpen
+            end
+        },
         main = uibase:new {
             size = UDim2.new(1,0,1,0),
             backgroundcolor = Color.new(0,0,0,0),
@@ -143,13 +266,13 @@ function ui:init()
                     backgroundcolor = Color.new(0,0,0,0)
                 },
         
-                play = Button("green", "Play Levels", UDim2.new(0,200,0,300), function (btn)
-                    self:populateLevels()
-                    tween:new(btn.parent, TweenInfo.new(1, EasingStyle.CubicOut), {position = UDim2.new(-1,0,0,0)}):play()
-                    tween:new(self.screen:get("levels"), TweenInfo.new(1, EasingStyle.CubicOut), {position = UDim2.new(0,0,0,0)}):play()
+                play = Button("green", "Play Levels", UDim2.new(0,200,0,300), function ()
+                    
                 end),
-                create = Button("blue", "Create Levels", UDim2.new(0,200,0,410), function ()
-                    currentScene = "editor"
+                create = Button("blue", "Custom Levels", UDim2.new(0,200,0,410), function ()
+                    self:populateLevels()
+                    tween:new(self.screen:get("main"), TweenInfo.new(1, EasingStyle.CubicOut), {position = UDim2.new(-1,0,0,0)}):play()
+                    tween:new(self.screen:get("levels"), TweenInfo.new(1, EasingStyle.CubicOut), {position = UDim2.new(0,0,0,0)}):play()
                 end),
                 quit = Button("red", "Exit", UDim2.new(0,200,0,520), function ()
                     love.event.quit()
@@ -161,13 +284,29 @@ function ui:init()
             backgroundcolor = Color.new(0,0,0,0),
             position = UDim2.new(1,0,0,0),
             children = {
-                back = Button("red", "Back", UDim2.new(0,105,0,40), function ()
+                back = Button("red", "Back", UDim2.new(0,85,0,40), function ()
                     tween:new(self.screen:get("main"), TweenInfo.new(1, EasingStyle.CubicOut), {position = UDim2.new(0,0,0,0)}):play()
                     tween:new(self.screen:get("levels"), TweenInfo.new(1, EasingStyle.CubicOut), {position = UDim2.new(1,0,0,0)}):play()
-                end, UDim2.new(0,200,0,60)),
+                end, UDim2.new(0,150,0,60)),
+                create = Button("green", "New Level", UDim2.new(0,245,0,40), function ()
+                    self:createPopup({
+                        title = "Create Level",
+                        buttonText = "Confirm",
+                        inputs = {
+                            name = {type = INPUT_FIELD.TextField, label = "Level Name"},
+                            description = {type = INPUT_FIELD.TextField, label = "Description"},
+                            creator = {type = INPUT_FIELD.TextField, label = "Level Creator (that's you!)"},
+                        },
+                        callback = function (inputs)
+                            inputs.platforms = {}
+                            Level:export(inputs)
+                        end
+                    })
+                end, UDim2.new(0,150,0,60), 29),
                 levelContainer = uibase:new {
                     size = UDim2.new(1,-120,0.4,0),
-                    position = UDim2.new(0,60,0,80),
+                    anchorpoint = Vector2.new(0,1),
+                    position = UDim2.new(0,60,1,-20),
                     backgroundcolor = Color.new(0.1,0.1,0.1,0.98),
                     cornerradius = UDim.new(0,16),
                     bordercolor = Color.new(1,1,1,0.5),
@@ -191,15 +330,18 @@ function ui:init()
 
                 levelLeft = textlabel:new {
                     size = UDim2.new(0,40,0.4,0),
-                    position = UDim2.new(0,10,0,40),
+                    anchorpoint = Vector2.new(0,1),
+                    position = UDim2.new(0,10,1,-20),
                     backgroundcolor = Color.new(0,0,0,0),
                     textcolor = Color.new(1,1,1,1),
                     text = "<",
                     textsize = 29, -- i dont know
                     mousebutton1down = function (btn)
+                        if popupOpen then return end
                         btn.textsize = 20
                     end,
                     mousebutton1up = function (btn)
+                        if popupOpen then return end
                         btn.textsize = 30
                         self.currentLevel = self.currentLevel - 1
                         tween:new(self.screen:get("levels"):get("levelContainer"):get("scroller"), TweenInfo.new(0.3, EasingStyle.CubicOut), {position = UDim2.new(-self.currentLevel + 1, 0, 0, 0)}):play()
@@ -208,20 +350,31 @@ function ui:init()
 
                 levelRight = textlabel:new {
                     size = UDim2.new(0,40,0.4,0),
-                    position = UDim2.new(1,-50,0,40),
+                    anchorpoint = Vector2.new(1,1),
+                    position = UDim2.new(1,-10,1,-20),
                     backgroundcolor = Color.new(0,0,0,0),
                     textcolor = Color.new(1,1,1,1),
                     text = ">",
                     textsize = 29,
                     mousebutton1down = function (btn)
+                        if popupOpen then return end
                         btn.textsize = 20
                     end,
                     mousebutton1up = function (btn)
+                        if popupOpen then return end
                         btn.textsize = 30
                         self.currentLevel = self.currentLevel + 1
                         tween:new(self.screen:get("levels"):get("levelContainer"):get("scroller"), TweenInfo.new(0.3, EasingStyle.CubicOut), {position = UDim2.new(-self.currentLevel + 1, 0, 0, 0)}):play()
                     end
                 }
+            }
+        },
+        popup = uibase:new {
+            size = UDim2.new(1,0,1,0),
+            backgroundcolor = Color.new(0,0,0,0),
+            zindex = 100,
+            children = {
+
             }
         }
     }

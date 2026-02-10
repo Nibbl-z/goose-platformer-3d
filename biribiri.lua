@@ -154,6 +154,10 @@ local function TableToString(t)
         index = index + 1
     end
 
+    if index == 1 then
+        str = "{}"
+    end
+
     return str
 end
 
