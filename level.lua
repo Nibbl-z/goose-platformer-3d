@@ -64,4 +64,57 @@ function level:loadGame(data)
     currentScene = "game"
 end
 
+function level:loadEditor(data)
+    table.clear(platforms)
+
+    for _, data in ipairs(data.platforms) do
+        table.insert(platforms, Platform:new(data))
+    end
+
+    currentScene = "editor"
+end
+
+function level:renameLevel(oldName, newName)
+    if string.len(newName) <= 0 then
+        return "Level name needs to be at least 1 character!"
+    end
+
+    local newNamePath = newName..".goose3d"
+    local info = love.filesystem.getInfo(newNamePath)
+    print(info)
+    if info ~= nil then
+        return "Another level already has the new name!"
+    end
+
+    local oldFile = love.filesystem.newFile(oldName)
+
+    local ok, err = oldFile:open("r")
+    if not ok then
+        return "Failed to load level data: "..err
+    end
+
+    local data = loadstring("return "..oldFile:read())()
+    data.name = newName
+
+    local stringedData = table.tostring(data)
+
+    local newFile = love.filesystem.newFile(newNamePath)
+    local ok, err = newFile:open("w")
+    if not ok then
+        return "Failed to update level name: "..err
+    end
+
+    local ok, err = newFile:write(stringedData)
+    if not ok then
+        return "Failed to update level name: "..err
+    end
+
+    oldFile:close()
+    love.filesystem.remove(oldName)
+end
+
+function level:deleteLevel(path)
+    love.filesystem.remove(path)
+end
+
 return level

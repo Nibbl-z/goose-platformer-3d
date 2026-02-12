@@ -6,6 +6,11 @@ local levels = {}
 
 local popupOpen = false
 
+local INPUT_FIELD = {
+    TextField = 1,
+    Label = 2
+}
+
 function Button(color, text, position, callback, size, textSize, isPopup)
     return imagelabel:new {
         size = size or UDim2.new(0, 300, 0, 100),
@@ -45,7 +50,7 @@ function Button(color, text, position, callback, size, textSize, isPopup)
     }
 end
 
-function LevelCard(level)
+function ui:LevelCard(level, filename)
     return uibase:new {
         size = UDim2.new(1,0,1,0),
         backgroundcolor = Color.new(0,0,0,0),
@@ -83,26 +88,81 @@ function LevelCard(level)
                 textcolor = Color.new(0.8,0.8,0.8,1),
                 backgroundcolor = Color.new(0,0,0,0)
             },
-            Button("green", "Play", UDim2.new(0,100,1.2,-80), function ()
+            Button("green", "Play", UDim2.new(0,60,1.2,-70), function ()
                 Level:loadGame(level)
-            end, UDim2.new(0,200,0,70), 30),
+            end, UDim2.new(0,110,0,50), 25),
+            Button("blue", "Edit", UDim2.new(0,180,1.2,-70), function ()
+                Level:loadEditor(level)
+            end, UDim2.new(0,110,0,50), 25),
+            Button("orange", "Rename", UDim2.new(0,300,1.2,-70), function ()
+                self:createPopup({
+                    title = "Rename Level",
+                    buttonText = "Confirm",
+                    inputs = {
+                        name = {type = INPUT_FIELD.TextField, data = {label = "New Name"}, order = 1},
+                    },
+                    callback = function (inputs)
+                        local result = Level:renameLevel(filename, inputs.name)
+                        if result ~= nil then
+                            self:createPopup({
+                                title = "Error",
+                                inputs = {
+                                    label = {type = INPUT_FIELD.Label, data = {label = result, height = 100}, order = 1}
+                                },
+                                buttonText = "Ok",
+                            })
+                        else
+                            ui:populateLevels()
+                            
+                            for i, level in ipairs(levels) do
+                                if level.name == inputs.name then
+                                    self.currentLevel = i
+                                    tween:new(self.screen:get("levels"):get("levelContainer"):get("scroller"), TweenInfo.new(0.3, EasingStyle.CubicOut), {position = UDim2.new(-self.currentLevel + 1, 0, 0, 0)}):play()
+                                    break
+                                end
+                            end
+                        end
+                    end
+                })
+            end, UDim2.new(0,110,0,50), 25),
+            Button("red", "Delete", UDim2.new(0,420,1.2,-70), function ()
+                self:createPopup({
+                    title = "Delete Level",
+                    buttonText = "Cancel",
+                    danger = true,
+                    inputs = {
+                        label = {type = INPUT_FIELD.Label, data = {label = "Are you sure you want to delete "..level.name.."?", height = 100}, order = 1},
+                        label2 = {type = INPUT_FIELD.Label, data = {label = "This action cannot be undone.", height = 100}, order = 2}
+                    },
+                    dangerText = "Confirm",
+                    dangerCallback = function ()
+                        Level:deleteLevel(filename)
+                        self:populateLevels()
+                        if self.totalLevels ~= 0 then
+                            self.currentLevel = math.clamp(self.currentLevel, 1, self.totalLevels)
+                        end
+                        tween:new(self.screen:get("levels"):get("levelContainer"):get("scroller"), TweenInfo.new(0.3, EasingStyle.CubicOut), {position = UDim2.new(-self.currentLevel + 1, 0, 0, 0)}):play()
+                    end
+                })
+            end, UDim2.new(0,110,0,50), 25),
         }
     }
 end
 
-local INPUT_FIELD = {
-    TextField = 1
-}
+
 
 function Popup(data)
     local title = data.title
     local buttonText = data.buttonText
-    local callback = data.callback
-    local inputs = data.inputs
+    local callback = data.callback or function (_) end
+    local danger = data.danger or false
+    local dangerText = data.dangerText
+    local dangerCallback = data.dangerCallback or function (_) end
+    local inputs = data.inputs or {}
 
     popupOpen = true
 
-    local function TextField(labelText)
+    local function TextField(data)
         return uibase:new {
             size = UDim2.new(1,0,0,40),
             backgroundcolor = Color.new(0,0,0,0),
@@ -118,12 +178,23 @@ function Popup(data)
                 label = textlabel:new {
                     size = UDim2.new(0.25,0,1,0),
                     backgroundcolor = Color.new(0,0,0,0),
-                    text = labelText,
+                    text = data.label,
                     fontpath = "LTSuperior.ttf",
                     textcolor = Color.new(1,1,1,1),
                     textsize = 16,
                 }
             }
+        }
+    end
+
+    local function LabelField(data)
+        return textlabel:new {
+            size = UDim2.new(1,0,0,data.height),
+            backgroundcolor = Color.new(0,0,0,0),
+            text = data.label,
+            fontpath = "LTSuperior.ttf",
+            textcolor = Color.new(1,1,1,1),
+            textsize = 24,
         }
     end
 
@@ -157,7 +228,7 @@ function Popup(data)
                     -- creator = TextField("Level Creator (that's you!)")
                 }
             },
-            play = Button("green", buttonText, UDim2.new(0.5,0,1,-35), function (btn)
+            play = Button("green", buttonText, not danger and UDim2.new(0.5,0,1,-35) or UDim2.new(0.25,0,1,-35), function (btn)
                 popupOpen = false
                 table.clear(btn.parent.parent.children)
 
@@ -170,17 +241,35 @@ function Popup(data)
                 end
 
                 callback(inputValues)
-            end, UDim2.new(0.5,0,0,60), nil, true),
+            end, UDim2.new(0.5,danger and -20 or 0,0,60), nil, true),
+            
         }
     }
 
+    if danger then
+        Button("red", dangerText, UDim2.new(0.75,0,1,-35), function (btn)
+            popupOpen = false
+            table.clear(btn.parent.parent.children)
+
+            local inputValues = {}
+
+            for _, v in pairs(btn.parent:get("inputs").children) do
+                if v:get("input") ~= nil then
+                    inputValues[v.name] = v:get("input").text
+                end
+            end
+
+            dangerCallback(inputValues)
+        end, UDim2.new(0.5,-20,0,60), nil, true):setparent(popup)
+    end
 
     for k, input in pairs(inputs) do
         local lookup = {
-            [INPUT_FIELD.TextField] = TextField
+            [INPUT_FIELD.TextField] = TextField,
+            [INPUT_FIELD.Label] = LabelField
         }
 
-        local instance = lookup[input.type](input.label)
+        local instance = lookup[input.type](input.data)
         instance.name = k
         instance.layoutorder = input.order
         instance:setparent(popup:get("inputs"))
@@ -228,13 +317,10 @@ function ui:populateLevels()
             local level = Level:load(filename) 
             if type(level) == "table" then
                 table.insert(levels, level)
+                self:LevelCard(level, filename):setparent(scroller)
+                self.totalLevels = self.totalLevels + 1
             end
         end
-    end
-
-    for _, level in ipairs(levels) do
-        LevelCard(level):setparent(scroller)
-        self.totalLevels = self.totalLevels + 1
     end
 
     if self.totalLevels == 0 then
@@ -243,7 +329,7 @@ function ui:populateLevels()
             size = UDim2.new(1,0,1,0),
             children = {
                 label = textlabel:new {
-                    text = "No custom levels found! Create one by clicking the Create Level button, or by putting .goose3d files in %appdata%/goose-platformer-3d", -- todo: change text for web build i guess?
+                    text = "No custom levels found! Create one by clicking the New Level button, or by putting .goose3d files in %appdata%/goose-platformer-3d", -- todo: change text for web build i guess?
                     size = UDim2.new(0.8,0,0.8,0),
                     position = UDim2.new(0.5,0,0.5,0),
                     anchorpoint = Vector2.new(0.5,0.5),
@@ -258,7 +344,9 @@ function ui:populateLevels()
         message:setparent(scroller)
     end
 
-    self.currentLevel = math.clamp(self.currentLevel, 1, self.totalLevels) -- failsafe if levels are removed :P
+    if self.totalLevels ~= 0 then
+        self.currentLevel = math.clamp(self.currentLevel, 1, self.totalLevels) -- failsafe if levels are removed :P
+    end
 end
 
 function ui:createPopup(data)
@@ -319,16 +407,21 @@ function ui:init()
                         title = "Create Level",
                         buttonText = "Confirm",
                         inputs = {
-                            name = {type = INPUT_FIELD.TextField, label = "Level Name", order = 1},
-                            description = {type = INPUT_FIELD.TextField, label = "Description", order = 2},
-                            creator = {type = INPUT_FIELD.TextField, label = "Level Creator (that's you!)", order = 3},
+                            name = {type = INPUT_FIELD.TextField, data = {label = "Level Name"}, order = 1},
+                            description = {type = INPUT_FIELD.TextField, data = {label = "Description"}, order = 2},
+                            creator = {type = INPUT_FIELD.TextField, data = {label = "Level Creator (that's you!)"}, order = 3},
                         },
                         callback = function (inputs)
                             inputs.platforms = {}
                             Level:export(inputs)
                             ui:populateLevels()
-                            self.currentLevel = self.totalLevels
-                            tween:new(self.screen:get("levels"):get("levelContainer"):get("scroller"), TweenInfo.new(0.3, EasingStyle.CubicOut), {position = UDim2.new(-self.currentLevel + 1, 0, 0, 0)}):play()
+                            for i, level in ipairs(levels) do
+                                if level.name == inputs.name then
+                                    self.currentLevel = i
+                                    tween:new(self.screen:get("levels"):get("levelContainer"):get("scroller"), TweenInfo.new(0.3, EasingStyle.CubicOut), {position = UDim2.new(-self.currentLevel + 1, 0, 0, 0)}):play()
+                                    break
+                                end
+                            end
                         end
                     })
                 end, UDim2.new(0,150,0,60), 29),
