@@ -350,6 +350,10 @@ function uibase:isvisible()
         return self.visible 
     end
 
+    if self.visible == false then
+        return false
+    end
+
     while true do
         if parent.visible == false then
             return false

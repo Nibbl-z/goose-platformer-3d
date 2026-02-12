@@ -174,7 +174,6 @@ function Popup(data)
         }
     }
 
-    local i = 1
 
     for k, input in pairs(inputs) do
         local lookup = {
@@ -183,9 +182,8 @@ function Popup(data)
 
         local instance = lookup[input.type](input.label)
         instance.name = k
-        instance.layoutorder = i
+        instance.layoutorder = input.order
         instance:setparent(popup:get("inputs"))
-        i = i + 1
     end
 
     tween:new(popup, TweenInfo.new(0.4, EasingStyle.CubicOut), {position = UDim2.new(0.5,0,0.5,0)}):play()
@@ -216,6 +214,7 @@ function ui:enterAnim()
 end
 
 function ui:populateLevels()
+    self.totalLevels = 0
     local scroller = self.screen:get("levels"):get("levelContainer"):get("scroller")
 
     table.clear(scroller.children)
@@ -235,7 +234,31 @@ function ui:populateLevels()
 
     for _, level in ipairs(levels) do
         LevelCard(level):setparent(scroller)
+        self.totalLevels = self.totalLevels + 1
     end
+
+    if self.totalLevels == 0 then
+        local message = uibase:new {
+            backgroundcolor = Color.new(0,0,0,0),
+            size = UDim2.new(1,0,1,0),
+            children = {
+                label = textlabel:new {
+                    text = "No custom levels found! Create one by clicking the Create Level button, or by putting .goose3d files in %appdata%/goose-platformer-3d", -- todo: change text for web build i guess?
+                    size = UDim2.new(0.8,0,0.8,0),
+                    position = UDim2.new(0.5,0,0.5,0),
+                    anchorpoint = Vector2.new(0.5,0.5),
+                    backgroundcolor = Color.new(0,0,0,0),
+                    textcolor = Color.new(1,1,1,1),
+                    textsize = 30,
+                    fontpath = "LTSuperior.ttf"
+                }
+            }
+        }
+
+        message:setparent(scroller)
+    end
+
+    self.currentLevel = math.clamp(self.currentLevel, 1, self.totalLevels) -- failsafe if levels are removed :P
 end
 
 function ui:createPopup(data)
@@ -244,6 +267,7 @@ end
 
 function ui:init()
     self.currentLevel = 1
+    self.totalLevels = 0
 
     self.screen = screen:new {
         popupTint = uibase:new {
@@ -270,6 +294,8 @@ function ui:init()
                     
                 end),
                 create = Button("blue", "Custom Levels", UDim2.new(0,200,0,410), function ()
+                    self.currentLevel = 1
+                    self.screen:get("levels"):get("levelContainer"):get("scroller").position = UDim2.new(0,0,0,0)   
                     self:populateLevels()
                     tween:new(self.screen:get("main"), TweenInfo.new(1, EasingStyle.CubicOut), {position = UDim2.new(-1,0,0,0)}):play()
                     tween:new(self.screen:get("levels"), TweenInfo.new(1, EasingStyle.CubicOut), {position = UDim2.new(0,0,0,0)}):play()
@@ -293,13 +319,16 @@ function ui:init()
                         title = "Create Level",
                         buttonText = "Confirm",
                         inputs = {
-                            name = {type = INPUT_FIELD.TextField, label = "Level Name"},
-                            description = {type = INPUT_FIELD.TextField, label = "Description"},
-                            creator = {type = INPUT_FIELD.TextField, label = "Level Creator (that's you!)"},
+                            name = {type = INPUT_FIELD.TextField, label = "Level Name", order = 1},
+                            description = {type = INPUT_FIELD.TextField, label = "Description", order = 2},
+                            creator = {type = INPUT_FIELD.TextField, label = "Level Creator (that's you!)", order = 3},
                         },
                         callback = function (inputs)
                             inputs.platforms = {}
                             Level:export(inputs)
+                            ui:populateLevels()
+                            self.currentLevel = self.totalLevels
+                            tween:new(self.screen:get("levels"):get("levelContainer"):get("scroller"), TweenInfo.new(0.3, EasingStyle.CubicOut), {position = UDim2.new(-self.currentLevel + 1, 0, 0, 0)}):play()
                         end
                     })
                 end, UDim2.new(0,150,0,60), 29),
@@ -335,15 +364,19 @@ function ui:init()
                     backgroundcolor = Color.new(0,0,0,0),
                     textcolor = Color.new(1,1,1,1),
                     text = "<",
+                    visible = function ()
+                        return self.currentLevel > 1
+                    end,
                     textsize = 29, -- i dont know
                     mousebutton1down = function (btn)
                         if popupOpen then return end
                         btn.textsize = 20
                     end,
                     mousebutton1up = function (btn)
+                        if self.totalLevels == 0 then return end
                         if popupOpen then return end
                         btn.textsize = 30
-                        self.currentLevel = self.currentLevel - 1
+                        self.currentLevel = math.clamp(self.currentLevel - 1, 1, self.totalLevels)
                         tween:new(self.screen:get("levels"):get("levelContainer"):get("scroller"), TweenInfo.new(0.3, EasingStyle.CubicOut), {position = UDim2.new(-self.currentLevel + 1, 0, 0, 0)}):play()
                     end
                 },
@@ -356,14 +389,18 @@ function ui:init()
                     textcolor = Color.new(1,1,1,1),
                     text = ">",
                     textsize = 29,
+                    visible = function ()
+                        return self.currentLevel < self.totalLevels
+                    end,
                     mousebutton1down = function (btn)
                         if popupOpen then return end
                         btn.textsize = 20
                     end,
                     mousebutton1up = function (btn)
+                        if self.totalLevels == 0 then return end
                         if popupOpen then return end
                         btn.textsize = 30
-                        self.currentLevel = self.currentLevel + 1
+                        self.currentLevel = math.clamp(self.currentLevel + 1, 1, self.totalLevels)
                         tween:new(self.screen:get("levels"):get("levelContainer"):get("scroller"), TweenInfo.new(0.3, EasingStyle.CubicOut), {position = UDim2.new(-self.currentLevel + 1, 0, 0, 0)}):play()
                     end
                 }
