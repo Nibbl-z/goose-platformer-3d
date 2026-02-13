@@ -2,9 +2,28 @@ local level = {}
 local Platform = require("objects.platform")
 
 function level:export(data, filename)
+    if data.name == "" then
+        return "Level name needs to be at least 1 character!"
+    end
+
+    if data.description == "" then
+        return "Level description needs to be at least 1 character!"
+    end
+
+    if data.creator == "" then
+        return "Level creator needs to be at least 1 character!"
+    end
+
+    love.filesystem.setIdentity("goose-platformer-3d")
+
     if filename == nil then
         filename = data.name..".goose3d"
     end
+
+    if love.filesystem.getInfo(filename) ~= nil then
+        return "A level already exists with the file name "..filename.."!"
+    end
+
     local contents = {
         name = data.name,
         description = data.description,
@@ -16,8 +35,7 @@ function level:export(data, filename)
         table.insert(contents.platforms, table.clone(platform.data))
     end
 
-    love.filesystem.setIdentity("goose-platformer-3d")
-
+    
     local file = love.filesystem.newFile(filename)
     
     local ok, err = file:open("w")
@@ -35,8 +53,6 @@ function level:export(data, filename)
     if not ok then
        return "Level exported successfully, but file failed to close. It'll probably still work :P"
     end
-
-    return "Level exported successfully!"
 end
 
 function level:save(filename)

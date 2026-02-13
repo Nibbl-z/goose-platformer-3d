@@ -415,7 +415,18 @@ function ui:init()
                         },
                         callback = function (inputs)
                             inputs.platforms = {}
-                            Level:export(inputs)
+                            local result = Level:export(inputs)
+
+                            if result ~= nil then
+                                self:createPopup({
+                                    title = "Error",
+                                    inputs = {
+                                        label = {type = INPUT_FIELD.Label, data = {label = result, height = 100}, order = 1}
+                                    },
+                                    buttonText = "Ok",
+                                })
+                            end
+
                             ui:populateLevels()
                             for i, level in ipairs(levels) do
                                 if level.name == inputs.name then
