@@ -19,6 +19,7 @@ platforms = {}
 
 local SCENES = {}
 currentScene = "mainmenu"
+currentLevelPath = ""
 local lastScene = nil
 
 function love.load()
@@ -115,7 +116,8 @@ function love.load()
         ui.editor, 
         -- Init
         function ()
-            
+            ui.editor.exitConfirmation = false
+            Editor:reset()
         end,
         -- Update
         function (dt)

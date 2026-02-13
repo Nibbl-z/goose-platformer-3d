@@ -89,9 +89,11 @@ function ui:LevelCard(level, filename)
                 backgroundcolor = Color.new(0,0,0,0)
             },
             Button("green", "Play", UDim2.new(0,60,1.2,-70), function ()
+                currentLevelPath = filename
                 Level:loadGame(level)
             end, UDim2.new(0,110,0,50), 25),
             Button("blue", "Edit", UDim2.new(0,180,1.2,-70), function ()
+                currentLevelPath = filename
                 Level:loadEditor(level)
             end, UDim2.new(0,110,0,50), 25),
             Button("orange", "Rename", UDim2.new(0,300,1.2,-70), function ()

@@ -1,7 +1,10 @@
 local level = {}
 local Platform = require("objects.platform")
 
-function level:export(data)
+function level:export(data, filename)
+    if filename == nil then
+        filename = data.name..".goose3d"
+    end
     local contents = {
         name = data.name,
         description = data.description,
@@ -15,10 +18,10 @@ function level:export(data)
 
     love.filesystem.setIdentity("goose-platformer-3d")
 
-    local file = love.filesystem.newFile(data.name..".goose3d")
+    local file = love.filesystem.newFile(filename)
     
     local ok, err = file:open("w")
-    print(ok, err)
+
     if not ok then
         return "Failed to export level: "..err
     end
@@ -27,15 +30,40 @@ function level:export(data)
     if not ok then
         return "Failed to export level: "..err
     end
-    print(ok, err)
 
     local ok = file:close()
     if not ok then
        return "Level exported successfully, but file failed to close. It'll probably still work :P"
     end
-    print(ok)
 
     return "Level exported successfully!"
+end
+
+function level:save(filename)
+    local file = love.filesystem.newFile(filename)
+    
+    local ok, err = file:open("r")
+    if not ok then return "Failed to save level: "..err end
+
+    local contents = file:read()
+    local data = loadstring("return "..contents)()
+    table.clear(data.platforms)
+
+    for _, platform in ipairs(platforms) do
+        table.insert(data.platforms, table.clone(platform.data))
+    end
+
+    file:close()
+
+    local ok, err = file:open("w")
+    if not ok then return "Failed to save level: "..err end
+
+    local ok, err = file:write(table.tostring(data))
+    if not ok then return "Failed to save level: "..err end
+
+    file:close()
+
+    return "Level saved!"
 end
 
 function level:load(filename)

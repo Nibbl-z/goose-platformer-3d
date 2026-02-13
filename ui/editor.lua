@@ -1,5 +1,6 @@
 require "yan"
 local Editor = require "editor"
+local Level = require "level"
 
 local ui = {}
 
@@ -159,7 +160,28 @@ function PropertiesCheckbox(title, callbackOn, callbackOff, condition)
     }
 end
 
+function ui:addNotif(text)
+    local label = textlabel:new {
+        text = text,
+        size = UDim2.new(0.6,0,0,12),
+        textsize = 12,
+        backgroundcolor = Color.new(0,0,0,0),
+        textcolor = Color.new(1,1,1,1),
+        halign = "left"
+    }
+
+    label:setparent(self.screen:get("bottombar"))
+
+    biribiri:CreateAndStartTimer(3, function ()
+        tween:new(label, TweenInfo.new(0.5), {textcolor = Color.new(1,1,1,0)}):play()
+        biribiri:CreateAndStartTimer(0.5, function ()
+            table.remove(self.screen:get("bottombar").children, table.find(self.screen:get("bottombar").children, label))
+        end)
+    end)
+end
+
 function ui:init()
+    self.exitConfirmation = false
     self.screen = screen:new {
         topbar = uibase:new {
             size = UDim2.new(1, 0, 0, 48),
@@ -170,6 +192,29 @@ function ui:init()
             listpadding = 8,
             leftpadding = UDim.new(0,8),
             children = {
+                exit = imagelabel:new {
+                    size = UDim2.new(0,32,0,32),
+                    image = "img/exit.png",
+                    backgroundcolor = Color.fromRgb(40,40,40),
+                    mousebutton1up = function (v)
+                        if editorState.unsavedChanges then
+                            self.exitConfirmation = true
+                        else
+                            currentScene = "mainmenu"
+                        end
+                    end,
+                },
+                save = imagelabel:new {
+                    size = UDim2.new(0,32,0,32),
+                    image = "img/save.png",
+                    backgroundcolor = Color.fromRgb(40,40,40),
+                    mousebutton1up = function (v)
+                        local result = Level:save(currentLevelPath)
+                        if result == "Level saved!" then editorState.unsavedChanges = false end
+                        
+                        self:addNotif(result)
+                    end,
+                },
                 movetool = imagelabel:new {
                     size = UDim2.new(0,32,0,32),
                     image = "img/tool_move.png",
@@ -207,21 +252,7 @@ function ui:init()
                     mousebutton1up = function (v)
                         Editor:createPlatform()
                     end,
-                }
-            }
-        },
-
-        bottombar = uibase:new {
-            size = UDim2.new(1, 0, 0, 24),
-            position = UDim2.new(0,0,1,0),
-            anchorpoint = Vector2.new(0,1),
-            backgroundcolor = Color.new(0,0,0,0),
-            layout = "list",
-            listdirection = "horizontal",
-            listvalign = "center",
-            listpadding = 8,
-            leftpadding = UDim.new(0,8),
-            children = {
+                },
                 camSpeed = textlabel:new {
                     text = function ()
                         return "Camera speed: "..tostring(editorState.camSpeed)
@@ -232,6 +263,68 @@ function ui:init()
                     textsize = 12,
                     textcolor = Color.new(1,1,1,1)
                 }
+            }
+        },
+
+        exitConfirmation = uibase:new {
+            size = UDim2.new(0,200,0,100),
+            position = UDim2.new(0,0,0,54),
+            backgroundcolor = Color.fromRgb(30,30,30),
+            leftpadding = UDim.new(0,5),
+            rightpadding = UDim.new(0,5),
+            toppadding = UDim.new(0,5),
+            bottompadding = UDim.new(0,5),
+            visible = function ()
+                return self.exitConfirmation
+            end,
+            children = {
+                message = textlabel:new {
+                    textcolor = Color.new(1,1,1,1),
+                    backgroundcolor = Color.new(0,0,0,0),
+                    size = UDim2.new(1,0,0.6,0),
+                    text = "Are you sure you want to exit the editor? Unsaved changes will be lost!",
+                    halign = "left",
+                    valign = "top",
+                    textsize = 14,
+                },
+                exit = textlabel:new {
+                    textcolor = Color.new(1,0,0,1),
+                    backgroundcolor = Color.fromRgb(40,40,40),
+                    size = UDim2.new(0.5,-2,0.3,0),
+                    position = UDim2.new(0,0,1,0),
+                    anchorpoint = Vector2.new(0,1),
+                    text = "Exit",
+                    mousebutton1up = function ()
+                        currentScene = "mainmenu"
+                    end
+                },
+                cancel = textlabel:new {
+                    textcolor = Color.new(1,1,1,1),
+                    backgroundcolor = Color.fromRgb(40,40,40),
+                    size = UDim2.new(0.5,-2,0.3,0),
+                    position = UDim2.new(1,0,1,0),
+                    anchorpoint = Vector2.new(1,1),
+                    text = "Cancel",
+                    mousebutton1up = function ()
+                        self.exitConfirmation = false
+                    end
+                }
+            }
+        },
+
+        bottombar = uibase:new {
+            size = UDim2.new(1, 0, 0, 24),
+            position = UDim2.new(0,0,1,0),
+            anchorpoint = Vector2.new(0,1),
+            backgroundcolor = Color.new(0,0,0,0),
+            layout = "list",
+            listdirection = "vertical",
+            listvalign = "bottom",
+            listhalign = "left",
+            listpadding = 8,
+            leftpadding = UDim.new(0,8),
+            children = {
+                
             }
         },
 

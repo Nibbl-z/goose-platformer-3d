@@ -46,6 +46,16 @@ local hueShader = love.graphics.newShader("shaders/hue.glsl")
 
 local hm, sm, vm = 0, 0, 0
 
+function editor:reset()
+    table.clear(history)
+    table.clear(stateBeforeUndo)
+    currentHistory = 0
+    
+    hm, sm, vm = 0, 0, 0
+    camera.position = vec3.new(0,0,0)
+    camera.rotation = vec3.new(0,0,0)
+end
+
 function editor:init()
     saturationValueShader:send("hue", 0)
 
@@ -144,7 +154,8 @@ function camRay(dist,x,y)
 end
 
 function editor:updateHistory()
-    print("storing history")
+    editorState.unsavedChanges = true
+
     if currentHistory ~= 0 then
         for i = currentHistory, 1, -1 do
             table.remove(history, i)

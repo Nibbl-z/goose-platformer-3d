@@ -14,7 +14,8 @@ editorState = {
     camSpeed = 30,
     rightClicked = false,
     rightClickPos = UDim2.new(0,0,0,0),
-    selectedPlatforms = {}
+    selectedPlatforms = {},
+    unsavedChanges = false
 }
 
 -- source: https://github.com/EmmanuelOga/columns/blob/master/utils/color.lua (because. why do this myself. again.)
