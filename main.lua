@@ -230,10 +230,14 @@ function love.draw()
     love.graphics.setBackgroundColor(0.1,0.1,0.1,1)
 
     for k, scene in pairs(SCENES) do
-        if k == currentScene then
+        if k == currentScene and k ~= "editor" then -- yes, icky hard coding, but this is literally just one edge case i dont want to deal with rn
             scene:draw()
         end
     end
 
     yan:draw()
+
+    if currentScene == "editor" then
+        SCENES[currentScene]:draw()
+    end
 end

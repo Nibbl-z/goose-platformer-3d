@@ -1,6 +1,5 @@
 require "global"
 local Platform = require "objects.platform"
-local World = require "objects.world"
 
 local editor = {}
 
@@ -18,8 +17,6 @@ local MOVE_DIRECTIONS = {
 }
 
 local mouseX, mouseY = nil, nil
-local debugObjs = {}
-local Debug = require("objects.debug")
 local Keybind = require("objects.keybind")
 
 local chosenPlatform, selectedPlatform
@@ -444,10 +441,6 @@ function editor:draw()
     --     end
     --     love.graphics.print(tostring(i)..table.tostring(v), 100, 100 + i * 20)
     -- end
-
-    for _, d in ipairs(debugObjs) do
-        d:draw()
-    end
 
     saturationValueShader:send("hue", hm)
 
