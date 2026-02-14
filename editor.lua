@@ -43,6 +43,7 @@ local saturationValueShader = love.graphics.newShader("shaders/saturationvalue.g
 local hueShader = love.graphics.newShader("shaders/hue.glsl")
 
 local hm, sm, vm = 0, 0, 0
+local mouseInUi = false
 
 function editor:reset()
     table.clear(history)
@@ -326,6 +327,20 @@ function editor:update(dt, platforms)
     mouse2 = not love.mouse.isDown(2) and not mouse2reset
     mouse2reset = not love.mouse.isDown(2)
 
+    local mousex, mousey = love.mouse.getPosition()
+
+    local ui = require("ui.editor")
+    local tx, ty, tsx, tsy = ui.screen:get("topbar"):getdrawingcoordinates()
+    local px, py, psx, psy = ui.screen:get("properties"):getdrawingcoordinates()
+    mouseInUi = false
+    if biribiri.collision(mousex, mousey, 1, 1, tx, ty, tsx, tsy) then
+        mouseInUi = true
+    end
+
+    if biribiri.collision(mousex, mousey, 1, 1, px, py, psx, psy) then
+        mouseInUi = true
+    end
+
     self:updateMovement(dt)
 
     table.clear(editorState.selectedPlatforms)
@@ -382,7 +397,7 @@ function editor:update(dt, platforms)
 
     
     
-    if chosenPlatform ~= nil and chosenHandle == nil and not dragging then
+    if chosenPlatform ~= nil and chosenHandle == nil and not dragging and not mouseInUi then
         chosenPlatform.hovered = true
 
         if (mouse1 or (mouse2 and not cameraTurning)) and not dragging then
@@ -422,7 +437,7 @@ function editor:update(dt, platforms)
         
     end
 
-    local ui = require("ui.editor")
+    
     ui:updateProperties()
 
     if chosenHandle ~= nil then
