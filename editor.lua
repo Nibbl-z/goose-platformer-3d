@@ -56,8 +56,8 @@ end
 function editor:undo()
     if #history == 0 then return end
     if currentHistory == 0 then
+        table.clear(stateBeforeUndo)
         for _, platform in ipairs(platforms) do
-            table.clear(stateBeforeUndo)
             table.insert(stateBeforeUndo, platform.data)
         end
     end
