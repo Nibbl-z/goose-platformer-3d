@@ -254,6 +254,7 @@ function uibase:draw()
     end
 
     love.graphics.setColor(self.backgroundcolor:get())
+
     love.graphics.rectangle("fill", pX, pY, sX, sY, rX, rY)
     love.graphics.setColor(1,1,1,1)
 end

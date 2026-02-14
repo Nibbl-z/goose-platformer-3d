@@ -1,5 +1,6 @@
 require "global"
 local Platform = require "objects.platform"
+local Level = require "level"
 
 local editor = {}
 
@@ -130,6 +131,28 @@ function editor:init()
     table.insert(keybinds, Keybind:new("x", false, true, function ()
         self:copyPlatforms()
         self:deletePlatforms()
+    end))
+
+    -- Save
+    table.insert(keybinds, Keybind:new("s", false, true, function ()
+        local result = Level:save(currentLevelPath)
+        if result == "Level saved!" then editorState.unsavedChanges = false end
+        
+        require "ui.editor":addNotif(result) -- icky
+    end))
+
+    -- Move Tool
+    table.insert(keybinds, Keybind:new("1", false, false, function ()
+        editorState.tool = EDITOR_TOOLS.move
+        require "ui.editor".screen:get("topbar"):get("movetool").backgroundcolor = Color.fromRgb(10,10,10)
+        require "ui.editor".screen:get("topbar"):get("scaletool").backgroundcolor = Color.fromRgb(40,40,40)
+    end))
+
+    -- Scale Tool
+    table.insert(keybinds, Keybind:new("2", false, false, function ()
+        editorState.tool = EDITOR_TOOLS.scale
+        require "ui.editor".screen:get("topbar"):get("scaletool").backgroundcolor = Color.fromRgb(10,10,10)
+        require "ui.editor".screen:get("topbar"):get("movetool").backgroundcolor = Color.fromRgb(40,40,40)
     end))
 end
 
@@ -427,20 +450,10 @@ function editor:update(dt, platforms)
         self:setPlatformColors(hm, s, v, mouse1down)
     end
 
-    for _, keybind in ipairs(keybinds) do
-        keybind:update()
-    end
-
-    if love.keyboard.isDown("1") then
-        editorState.tool = EDITOR_TOOLS.move
-        ui.screen:get("topbar"):get("movetool").backgroundcolor = Color.fromRgb(10,10,10)
-        ui.screen:get("topbar"):get("scaletool").backgroundcolor = Color.fromRgb(40,40,40)
-    end
-
-    if love.keyboard.isDown("2") then
-        editorState.tool = EDITOR_TOOLS.scale
-        ui.screen:get("topbar"):get("scaletool").backgroundcolor = Color.fromRgb(10,10,10)
-        ui.screen:get("topbar"):get("movetool").backgroundcolor = Color.fromRgb(40,40,40)
+    if not editorState.usingTextInput then
+        for _, keybind in ipairs(keybinds) do
+            keybind:update()
+        end
     end
 end
 

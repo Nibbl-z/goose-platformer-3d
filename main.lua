@@ -132,7 +132,7 @@ function love.load()
             end
 
             Skybox:draw()
-            Editor:draw()
+            
         end,
         {Editor}
     )
@@ -230,14 +230,14 @@ function love.draw()
     love.graphics.setBackgroundColor(0.1,0.1,0.1,1)
 
     for k, scene in pairs(SCENES) do
-        if k == currentScene and k ~= "editor" then -- yes, icky hard coding, but this is literally just one edge case i dont want to deal with rn
+        if k == currentScene then 
             scene:draw()
         end
     end
-
+    
     yan:draw()
-
-    if currentScene == "editor" then
-        SCENES[currentScene]:draw()
+    
+    if currentScene == "editor" then -- yes, icky hard coding, but this is literally just one edge case i dont want to deal with rn
+        Editor:draw()
     end
 end

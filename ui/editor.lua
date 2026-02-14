@@ -183,12 +183,13 @@ function ui:addNotif(text)
         textsize = 12,
         backgroundcolor = Color.new(0,0,0,0),
         textcolor = Color.new(1,1,1,1),
-        halign = "left"
+        halign = "left",
     }
 
     label:setparent(self.screen:get("bottombar"))
 
     biribiri:CreateAndStartTimer(3, function ()
+        print(label.backgroundcolor:get())
         tween:new(label, TweenInfo.new(0.5), {textcolor = Color.new(1,1,1,0)}):play()
         biribiri:CreateAndStartTimer(0.5, function ()
             table.remove(self.screen:get("bottombar").children, table.find(self.screen:get("bottombar").children, label))
@@ -592,6 +593,13 @@ function ui:updateProperties()
     if color:get("x")._typing == false then color:get("x").text = tostring(r or "") end
     if color:get("y")._typing == false then color:get("y").text = tostring(g or "") end
     if color:get("z")._typing == false then color:get("z").text = tostring(b or "") end
+
+    for _, v in ipairs({pos, size, color}) do
+        for _, v2 in ipairs({"x", "y", "z"}) do
+            editorState.usingTextInput = v:get(v2)._typing
+            if v:get(v2)._typing then return end
+        end
+    end
 end
 
 function cycleMaterial(direction)

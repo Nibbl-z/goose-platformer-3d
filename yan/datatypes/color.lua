@@ -31,13 +31,13 @@ end
 ---@param a? number Alpha value from 0-255
 ---@return Color
 function Color.fromRgb(r, g, b, a)
-    a = a or 255
+    local a2 = a or 255
 
     local self = setmetatable({
         r = math.min(r / 255, 1),
         g = math.min(g / 255, 1),
         b = math.min(b / 255, 1),
-        a = math.min(a / 255, 1)
+        a = math.min(a2 / 255, 1)
     }, Color)
     
     return self

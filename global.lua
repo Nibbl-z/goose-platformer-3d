@@ -14,6 +14,7 @@ editorState = {
     camSpeed = 30,
     rightClicked = false,
     rightClickPos = UDim2.new(0,0,0,0),
+    usingTextInput = false,
     selectedPlatforms = {},
     unsavedChanges = false
 }
