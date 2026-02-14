@@ -199,6 +199,19 @@ end
 
 function ui:init()
     self.exitConfirmation = false
+    self.tooltipActive = false
+    self.tooltipTitle = ""
+    self.tooltipDescription = ""
+    self.tooltipKeybind = ""
+
+    local function exit(btn)
+        btn.backgroundcolor = Color.fromRgb(40,40,40)
+        self.tooltipTitle = ""
+        self.tooltipDescription = ""
+        self.tooltipKeybind = ""
+        self.tooltipActive = false
+    end
+
     self.screen = screen:new {
         topbar = uibase:new {
             size = UDim2.new(1, 0, 0, 36),
@@ -220,8 +233,14 @@ function ui:init()
                             currentScene = "mainmenu"
                         end
                     end,
-                    mouseenter = function (btn) btn.backgroundcolor = Color.fromRgb(60,60,60) end,
-                    mouseexit = function (btn) btn.backgroundcolor = Color.fromRgb(40,40,40) end
+                    mouseenter = function (btn) 
+                        btn.backgroundcolor = Color.fromRgb(60,60,60) 
+                        self.tooltipTitle = "Exit"
+                        self.tooltipDescription = "Returns to the main menu"
+                        self.tooltipKeybind = ""
+                        self.tooltipActive = true
+                    end,
+                    mouseexit = function (btn) exit(btn) end
                 },
                 save = imagelabel:new {
                     size = UDim2.new(0,32,0,32),
@@ -233,8 +252,14 @@ function ui:init()
                         
                         self:addNotif(result)
                     end,
-                    mouseenter = function (btn) btn.backgroundcolor = Color.fromRgb(60,60,60) end,
-                    mouseexit = function (btn) btn.backgroundcolor = Color.fromRgb(40,40,40) end
+                    mouseenter = function (btn) 
+                        btn.backgroundcolor = Color.fromRgb(60,60,60) 
+                        self.tooltipTitle = "Save"
+                        self.tooltipDescription = "Saves your changes to the level file"
+                        self.tooltipKeybind = "Ctrl+S"
+                        self.tooltipActive = true
+                    end,
+                    mouseexit = function (btn) exit(btn) end
                 },
                 movetool = imagelabel:new {
                     size = UDim2.new(0,32,0,32),
@@ -245,8 +270,17 @@ function ui:init()
                         v.backgroundcolor = Color.fromRgb(10,10,10)
                         v.parent:get("scaletool").backgroundcolor = Color.fromRgb(40,40,40)
                     end,
-                    mouseenter = function (btn) btn.backgroundcolor = editorState.tool == EDITOR_TOOLS.move and Color.fromRgb(10,10,10) or Color.fromRgb(60,60,60) end,
-                    mouseexit = function (btn) btn.backgroundcolor = editorState.tool == EDITOR_TOOLS.move and Color.fromRgb(10,10,10) or Color.fromRgb(40,40,40) end
+                    mouseenter = function (btn) 
+                        btn.backgroundcolor = Color.fromRgb(60,60,60) 
+                        self.tooltipTitle = "Move tool"
+                        self.tooltipDescription = "Allows you to move platforms"
+                        self.tooltipKeybind = "1"
+                        self.tooltipActive = true
+                    end,
+                    mouseexit = function (btn)
+                        exit(btn)
+                        if editorState.tool == EDITOR_TOOLS.move then btn.backgroundcolor = Color.fromRgb(10,10,10) end
+                    end
                 },
                 scaletool = imagelabel:new {
                     size = UDim2.new(0,32,0,32),
@@ -257,8 +291,17 @@ function ui:init()
                         v.backgroundcolor = Color.fromRgb(10,10,10)
                         v.parent:get("movetool").backgroundcolor = Color.fromRgb(40,40,40)
                     end,
-                    mouseenter = function (btn) btn.backgroundcolor = editorState.tool == EDITOR_TOOLS.scale and Color.fromRgb(10,10,10) or Color.fromRgb(60,60,60) end,
-                    mouseexit = function (btn) btn.backgroundcolor = editorState.tool == EDITOR_TOOLS.scale and Color.fromRgb(10,10,10) or Color.fromRgb(40,40,40) end
+                    mouseenter = function (btn) 
+                        btn.backgroundcolor = Color.fromRgb(60,60,60) 
+                        self.tooltipTitle = "Scale tool"
+                        self.tooltipDescription = "Allows you to scale platforms"
+                        self.tooltipKeybind = "2"
+                        self.tooltipActive = true
+                    end,
+                    mouseexit = function (btn)
+                        exit(btn)
+                        if editorState.tool == EDITOR_TOOLS.scale then btn.backgroundcolor = Color.fromRgb(10,10,10) end
+                    end
                 },
                 addtool = imagelabel:new {
                     size = UDim2.new(0,32,0,32),
@@ -267,8 +310,14 @@ function ui:init()
                     mousebutton1up = function (v)
                         Editor:createPlatform()
                     end,
-                    mouseenter = function (btn) btn.backgroundcolor = Color.fromRgb(60,60,60) end,
-                    mouseexit = function (btn) btn.backgroundcolor = Color.fromRgb(40,40,40) end
+                    mouseenter = function (btn) 
+                        btn.backgroundcolor = Color.fromRgb(60,60,60) 
+                        self.tooltipTitle = "Create platform"
+                        self.tooltipDescription = "Creates a platform where you are looking"
+                        self.tooltipKeybind = ""
+                        self.tooltipActive = true
+                    end,
+                    mouseexit = function (btn) exit(btn) end
                 },
                 undo = imagelabel:new {
                     size = UDim2.new(0,32,0,32),
@@ -277,8 +326,14 @@ function ui:init()
                     mousebutton1up = function (v)
                         Editor:undo()
                     end,
-                    mouseenter = function (btn) btn.backgroundcolor = Color.fromRgb(60,60,60) end,
-                    mouseexit = function (btn) btn.backgroundcolor = Color.fromRgb(40,40,40) end
+                    mouseenter = function (btn) 
+                        btn.backgroundcolor = Color.fromRgb(60,60,60) 
+                        self.tooltipTitle = "Undo"
+                        self.tooltipDescription = "Undoes one change"
+                        self.tooltipKeybind = "Ctrl+Z"
+                        self.tooltipActive = true
+                    end,
+                    mouseexit = function (btn) exit(btn) end
                 },
                 redo = imagelabel:new {
                     size = UDim2.new(0,32,0,32),
@@ -287,8 +342,14 @@ function ui:init()
                     mousebutton1up = function (v)
                         Editor:redo()
                     end,
-                    mouseenter = function (btn) btn.backgroundcolor = Color.fromRgb(60,60,60) end,
-                    mouseexit = function (btn) btn.backgroundcolor = Color.fromRgb(40,40,40) end
+                    mouseenter = function (btn) 
+                        btn.backgroundcolor = Color.fromRgb(60,60,60) 
+                        self.tooltipTitle = "Redo"
+                        self.tooltipDescription = "Redoes one change"
+                        self.tooltipKeybind = "Ctrl+Shift+Z"
+                        self.tooltipActive = true
+                    end,
+                    mouseexit = function (btn) exit(btn) end
                 },
                 camSpeed = textlabel:new {
                     text = function ()
@@ -300,6 +361,57 @@ function ui:init()
                     textsize = 12,
                     textcolor = Color.new(1,1,1,1)
                 }
+            }
+        },
+
+        topbarTooltip = uibase:new {
+            size = UDim2.new(0,150,0,60),
+            position = function ()
+                return UDim2.new(0, love.mouse.getX() + 10, 0, love.mouse.getY() + 10)
+            end,
+            backgroundcolor = Color.fromRgb(30,30,30),
+            leftpadding = UDim.new(0,5),
+            rightpadding = UDim.new(0,5),
+            toppadding = UDim.new(0,5),
+            bottompadding = UDim.new(0,5),
+            visible = function ()
+                return self.tooltipActive
+            end,
+            children = {
+                title = textlabel:new {
+                    textcolor = Color.new(1,1,1,1),
+                    backgroundcolor = Color.new(0,0,0,0),
+                    size = UDim2.new(1,0,0.3,0),
+                    text = function ()
+                        return self.tooltipTitle
+                    end,
+                    halign = "left",
+                    valign = "top",
+                    textsize = 16,
+                },
+                keybind = textlabel:new {
+                    textcolor = Color.new(0.6,0.6,0.6,1),
+                    backgroundcolor = Color.new(0,0,0,0),
+                    size = UDim2.new(1,0,0.3,0),
+                    text = function ()
+                        return self.tooltipKeybind
+                    end,
+                    halign = "right",
+                    valign = "top",
+                    textsize = 13,
+                },
+                desc = textlabel:new {
+                    textcolor = Color.new(1,1,1,1),
+                    backgroundcolor = Color.new(0,0,0,0),
+                    size = UDim2.new(1,0,0.6,0),
+                    position = UDim2.new(0,0,0.3,10),
+                    text = function ()
+                        return self.tooltipDescription
+                    end,
+                    halign = "left",
+                    valign = "top",
+                    textsize = 12,
+                },
             }
         },
 
