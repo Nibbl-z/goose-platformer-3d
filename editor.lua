@@ -34,7 +34,7 @@ local currentHistory = 0
 local keybinds = {}
 
 local mouse1, mouse2, mouse1down = false, false, false
-local mouse1reset, mouse2reset, mouse1downreset = false, false, false
+local mouse1reset, mouse2reset, mouse1downreset = false, true, true
 
 local clipboard = {}
 
@@ -373,11 +373,15 @@ function editor:update(dt, platforms)
 
             hm, sm, vm = self:getPlatformColors()
         end
+    end
 
-        if mouse2 and not cameraTurning then
-            editorState.rightClicked = true
-            editorState.rightClickPos = UDim2.new(0, love.mouse.getX(), 0, love.mouse.getY())
-        end
+    if mouse2 and not cameraTurning then
+        editorState.rightClicked = true
+        editorState.rightClickPos = UDim2.new(0, love.mouse.getX(), 0, love.mouse.getY())
+    end
+
+    if mouse1 then
+        editorState.rightClicked = false
     end
 
     for _, platform in ipairs(platforms) do

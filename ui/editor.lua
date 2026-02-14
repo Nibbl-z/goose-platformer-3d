@@ -4,25 +4,41 @@ local Level = require "level"
 
 local ui = {}
 
-function RightClickButton(text, image, callback)
-    return textlabel:new {
+function RightClickButton(text, image, shortcut, callback)
+    return uibase:new {
         size = UDim2.new(1,0,0,25),
-        textsize = 15,
-        halign = "right",
-        text = text,
-        textcolor = Color.new(1,1,1,1),
-        backgroundcolor = Color.new(0,0,0,0),
+        backgroundcolor = Color.fromRgb(30,30,30),
         children = {
             icon = imagelabel:new {
                 image = image,
                 size = UDim2.new(0,25,0,25),
                 backgroundcolor = Color.new(0,0,0,0)
+            },
+            label = textlabel:new {
+                size = UDim2.new(1,-30,1,0),
+                position = UDim2.new(0,30,0,0),
+                textsize = 15,
+                halign = "left",
+                text = text,
+                textcolor = Color.new(1,1,1,1),
+                backgroundcolor = Color.new(0,0,0,0),
+            },
+            shortcut = textlabel:new {
+                size = UDim2.new(1,-30,1,0),
+                position = UDim2.new(0,30,0,0),
+                textsize = 10,
+                halign = "right",
+                text = shortcut,
+                textcolor = Color.new(0.7,0.7,0.7,1),
+                backgroundcolor = Color.new(0,0,0,0),
             }
         },
         mousebutton1up = function ()
             callback()
             editorState.rightClicked = false
-        end
+        end,
+        mouseenter = function(btn) btn.backgroundcolor = Color.fromRgb(50,50,50) end,
+        mouseexit = function(btn) btn.backgroundcolor = Color.fromRgb(30,30,30) end
     }
 end
 
@@ -329,9 +345,9 @@ function ui:init()
         },
 
         rightclick = uibase:new {
-            size = UDim2.new(0,150,0,300),
-            backgroundcolor = Color.fromRgb(30,30,30),
-            
+            size = UDim2.new(0,150,0,150),
+            backgroundcolor = Color.fromRgb(0,0,0,0),
+            zindex = 50,
             visible = function ()
                 return editorState.rightClicked
             end,
@@ -346,20 +362,20 @@ function ui:init()
             listpadding = 4,
             listdirection = "vertical",
             children = {
-                delete = RightClickButton("Delete", "img/delete.png", function ()
+                delete = RightClickButton("Delete", "img/delete.png", "Delete", function ()
                     Editor:deletePlatforms()
                 end),
-                duplicate = RightClickButton("Duplicate", "img/copy.png", function ()
+                duplicate = RightClickButton("Duplicate", "img/copy.png", "Ctrl+D", function ()
                     Editor:duplicatePlatforms()
                 end),
-                copy = RightClickButton("Copy", "img/copy.png", function ()
+                copy = RightClickButton("Copy", "img/copy.png", "Ctrl+C", function ()
                     Editor:copyPlatforms()
                 end),
-                cut = RightClickButton("Cut", "img/cut.png", function ()
+                cut = RightClickButton("Cut", "img/cut.png", "Ctrl+X", function ()
                     Editor:copyPlatforms()
                     Editor:deletePlatforms()
                 end),
-                paste = RightClickButton("Paste", "img/paste.png", function ()
+                paste = RightClickButton("Paste", "img/paste.png", "Ctrl+V", function ()
                     Editor:pastePlatforms()
                 end),
             }
