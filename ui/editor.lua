@@ -367,7 +367,7 @@ function ui:init()
 
         rightclick = uibase:new {
             size = UDim2.new(0,150,0,150),
-            backgroundcolor = Color.fromRgb(0,0,0,0),
+            backgroundcolor = Color.fromRgb(20,20,20),
             zindex = 50,
             visible = function ()
                 return editorState.rightClicked

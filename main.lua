@@ -88,6 +88,7 @@ function love.load()
         ui.game, 
         -- Init
         function ()
+            love.keyboard.setKeyRepeat(false)
             Player.position = vec3.new(0,0,0)
             Player.velocity = vec3.new(0,0,0)
             World:updateMesh()
@@ -113,9 +114,10 @@ function love.load()
     )
 
     SCENES["editor"] = Scene:new(
-        ui.editor, 
+        ui.editor,
         -- Init
         function ()
+            love.keyboard.setKeyRepeat(true)
             ui.editor.exitConfirmation = false
             Editor:reset()
         end,
