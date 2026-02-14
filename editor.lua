@@ -53,49 +53,57 @@ function editor:reset()
     camera.rotation = vec3.new(0,0,0)
 end
 
+function editor:undo()
+    if #history == 0 then return end
+    if currentHistory == 0 then
+        for _, platform in ipairs(platforms) do
+            table.clear(stateBeforeUndo)
+            table.insert(stateBeforeUndo, platform.data)
+        end
+    end
+    currentHistory = math.clamp(currentHistory + 1, 1, #history)
+
+    table.clear(platforms)
+
+    for _, data in ipairs(history[currentHistory]) do
+        local platform = Platform:new(data)
+        table.insert(platforms, platform)
+    end
+end
+
+function editor:redo()
+    if #history == 0 then return end
+    if currentHistory == 0 then return end
+    table.clear(platforms)
+    
+    if currentHistory == 1 then
+        currentHistory = 0
+        for _, data in ipairs(stateBeforeUndo) do
+            local platform = Platform:new(data)
+            table.insert(platforms, platform)
+        end
+        return
+    end
+
+    currentHistory = math.clamp(currentHistory - 1, 1, #history)
+
+    for _, data in ipairs(history[currentHistory]) do
+        local platform = Platform:new(data)
+        table.insert(platforms, platform)
+    end
+end
+
 function editor:init()
     saturationValueShader:send("hue", 0)
 
     -- Ctrl+Z (undo)
     table.insert(keybinds, Keybind:new("z", false, true, function ()
-        if #history == 0 then return end
-        if currentHistory == 0 then
-            for _, platform in ipairs(platforms) do
-                table.clear(stateBeforeUndo)
-                table.insert(stateBeforeUndo, platform.data)
-            end
-        end
-        currentHistory = math.clamp(currentHistory + 1, 1, #history)
-
-        table.clear(platforms)
-
-        for _, data in ipairs(history[currentHistory]) do
-            local platform = Platform:new(data)
-            table.insert(platforms, platform)
-        end
+        self:undo()
     end))
 
     -- Ctrl+Shift+Z (redo)
     table.insert(keybinds, Keybind:new("z", true, true, function ()
-        if #history == 0 then return end
-        if currentHistory == 0 then return end
-        table.clear(platforms)
-
-        if currentHistory == 1 then
-            currentHistory = 0
-            for _, data in ipairs(stateBeforeUndo) do
-                local platform = Platform:new(data)
-                table.insert(platforms, platform)
-            end
-            return
-        end
-
-        currentHistory = math.clamp(currentHistory - 1, 1, #history)
-
-        for _, data in ipairs(history[currentHistory]) do
-            local platform = Platform:new(data)
-            table.insert(platforms, platform)
-        end
+        self:redo()
     end))
 
     -- Delete
@@ -425,10 +433,14 @@ function editor:update(dt, platforms)
 
     if love.keyboard.isDown("1") then
         editorState.tool = EDITOR_TOOLS.move
+        ui.screen:get("topbar"):get("movetool").backgroundcolor = Color.fromRgb(10,10,10)
+        ui.screen:get("topbar"):get("scaletool").backgroundcolor = Color.fromRgb(40,40,40)
     end
 
     if love.keyboard.isDown("2") then
         editorState.tool = EDITOR_TOOLS.scale
+        ui.screen:get("topbar"):get("scaletool").backgroundcolor = Color.fromRgb(10,10,10)
+        ui.screen:get("topbar"):get("movetool").backgroundcolor = Color.fromRgb(40,40,40)
     end
 end
 

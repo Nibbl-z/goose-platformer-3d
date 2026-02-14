@@ -200,13 +200,13 @@ function ui:init()
     self.exitConfirmation = false
     self.screen = screen:new {
         topbar = uibase:new {
-            size = UDim2.new(1, 0, 0, 48),
+            size = UDim2.new(1, 0, 0, 36),
             backgroundcolor = Color.fromRgb(30,30,30),
             layout = "list",
             listdirection = "horizontal",
             listvalign = "center",
-            listpadding = 8,
-            leftpadding = UDim.new(0,8),
+            listpadding = 4,
+            leftpadding = UDim.new(0,4),
             children = {
                 exit = imagelabel:new {
                     size = UDim2.new(0,32,0,32),
@@ -219,6 +219,8 @@ function ui:init()
                             currentScene = "mainmenu"
                         end
                     end,
+                    mouseenter = function (btn) btn.backgroundcolor = Color.fromRgb(60,60,60) end,
+                    mouseexit = function (btn) btn.backgroundcolor = Color.fromRgb(40,40,40) end
                 },
                 save = imagelabel:new {
                     size = UDim2.new(0,32,0,32),
@@ -230,36 +232,32 @@ function ui:init()
                         
                         self:addNotif(result)
                     end,
+                    mouseenter = function (btn) btn.backgroundcolor = Color.fromRgb(60,60,60) end,
+                    mouseexit = function (btn) btn.backgroundcolor = Color.fromRgb(40,40,40) end
                 },
                 movetool = imagelabel:new {
                     size = UDim2.new(0,32,0,32),
                     image = "img/tool_move.png",
-                    backgroundcolor = function (v)
-                        if editorState.tool == EDITOR_TOOLS.move then
-                            return Color.fromRgb(10,10,10)
-                        else
-                            return Color.fromRgb(40,40,40)
-                        end
-                        
-                    end,
+                    backgroundcolor = Color.fromRgb(10,10,10),
                     mousebutton1up = function (v)
                         editorState.tool = EDITOR_TOOLS.move
+                        v.backgroundcolor = Color.fromRgb(10,10,10)
+                        v.parent:get("scaletool").backgroundcolor = Color.fromRgb(40,40,40)
                     end,
+                    mouseenter = function (btn) btn.backgroundcolor = editorState.tool == EDITOR_TOOLS.move and Color.fromRgb(10,10,10) or Color.fromRgb(60,60,60) end,
+                    mouseexit = function (btn) btn.backgroundcolor = editorState.tool == EDITOR_TOOLS.move and Color.fromRgb(10,10,10) or Color.fromRgb(40,40,40) end
                 },
                 scaletool = imagelabel:new {
                     size = UDim2.new(0,32,0,32),
                     image = "img/tool_scale.png",
-                    backgroundcolor = function (v)
-                        if editorState.tool == EDITOR_TOOLS.scale then
-                            return Color.fromRgb(10,10,10)
-                        else
-                            return Color.fromRgb(40,40,40)
-                        end
-                        
-                    end,
+                    backgroundcolor = Color.fromRgb(40,40,40),
                     mousebutton1up = function (v)
                         editorState.tool = EDITOR_TOOLS.scale
+                        v.backgroundcolor = Color.fromRgb(10,10,10)
+                        v.parent:get("movetool").backgroundcolor = Color.fromRgb(40,40,40)
                     end,
+                    mouseenter = function (btn) btn.backgroundcolor = editorState.tool == EDITOR_TOOLS.scale and Color.fromRgb(10,10,10) or Color.fromRgb(60,60,60) end,
+                    mouseexit = function (btn) btn.backgroundcolor = editorState.tool == EDITOR_TOOLS.scale and Color.fromRgb(10,10,10) or Color.fromRgb(40,40,40) end
                 },
                 addtool = imagelabel:new {
                     size = UDim2.new(0,32,0,32),
@@ -268,6 +266,28 @@ function ui:init()
                     mousebutton1up = function (v)
                         Editor:createPlatform()
                     end,
+                    mouseenter = function (btn) btn.backgroundcolor = Color.fromRgb(60,60,60) end,
+                    mouseexit = function (btn) btn.backgroundcolor = Color.fromRgb(40,40,40) end
+                },
+                undo = imagelabel:new {
+                    size = UDim2.new(0,32,0,32),
+                    image = "img/undo.png",
+                    backgroundcolor = Color.fromRgb(40,40,40),
+                    mousebutton1up = function (v)
+                        Editor:undo()
+                    end,
+                    mouseenter = function (btn) btn.backgroundcolor = Color.fromRgb(60,60,60) end,
+                    mouseexit = function (btn) btn.backgroundcolor = Color.fromRgb(40,40,40) end
+                },
+                redo = imagelabel:new {
+                    size = UDim2.new(0,32,0,32),
+                    image = "img/redo.png",
+                    backgroundcolor = Color.fromRgb(40,40,40),
+                    mousebutton1up = function (v)
+                        Editor:redo()
+                    end,
+                    mouseenter = function (btn) btn.backgroundcolor = Color.fromRgb(60,60,60) end,
+                    mouseexit = function (btn) btn.backgroundcolor = Color.fromRgb(40,40,40) end
                 },
                 camSpeed = textlabel:new {
                     text = function ()
