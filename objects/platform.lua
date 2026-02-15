@@ -153,6 +153,7 @@ local HANDLE_COLORS = {
 
 function platform:draw()
     if self.model == nil then return end
+    
     --love.graphics.setColor(1,0,0,1)
     
     self.shader:send("tintColor", self.data.type == PLATFORM_TYPE.default and {self.data.color:get()} or {1.0,1.0,1.0,1.0})

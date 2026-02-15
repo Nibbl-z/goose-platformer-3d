@@ -222,6 +222,7 @@ function player:new()
         grounded = false,
         jumpPressed = false,
         airtime = 0.0,
+        spawnpoint = vec3.new(0,0,0),
 
         currentAnimation = "idle",
         currentFrame = -1,
@@ -299,7 +300,7 @@ function player:solveCollision(platforms, dt)
 end
 
 function player:reset()
-    self.position = vec3.new(0,0,0)
+    self.position = self.spawnpoint
     self.grounded = false
     self.airtime = 0
 end
@@ -472,6 +473,22 @@ function player:update(dt, platforms)
             elseif data ~= nil then
                 self.currentFrameData = data
             end
+        end
+    end
+
+    for _, checkpoint in ipairs(checkpoints) do
+        local dist = (self.position - checkpoint.position):magnitude()
+        if dist <= 3 then
+            self.spawnpoint = checkpoint.position
+            checkpoint.speed = 5
+            checkpoint.active = true
+            for _, other in ipairs(checkpoints) do
+                if other ~= checkpoint then
+                    other.active = false
+                end
+            end
+
+            break
         end
     end
 

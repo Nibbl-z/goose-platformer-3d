@@ -10,7 +10,8 @@ function checkpoint:new(position)
         position = position,
         active = false,
         time = 0,
-        shader = love.graphics.newShader(g3d.shaderpath, "shaders/checkpoint.glsl")
+        shader = love.graphics.newShader(g3d.shaderpath, "shaders/checkpoint.glsl"),
+        speed = 1
     }
     
     setmetatable(object, self)
@@ -18,9 +19,11 @@ function checkpoint:new(position)
 end
 
 function checkpoint:update(dt)
-    self.time = self.time + dt
-    self.model:setRotation(0, 0, self.model.rotation[3] + dt)
+    self.time = self.time + dt * (self.active and 1 or 0.25)
+    self.model:setRotation(0, 0, self.model.rotation[3] + dt * self.speed)
     self.shader:send("time", self.time)
+    self.shader:send("enabled", self.active)
+    self.speed = self.speed + (1 - self.speed) * 0.99
 end
 
 function checkpoint:draw()

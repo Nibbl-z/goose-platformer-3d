@@ -100,6 +100,7 @@ function love.load()
         function ()
             love.keyboard.setKeyRepeat(false)
             Player.position = vec3.new(0,0,0)
+            Player.spawnpoint = vec3.new(0,0,0)
             Player.velocity = vec3.new(0,0,0)
             World:updateMesh()
         end,
