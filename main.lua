@@ -1,12 +1,13 @@
 require "global"
 local level = require "level"
 
+
 local Platform = require("objects.platform")
 local player = require("objects.player")
 local Editor = require("editor")
 local World = require("objects.world")
 local skybox = require("objects.skybox")
-
+local Checkpoint = require("objects.checkpoint")
 local Scene = require("objects.scene")
 
 local ui = {
@@ -16,6 +17,7 @@ local ui = {
 }
 
 platforms = {}
+checkpoints = {}
 
 local SCENES = {}
 currentScene = "mainmenu"
@@ -34,6 +36,8 @@ function love.load()
     for _, v in pairs(ui) do
         v:init()
     end
+
+
 
     SCENES["mainmenu"] = Scene:new(
         ui.mainmenu, 
@@ -65,6 +69,9 @@ function love.load()
             Player.active = true
             love.mouse.setRelativeMode(false)
             Player:update(dt, platforms)
+            for _, v in pairs(checkpoints) do
+                v:update(dt)
+            end
         end, 
         -- Draw
         function ()
@@ -75,6 +82,9 @@ function love.load()
             --love.graphics.setCanvas({uiCanvas, depth=true})
             --love.graphics.clear(0,0,0,0)
             for _, v in pairs(platforms) do
+                v:draw()
+            end
+            for _, v in pairs(checkpoints) do
                 v:draw()
             end
             Skybox:draw()
@@ -100,10 +110,17 @@ function love.load()
             love.mouse.setRelativeMode(true)
             Player:update(dt, platforms)
             Skybox:update(Player.camera.position)
+            for _, v in pairs(checkpoints) do
+                v:update(dt)
+            end
         end, 
         -- Draw
         function ()
             for _, v in pairs(platforms) do
+                v:draw()
+            end
+
+            for _, v in pairs(checkpoints) do
                 v:draw()
             end
 
@@ -126,10 +143,18 @@ function love.load()
             Player.active = false
             Editor:update(dt, platforms)
             Skybox:update(Editor:getCam().position)
+
+            for _, v in pairs(checkpoints) do
+                v:update(dt)
+            end
         end, 
         -- Draw
         function ()
             for _, v in pairs(platforms) do
+                v:draw()
+            end
+
+            for _, v in pairs(checkpoints) do
                 v:draw()
             end
 
@@ -204,25 +229,6 @@ function love.keypressed(key)
     end
     if key == "space" and (Player.grounded or Player.airtime <= 0.2) then
         Player.jumpPressed = true
-    end
-
-    if key == "=" then
-        print(level:export("level"..tostring(love.math.random(1,100000))))
-    end
-
-    if key == "-" then
-        local result = level:load()
-        if type(result) == "table" then
-            table.clear(platforms)
-            print(table.tostring(result.platforms))
-            
-        end
-    end
-
-    if key == "m" then
-        for _, v in ipairs(platforms) do
-            print(table.tostring(v.data))
-        end
     end
 end
 

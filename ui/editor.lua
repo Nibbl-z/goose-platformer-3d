@@ -319,6 +319,22 @@ function ui:init()
                     end,
                     mouseexit = function (btn) exit(btn) end
                 },
+                checkpointtool = imagelabel:new {
+                    size = UDim2.new(0,32,0,32),
+                    image = "img/tool_checkpoint.png",
+                    backgroundcolor = Color.fromRgb(40,40,40),
+                    mousebutton1up = function (v)
+                        Editor:createCheckpoint()
+                    end,
+                    mouseenter = function (btn) 
+                        btn.backgroundcolor = Color.fromRgb(60,60,60) 
+                        self.tooltipTitle = "Create checkpoint"
+                        self.tooltipDescription = "Creates a checkpoint where you are looking"
+                        self.tooltipKeybind = ""
+                        self.tooltipActive = true
+                    end,
+                    mouseexit = function (btn) exit(btn) end
+                },
                 undo = imagelabel:new {
                     size = UDim2.new(0,32,0,32),
                     image = "img/undo.png",
@@ -365,7 +381,7 @@ function ui:init()
         },
 
         topbarTooltip = uibase:new {
-            size = UDim2.new(0,150,0,60),
+            size = UDim2.new(0,180,0,60),
             position = function ()
                 return UDim2.new(0, love.mouse.getX() + 10, 0, love.mouse.getY() + 10)
             end,

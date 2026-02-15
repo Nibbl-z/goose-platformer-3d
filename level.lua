@@ -1,5 +1,6 @@
 local level = {}
 local Platform = require("objects.platform")
+local Checkpoint = require("objects.checkpoint")
 
 function level:export(data, filename)
     if data.name == "" then
@@ -28,13 +29,17 @@ function level:export(data, filename)
         name = data.name,
         description = data.description,
         creator = data.creator,
-        platforms = {}
+        platforms = {},
+        checkpoints = {},
     }
 
     for _, platform in ipairs(data.platforms) do
         table.insert(contents.platforms, table.clone(platform.data))
     end
 
+    for _, checkpoint in ipairs(data.checkpoints) do
+        table.insert(contents.platforms, table.clone(checkpoint))
+    end
     
     local file = love.filesystem.newFile(filename)
     
@@ -64,9 +69,14 @@ function level:save(filename)
     local contents = file:read()
     local data = loadstring("return "..contents)()
     table.clear(data.platforms)
+    table.clear(data.checkpoints)
 
     for _, platform in ipairs(platforms) do
         table.insert(data.platforms, table.clone(platform.data))
+    end
+
+    for _, pos in ipairs(checkpoints) do
+        table.insert(data.checkpoints, table.clone(pos.position))
     end
 
     file:close()
@@ -100,9 +110,14 @@ end
 
 function level:loadGame(data)
     table.clear(platforms)
+    table.clear(checkpoints)
 
     for _, data in ipairs(data.platforms) do
         table.insert(platforms, Platform:new(data))
+    end
+
+    for _, pos in ipairs(data.checkpoints) do
+        table.insert(checkpoints, Checkpoint:new(vec3.new(pos.x, pos.y, pos.z)))
     end
 
     currentScene = "game"
@@ -110,9 +125,14 @@ end
 
 function level:loadEditor(data)
     table.clear(platforms)
+    table.clear(checkpoints)
 
     for _, data in ipairs(data.platforms) do
         table.insert(platforms, Platform:new(data))
+    end
+
+    for _, pos in ipairs(data.checkpoints) do
+        table.insert(checkpoints, Checkpoint:new(vec3.new(pos.x, pos.y, pos.z)))
     end
 
     currentScene = "editor"

@@ -1,5 +1,6 @@
 require "global"
 local Platform = require "objects.platform"
+local Checkpoint = require "objects.checkpoint"
 local Level = require "level"
 
 local editor = {}
@@ -517,6 +518,13 @@ function editor:createPlatform()
     })
     self:updateHistory()
     table.insert(platforms, platform)
+end
+
+function editor:createCheckpoint()
+    local pos = camRay(10, 0, 0)
+    checkpoint = Checkpoint:new(pos)
+    self:updateHistory()
+    table.insert(checkpoints, checkpoint)
 end
 
 function editor:deletePlatforms()

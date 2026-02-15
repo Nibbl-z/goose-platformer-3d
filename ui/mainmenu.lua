@@ -415,6 +415,7 @@ function ui:init()
                         },
                         callback = function (inputs)
                             inputs.platforms = {}
+                            inputs.checkpoints = {}
                             local result = Level:export(inputs)
 
                             if result ~= nil then
