@@ -477,9 +477,9 @@ function player:update(dt, platforms)
     end
 
     for _, checkpoint in ipairs(checkpoints) do
-        local dist = (self.position - checkpoint.position):magnitude()
+        local dist = (self.position - checkpoint.data.position):magnitude()
         if dist <= 3 then
-            self.spawnpoint = checkpoint.position
+            self.spawnpoint = checkpoint.data.position
             checkpoint.speed = 5
             checkpoint.active = true
             for _, other in ipairs(checkpoints) do

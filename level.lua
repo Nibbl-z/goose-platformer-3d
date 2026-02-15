@@ -76,7 +76,7 @@ function level:save(filename)
     end
 
     for _, pos in ipairs(checkpoints) do
-        table.insert(data.checkpoints, table.clone(pos.position))
+        table.insert(data.checkpoints, table.clone(pos.data.position))
     end
 
     file:close()

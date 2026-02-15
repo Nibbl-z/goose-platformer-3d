@@ -79,6 +79,21 @@ function PropertiesVec3(property, isVector)
                 -- please enjoy
             end
         end
+
+        -- hi its getting worse
+
+        if prop == "position" then
+            for _, checkpoint in ipairs(checkpoints) do
+                if checkpoint.selected then
+                    local vector = vec3.new(checkpoint.data[prop].x, checkpoint.data[prop].y, checkpoint.data[prop].z)
+                    vector[axis] = value
+
+                    checkpoint.data[prop] = vector
+
+                    checkpoint.model.setTranslation(checkpoint.model, checkpoint.data[prop]:getTuple())
+                end
+            end
+        end
     end
 
     return uibase:new {
@@ -559,11 +574,15 @@ function ui:init()
                 size = PropertiesVec3("size", true),
                 isLava = PropertiesCheckbox("lava", function ()
                     for _, platform in ipairs(editorState.selectedPlatforms) do
-                        platform.data.type = PLATFORM_TYPE.lava
+                        if not platform.nonPlatform then           
+                            platform.data.type = PLATFORM_TYPE.lava
+                        end
                     end
                 end, function ()
                     for _, platform in ipairs(editorState.selectedPlatforms) do
-                        platform.data.type = PLATFORM_TYPE.default
+                        if not platform.nonPlatform then
+                            platform.data.type = PLATFORM_TYPE.default
+                        end
                     end
                 end, function ()
                     local condition = true
@@ -576,11 +595,15 @@ function ui:init()
                 end),
                 collision = PropertiesCheckbox("collision", function ()
                     for _, platform in ipairs(editorState.selectedPlatforms) do
-                        platform.data.collision = true
+                        if not platform.nonPlatform then      
+                            platform.data.collision = true
+                        end
                     end
                 end, function ()
                     for _, platform in ipairs(editorState.selectedPlatforms) do
-                        platform.data.collision = false
+                        if not platform.nonPlatform then      
+                            platform.data.collision = false
+                        end
                     end
                 end, function ()
                     local condition = true
@@ -686,21 +709,33 @@ function ui:updateProperties()
 
         if i == 1 then
             px, pz, py = pos:getTuple()
-            sx, sz, sy = size:getTuple()
-            r, g, b = color:get()
-            r = math.ceil(r * 255)
-            g = math.ceil(g * 255)
-            b = math.ceil(b * 255)
+            if size == nil then
+                sx, sz, sy = nil, nil, nil
+            else
+                sx, sz, sy = size:getTuple()
+            end
+            if color == nil then
+                r, g, b = nil, nil, nil
+            else
+                r, g, b = color:get()
+                r = math.ceil(r * 255)
+                g = math.ceil(g * 255)
+                b = math.ceil(b * 255)
+            end
         else
             if px ~= pos.x then px = nil end
             if py ~= pos.y then py = nil end
             if pz ~= pos.z then pz = nil end
-            if sx ~= size.x then sx = nil end
-            if sy ~= size.y then sy = nil end
-            if sz ~= size.z then sz = nil end
-            if r ~= math.ceil(color.r * 255) then r = nil end
-            if g ~= math.ceil(color.g * 255) then g = nil end
-            if b ~= math.ceil(color.b * 255) then b = nil end
+            if size ~= nil then
+                if sx ~= size.x then sx = nil end
+                if sy ~= size.y then sy = nil end
+                if sz ~= size.z then sz = nil end
+            end
+            if color ~= nil then
+                if r ~= math.ceil(color.r * 255) then r = nil end
+                if g ~= math.ceil(color.g * 255) then g = nil end
+                if b ~= math.ceil(color.b * 255) then b = nil end
+            end
         end
     end
 

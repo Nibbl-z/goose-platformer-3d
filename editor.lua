@@ -21,7 +21,7 @@ local MOVE_DIRECTIONS = {
 local mouseX, mouseY = nil, nil
 local Keybind = require("objects.keybind")
 
-local chosenPlatform, selectedPlatform
+local chosenItem, selectedItem
 local chosenHandle = nil
 local extraSelected = {}
 local dragging = false
@@ -212,7 +212,7 @@ function editor:mousemoved(x, y, dx, dy)
     if love.mouse.isDown(2) then
         cameraTurning = true
         editorState.rightClicked = false
-        chosenPlatform = nil
+        chosenItem = nil
         if mouseX ~= nil then
             love.mouse.setPosition(mouseX, mouseY)
         end
@@ -223,20 +223,20 @@ function editor:mousemoved(x, y, dx, dy)
         cameraTurning = false
     end
 
-    if selectedPlatform == nil then return end
+    if selectedItem == nil then return end
     
     if love.mouse.isDown(1) and chosenHandle ~= nil then
-        for _, platform in ipairs({selectedPlatform, unpack(extraSelected)}) do
+        for _, platform in ipairs({selectedItem, unpack(extraSelected)}) do
             if chosenHandle.hovered then
                 if not dragging then
                     self:updateHistory()
                 end
                 dragging = true
-                local distance = (camera.position - vec3.fromg3d(chosenHandle.scaleModel.translation)):magnitude()
+                local distance = (camera.position - vec3.fromg3d(chosenHandle.positionModel.translation)):magnitude()
 
                 local d = math.sqrt(dx ^ 2 + dy ^ 2)
                 local pos = camRay(distance)
-                local sign = ((pos - vec3.fromg3d(chosenHandle.scaleModel.translation))[chosenHandle.axis] < 0) and -1 or 1
+                local sign = ((pos - vec3.fromg3d(chosenHandle.positionModel.translation))[chosenHandle.axis] < 0) and -1 or 1
 
                 if editorState.tool == EDITOR_TOOLS.scale and chosenHandle.axis ~= "y" then -- i dont even know, i dont even want to know, 
                     sign = sign * -1
@@ -250,7 +250,7 @@ function editor:mousemoved(x, y, dx, dy)
                         chosenHandle.axis == "y" and move or 0,
                         chosenHandle.axis == "z" and move or 0
                     )):getTuple())
-                else
+                elseif editorState.tool == EDITOR_TOOLS.scale and not platform.nonPlatform then
                     if editorState.tool == EDITOR_TOOLS.scale and chosenHandle.negative == true then
                         move = move * -1
                     end
@@ -357,38 +357,56 @@ function editor:update(dt, platforms)
 
         platform:update(dt)
     end
+
+    for _, platform in ipairs(checkpoints) do
+        platform.hovered = false
+        for _, handle in pairs(platform.handles) do
+            if not dragging then
+                handle.hovered = false
+            end
+        end
+    end
     
     local dist = 75
     local handleDist = 75
     
 
-    local optimizedPlatforms = {}
-    chosenPlatform = nil
+    local optimizedItems = {}
+    chosenItems = nil
+
     for _, v in ipairs(platforms) do
         v.hovered = false
         local pos = vec3.fromg3d(v.model.translation)
         if (pos - camera.position):magnitude() <= 80 then
-            table.insert(optimizedPlatforms, v)
+            table.insert(optimizedItems, v)
+        end
+    end
+
+    for _, v in ipairs(checkpoints) do
+        v.hovered = false
+        local pos = vec3.fromg3d(v.model.translation)
+        if (pos - camera.position):magnitude() <= 80 then
+            table.insert(optimizedItems, v)
         end
     end
 
     for i = 1, 75, 1 do
         local rayPos = camRay(i)
 
-        for _, platform in ipairs(optimizedPlatforms) do
-            if platform.selected then
-                for _, handle in pairs(platform.handles) do
-                    if vec3.magnitude(rayPos - vec3.fromg3d(handle.positionModel.translation)) <= 6 and not dragging and i <= handleDist then
+        for _, item in ipairs(optimizedItems) do
+            if item.selected then
+                for _, handle in pairs(item.handles) do
+                    if vec3.magnitude(rayPos - vec3.fromg3d(handle.positionModel.translation)) <= 6 and not dragging and i <= handleDist and not (editorState.tool == EDITOR_TOOLS.scale and item.nonPlatform) then
                         handleDist = i
                         chosenHandle = handle
                     end
                 end
             end
 
-            if g3d.collisions.sphereIntersection(platform.model.verts, platform.model, rayPos.x, rayPos.z, rayPos.y, 1) then
+            if g3d.collisions.sphereIntersection(item.model.verts, item.model, rayPos.x, rayPos.z, rayPos.y, 1) then
                 if i <= dist then
                     dist = i
-                    chosenPlatform = platform
+                    chosenItem = item
                 end
                 
                 break
@@ -398,25 +416,28 @@ function editor:update(dt, platforms)
 
     
     
-    if chosenPlatform ~= nil and chosenHandle == nil and not dragging and not mouseInUi then
-        chosenPlatform.hovered = true
+    if chosenItem ~= nil and chosenHandle == nil and not dragging and not mouseInUi then
+        chosenItem.hovered = true
 
         if (mouse1 or (mouse2 and not cameraTurning)) and not dragging then
             
             if not mouse2 then editorState.rightClicked = false end
 
-            if selectedPlatform ~= nil and love.keyboard.isDown("lshift") and chosenPlatform.selected == false then
-                table.insert(extraSelected, chosenPlatform) 
-            elseif not love.keyboard.isDown("lshift") and chosenPlatform.selected == false then
+            if selectedItem ~= nil and love.keyboard.isDown("lshift") and chosenItem.selected == false then
+                table.insert(extraSelected, chosenItem) 
+            elseif not love.keyboard.isDown("lshift") and chosenItem.selected == false then
                 for _, platform in ipairs(platforms) do
                     platform.selected = false
                 end
+                for _, checkpoint in ipairs(checkpoints) do
+                    checkpoint.selected = false
+                end
                 table.clear(extraSelected)
-                selectedPlatform = chosenPlatform
+                selectedItem = chosenItem
                 
             end
             
-            chosenPlatform.selected = true
+            chosenItem.selected = true
 
             hm, sm, vm = self:getPlatformColors()
         end
@@ -435,9 +456,13 @@ function editor:update(dt, platforms)
         if platform.selected then
             table.insert(editorState.selectedPlatforms, platform)
         end
-        
     end
 
+    for _, checkpoint in ipairs(checkpoints) do
+        if checkpoint.selected then
+            table.insert(editorState.selectedPlatforms, checkpoint)
+        end
+    end
     
     ui:updateProperties()
 
