@@ -372,7 +372,7 @@ function editor:update(dt, platforms)
     
 
     local optimizedItems = {}
-    chosenItems = nil
+    chosenItem = nil
 
     for _, v in ipairs(platforms) do
         v.hovered = false
