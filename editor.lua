@@ -1,6 +1,7 @@
 require "global"
 local Platform = require "objects.platform"
 local Checkpoint = require "objects.checkpoint"
+local FinishLine = require "objects.finishline"
 local Level = require "level"
 
 local editor = {}
@@ -347,25 +348,19 @@ function editor:update(dt, platforms)
     table.clear(editorState.selectedPlatforms)
 
     -- update platform selection and handle selection
-    for _, platform in ipairs(platforms) do
-        platform.hovered = false
-        for _, handle in pairs(platform.handles) do
-            if not dragging then
-                handle.hovered = false
-            end
-        end
 
-        platform:update(dt)
-    end
-
-    for _, platform in ipairs(checkpoints) do
-        platform.hovered = false
-        for _, handle in pairs(platform.handles) do
-            if not dragging then
-                handle.hovered = false
+    for _, v in ipairs({platforms, checkpoints, finishlines}) do     
+        for _, item in ipairs(v) do
+            item:update(dt)
+            item.hovered = false
+            for _, handle in pairs(item.handles) do
+                if not dragging then
+                    handle.hovered = false
+                end
             end
         end
     end
+
     
     local dist = 75
     local handleDist = 75
@@ -374,19 +369,12 @@ function editor:update(dt, platforms)
     local optimizedItems = {}
     chosenItem = nil
 
-    for _, v in ipairs(platforms) do
-        v.hovered = false
-        local pos = vec3.fromg3d(v.model.translation)
-        if (pos - camera.position):magnitude() <= 80 then
-            table.insert(optimizedItems, v)
-        end
-    end
-
-    for _, v in ipairs(checkpoints) do
-        v.hovered = false
-        local pos = vec3.fromg3d(v.model.translation)
-        if (pos - camera.position):magnitude() <= 80 then
-            table.insert(optimizedItems, v)
+    for _, v in ipairs({platforms, checkpoints, finishlines}) do 
+        for _, item in ipairs(v) do
+            local pos = vec3.fromg3d(item.model.translation)
+            if (pos - camera.position):magnitude() <= 80 then
+                table.insert(optimizedItems, item)
+            end
         end
     end
 
@@ -413,8 +401,6 @@ function editor:update(dt, platforms)
             end
         end
     end
-
-    
     
     if chosenItem ~= nil and chosenHandle == nil and not dragging and not mouseInUi then
         chosenItem.hovered = true
@@ -431,6 +417,9 @@ function editor:update(dt, platforms)
                 end
                 for _, checkpoint in ipairs(checkpoints) do
                     checkpoint.selected = false
+                end
+                for _, finishline in ipairs(finishlines) do
+                    finishline.selected = false
                 end
                 table.clear(extraSelected)
                 selectedItem = chosenItem
@@ -461,6 +450,12 @@ function editor:update(dt, platforms)
     for _, checkpoint in ipairs(checkpoints) do
         if checkpoint.selected then
             table.insert(editorState.selectedPlatforms, checkpoint)
+        end
+    end
+
+    for _, finishline in ipairs(finishlines) do
+        if finishline.selected then
+            table.insert(editorState.selectedPlatforms, finishline)
         end
     end
     
@@ -550,6 +545,13 @@ function editor:createCheckpoint()
     checkpoint = Checkpoint:new(pos)
     self:updateHistory()
     table.insert(checkpoints, checkpoint)
+end
+
+function editor:createFinishLine()
+    local pos = camRay(10, 0, 0)
+    finishline = FinishLine:new(pos)
+    self:updateHistory()
+    table.insert(finishlines, finishline)
 end
 
 function editor:deletePlatforms()

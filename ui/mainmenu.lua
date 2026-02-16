@@ -414,8 +414,6 @@ function ui:init()
                             creator = {type = INPUT_FIELD.TextField, data = {label = "Level Creator (that's you!)"}, order = 3},
                         },
                         callback = function (inputs)
-                            inputs.platforms = {}
-                            inputs.checkpoints = {}
                             local result = Level:export(inputs)
 
                             if result ~= nil then

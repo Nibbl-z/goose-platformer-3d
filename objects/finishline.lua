@@ -1,26 +1,23 @@
 require "global"
 
-local checkpoint = {}
-checkpoint.__index = checkpoint
+local finishline = {}
+finishline.__index = finishline
 
 
-function checkpoint:new(position)
+function finishline:new(position)
     local data = {
         position = position,
         size = vec3.new(2,4,2)
-    } -- watcha s the nibbles refuses to properly refactor this to work with everything
+    }
 
     local object = {
-        model = g3d.newModel("models/checkpoint.obj", assets["img/goog.png"], position:get(), {0,0,0}, {1,1,1}),
+        model = g3d.newModel(g3d.loadObj("models/finishline.obj", false, true), assets["img/finishline.skin.png"], position:get(), {0,0,-1}, {0.5,0.5,0.5}),
         data = {
             position = position
         },
-        active = false,
-        time = 0,
+        shader = love.graphics.newShader(g3d.shaderpath, "shaders/finishline.glsl"),
         hovered = false,
         selected = false,
-        shader = love.graphics.newShader(g3d.shaderpath, "shaders/checkpoint.glsl"),
-        speed = 1,
         nonPlatform = true,
         handles = {
             x = {
@@ -69,27 +66,20 @@ function checkpoint:new(position)
     return object
 end
 
-function checkpoint:update(dt)
+function finishline:update(dt)
     self.data.position = vec3.fromg3d(self.model.translation)
-    self.time = self.time + dt * (self.active and 1 or 0.25)
-    self.model:setRotation(0, 0, self.model.rotation[3] + dt * self.speed)
-
-    self.shader:send("time", self.time)
-    self.shader:send("enabled", self.active)
     self.shader:send("hovered", self.hovered)
     self.shader:send("selected", self.selected)
-
-    self.speed = self.speed + (1 - self.speed) * 0.001
 
     for k, v in pairs(self.data.position) do
         self.data.position[k] = math.round(v, 0.0001)
     end
 
-    local checkpointSize = vec3.new(2,4,2)
+    local finishlineSize = vec3.new(2,4,2)
 
     for k, handle in pairs(self.handles) do
         local offset = vec3.new(0,0,0)
-        offset[handle.axis] = checkpointSize[handle.axis] / 2 + 3
+        offset[handle.axis] = finishlineSize[handle.axis] / 2 + 3
 
         if handle.axis == "y" then
             offset[handle.axis] = offset[handle.axis] * -1
@@ -109,7 +99,7 @@ local HANDLE_COLORS = {
     z = {0.0, 0.0, 1.0}
 }
 
-function checkpoint:draw()
+function finishline:draw()
     self.model:draw(self.shader)
 
     if self.selected then
@@ -123,4 +113,4 @@ function checkpoint:draw()
     end
 end
 
-return checkpoint
+return finishline

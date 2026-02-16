@@ -1,6 +1,7 @@
 local level = {}
 local Platform = require("objects.platform")
 local Checkpoint = require("objects.checkpoint")
+local FinishLine = require("objects.finishline")
 
 function level:export(data, filename)
     if data.name == "" then
@@ -31,15 +32,8 @@ function level:export(data, filename)
         creator = data.creator,
         platforms = {},
         checkpoints = {},
+        finishlines = {},
     }
-
-    for _, platform in ipairs(data.platforms) do
-        table.insert(contents.platforms, table.clone(platform.data))
-    end
-
-    for _, checkpoint in ipairs(data.checkpoints) do
-        table.insert(contents.platforms, table.clone(checkpoint))
-    end
     
     local file = love.filesystem.newFile(filename)
     
@@ -70,6 +64,7 @@ function level:save(filename)
     local data = loadstring("return "..contents)()
     table.clear(data.platforms)
     table.clear(data.checkpoints)
+    table.clear(data.finishlines)
 
     for _, platform in ipairs(platforms) do
         table.insert(data.platforms, table.clone(platform.data))
@@ -77,6 +72,10 @@ function level:save(filename)
 
     for _, pos in ipairs(checkpoints) do
         table.insert(data.checkpoints, table.clone(pos.data.position))
+    end
+
+    for _, pos in ipairs(finishlines) do
+        table.insert(data.finishlines, table.clone(pos.data.position))
     end
 
     file:close()
@@ -111,6 +110,7 @@ end
 function level:loadGame(data)
     table.clear(platforms)
     table.clear(checkpoints)
+    table.clear(finishlines)
 
     for _, data in ipairs(data.platforms) do
         table.insert(platforms, Platform:new(data))
@@ -118,6 +118,10 @@ function level:loadGame(data)
 
     for _, pos in ipairs(data.checkpoints) do
         table.insert(checkpoints, Checkpoint:new(vec3.new(pos.x, pos.y, pos.z)))
+    end
+
+    for _, pos in ipairs(data.finishlines) do
+        table.insert(finishlines, FinishLine:new(vec3.new(pos.x, pos.y, pos.z)))
     end
 
     currentScene = "game"
@@ -126,6 +130,7 @@ end
 function level:loadEditor(data)
     table.clear(platforms)
     table.clear(checkpoints)
+    table.clear(finishlines)
 
     for _, data in ipairs(data.platforms) do
         table.insert(platforms, Platform:new(data))
@@ -133,6 +138,10 @@ function level:loadEditor(data)
 
     for _, pos in ipairs(data.checkpoints) do
         table.insert(checkpoints, Checkpoint:new(vec3.new(pos.x, pos.y, pos.z)))
+    end
+
+    for _, pos in ipairs(data.finishlines) do
+        table.insert(finishlines, FinishLine:new(vec3.new(pos.x, pos.y, pos.z)))
     end
 
     currentScene = "editor"

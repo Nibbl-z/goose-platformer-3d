@@ -83,14 +83,16 @@ function PropertiesVec3(property, isVector)
         -- hi its getting worse
 
         if prop == "position" then
-            for _, checkpoint in ipairs(checkpoints) do
-                if checkpoint.selected then
-                    local vector = vec3.new(checkpoint.data[prop].x, checkpoint.data[prop].y, checkpoint.data[prop].z)
-                    vector[axis] = value
-
-                    checkpoint.data[prop] = vector
-
-                    checkpoint.model.setTranslation(checkpoint.model, checkpoint.data[prop]:getTuple())
+            for _, v in ipairs({checkpoints, finishlines}) do
+                for _, checkpoint in ipairs(v) do
+                    if checkpoint.selected then
+                        local vector = vec3.new(checkpoint.data[prop].x, checkpoint.data[prop].y, checkpoint.data[prop].z)
+                        vector[axis] = value
+    
+                        checkpoint.data[prop] = vector
+    
+                        checkpoint.model.setTranslation(checkpoint.model, checkpoint.data[prop]:getTuple())
+                    end
                 end
             end
         end
@@ -345,6 +347,22 @@ function ui:init()
                         btn.backgroundcolor = Color.fromRgb(60,60,60) 
                         self.tooltipTitle = "Create checkpoint"
                         self.tooltipDescription = "Creates a checkpoint where you are looking"
+                        self.tooltipKeybind = ""
+                        self.tooltipActive = true
+                    end,
+                    mouseexit = function (btn) exit(btn) end
+                },
+                finishlinetool = imagelabel:new {
+                    size = UDim2.new(0,32,0,32),
+                    image = "img/tool_finishline.png",
+                    backgroundcolor = Color.fromRgb(40,40,40),
+                    mousebutton1up = function (v)
+                        Editor:createFinishLine()
+                    end,
+                    mouseenter = function (btn) 
+                        btn.backgroundcolor = Color.fromRgb(60,60,60) 
+                        self.tooltipTitle = "Create finish line"
+                        self.tooltipDescription = "Creates a finish line where you are looking (there can be multiple endings!)"
                         self.tooltipKeybind = ""
                         self.tooltipActive = true
                     end,

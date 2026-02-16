@@ -7,7 +7,7 @@ local player = require("objects.player")
 local Editor = require("editor")
 local World = require("objects.world")
 local skybox = require("objects.skybox")
-local Checkpoint = require("objects.checkpoint")
+local FinishLine = require("objects.finishline")
 local Scene = require("objects.scene")
 
 local ui = {
@@ -18,6 +18,7 @@ local ui = {
 
 platforms = {}
 checkpoints = {}
+finishlines = {}
 
 local SCENES = {}
 currentScene = "mainmenu"
@@ -57,6 +58,9 @@ function love.load()
                 size = vec3.new(4,10,4),
             }))
 
+            -- temp
+            table.insert(finishlines, FinishLine:new(vec3.new(3,0,0)))
+
             for _, v in ipairs(platforms) do
                 v:update(0.1)
             end
@@ -69,9 +73,6 @@ function love.load()
             Player.active = true
             love.mouse.setRelativeMode(false)
             Player:update(dt, platforms)
-            for _, v in pairs(checkpoints) do
-                v:update(dt)
-            end
         end, 
         -- Draw
         function ()
@@ -84,9 +85,7 @@ function love.load()
             for _, v in pairs(platforms) do
                 v:draw()
             end
-            for _, v in pairs(checkpoints) do
-                v:draw()
-            end
+            
             Skybox:draw()
             Player:draw()
             love.graphics.setCanvas()
@@ -125,6 +124,10 @@ function love.load()
                 v:draw()
             end
 
+            for _, v in pairs(finishlines) do
+                v:draw()
+            end
+
             Skybox:draw()
             Player:draw()
         end,
@@ -144,10 +147,6 @@ function love.load()
             Player.active = false
             Editor:update(dt, platforms)
             Skybox:update(Editor:getCam().position)
-
-            for _, v in pairs(checkpoints) do
-                v:update(dt)
-            end
         end, 
         -- Draw
         function ()
@@ -156,6 +155,10 @@ function love.load()
             end
 
             for _, v in pairs(checkpoints) do
+                v:draw()
+            end
+
+            for _, v in pairs(finishlines) do
                 v:draw()
             end
 
