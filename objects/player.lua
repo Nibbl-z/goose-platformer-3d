@@ -203,6 +203,7 @@ function player:new()
     local object = {
         active = true,
         menuMode = false,
+        win = false,
         root = g3d.newModel(g3d.loadObj("models/goose.obj", false, true), assets["img/goose.skin.png"], vec3.new(0,0,0):get(), vec3.new(0,0,0):get()),
         leftLeg = g3d.newModel(g3d.loadObj("models/leftleg.obj", false, true), assets["img/goose.skin.png"], vec3.new(0,0,0):get(), vec3.new(0,0,0):get()),
         rightLeg = g3d.newModel(g3d.loadObj("models/rightleg.obj", false, true), assets["img/goose.skin.png"], vec3.new(0,0,0):get(), vec3.new(0,0,0):get()),
@@ -478,7 +479,7 @@ function player:update(dt, platforms)
 
     for _, checkpoint in ipairs(checkpoints) do
         local dist = (self.position - checkpoint.data.position):magnitude()
-        if dist <= 3 then
+        if dist <= 4 then
             self.spawnpoint = checkpoint.data.position
             checkpoint.speed = 5
             checkpoint.active = true
@@ -489,6 +490,20 @@ function player:update(dt, platforms)
             end
 
             break
+        end
+    end
+
+    if self.win == false then
+        for _, finishline in ipairs(finishlines) do
+            local dist = (self.position - finishline.data.position):magnitude()
+            if dist <= 4 then
+                self.win = true
+                self.menuMode = true
+                love.mouse.setRelativeMode(false)
+                love.mouse.setGrabbed(false)
+                require "ui.game":finish()
+                break
+            end
         end
     end
 

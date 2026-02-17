@@ -19,6 +19,8 @@ editorState = {
     unsavedChanges = false
 }
 
+gametime = 0.0
+
 -- source: https://github.com/EmmanuelOga/columns/blob/master/utils/color.lua (because. why do this myself. again.)
 -- (edited to input 0-1 rgb instead of 0-255 rgb)
 

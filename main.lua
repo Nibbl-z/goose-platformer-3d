@@ -58,9 +58,6 @@ function love.load()
                 size = vec3.new(4,10,4),
             }))
 
-            -- temp
-            table.insert(finishlines, FinishLine:new(vec3.new(3,0,0)))
-
             for _, v in ipairs(platforms) do
                 v:update(0.1)
             end
@@ -97,17 +94,24 @@ function love.load()
         ui.game, 
         -- Init
         function ()
+            gametime = 0.0
             love.keyboard.setKeyRepeat(false)
             Player.position = vec3.new(0,0,0)
             Player.spawnpoint = vec3.new(0,0,0)
             Player.velocity = vec3.new(0,0,0)
+            love.mouse.setRelativeMode(true)
             World:updateMesh()
+            Player.menuMode = false
+            Player.win = false
+            ui.game:reset()
         end,
         -- Update
         function (dt)
             Player.active = true
-            Player.menuMode = false
-            love.mouse.setRelativeMode(true)
+            if not Player.win then
+                gametime = gametime + dt
+            end
+            
             Player:update(dt, platforms)
             Skybox:update(Player.camera.position)
             for _, v in pairs(checkpoints) do
