@@ -19,6 +19,7 @@ function finishline:new(position)
         hovered = false,
         selected = false,
         nonPlatform = true,
+        _type = "finishline",
         handles = {
             x = {
                 axis = "x",
@@ -111,6 +112,12 @@ function finishline:draw()
             end
         end
     end
+end
+
+function finishline:destroy()
+    self.model = nil
+    self.handles = nil
+    self = nil
 end
 
 return finishline

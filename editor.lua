@@ -57,34 +57,63 @@ function editor:reset()
     camera.rotation = vec3.new(0,0,0)
 end
 
+local typeLookup = {
+    ["platform"] = Platform,
+    ["checkpoint"] = Checkpoint,
+    ["finishline"] = FinishLine
+}
+
 function editor:undo()
+    local typeTableLookup = {
+        ["platform"] = platforms,
+        ["checkpoint"] = checkpoints,
+        ["finishline"] = finishlines
+    }
+
     if #history == 0 then return end
     if currentHistory == 0 then
         table.clear(stateBeforeUndo)
-        for _, platform in ipairs(platforms) do
-            table.insert(stateBeforeUndo, platform.data)
+        for _, v in ipairs({platforms, checkpoints, finishlines}) do
+            for _, item in ipairs(v) do
+                local data = table.clone(item.data)
+                data._type = item._type
+                table.insert(stateBeforeUndo, data)
+            end
         end
     end
     currentHistory = math.clamp(currentHistory + 1, 1, #history)
 
     table.clear(platforms)
+    table.clear(checkpoints)
+    table.clear(finishlines)
 
     for _, data in ipairs(history[currentHistory]) do
-        local platform = Platform:new(data)
-        table.insert(platforms, platform)
+        print(table.tostring(data))
+        local item = typeLookup[data._type]:new(data._type == "platform" and data or data.position)
+
+        table.insert(typeTableLookup[data._type], item)
     end
 end
 
 function editor:redo()
+    local typeTableLookup = {
+        ["platform"] = platforms,
+        ["checkpoint"] = checkpoints,
+        ["finishline"] = finishlines
+    }
+
     if #history == 0 then return end
     if currentHistory == 0 then return end
     table.clear(platforms)
+    table.clear(checkpoints)
+    table.clear(finishlines)
     
     if currentHistory == 1 then
         currentHistory = 0
         for _, data in ipairs(stateBeforeUndo) do
-            local platform = Platform:new(data)
-            table.insert(platforms, platform)
+            local item = typeLookup[data._type]:new(data._type == "platform" and data or data.position)
+            
+            table.insert(typeTableLookup[data._type], item)
         end
         return
     end
@@ -92,8 +121,8 @@ function editor:redo()
     currentHistory = math.clamp(currentHistory - 1, 1, #history)
 
     for _, data in ipairs(history[currentHistory]) do
-        local platform = Platform:new(data)
-        table.insert(platforms, platform)
+        local item = typeLookup[data._type]:new(data._type == "platform" and data or data.position)
+        table.insert(typeTableLookup[data._type], item)
     end
 end
 
@@ -196,8 +225,12 @@ function editor:updateHistory()
 
     local historyPlatforms = {}
 
-    for _, platform in ipairs(platforms) do
-        table.insert(historyPlatforms, table.clone(platform.data))
+    for _, v in ipairs({platforms, checkpoints, finishlines}) do
+        for _, item in ipairs(v) do
+            local data = table.clone(item.data)
+            data._type = item._type
+            table.insert(historyPlatforms, data)
+        end
     end
 
     table.insert(history, 1, historyPlatforms)
@@ -557,17 +590,14 @@ end
 function editor:deletePlatforms()
     self:updateHistory()
 
-    for _, platform in ipairs(platforms) do
-        if platform.selected then
-            table.remove(platforms, table.find(platforms, platform))
-            platform:destroy()
-        end
-    end
-
-    for _, platform in ipairs(platforms) do
-        if platform.selected then
-            table.remove(platforms, table.find(platforms, platform))
-            platform:destroy()
+    for i = 1, 2 do
+        for _, v in ipairs({platforms, checkpoints, finishlines}) do  
+            for _, item in ipairs(v) do
+                if item.selected then
+                    table.remove(v, table.find(v, item))
+                    item:destroy()
+                end
+            end
         end
     end
 
@@ -578,10 +608,10 @@ function editor:duplicatePlatforms()
     self:updateHistory()
 
     table.clear(extraSelected)
-    selectedPlatform = nil
+    selectedItem = nil
 
     local newPlatforms = {}
-
+    local newItems = {}
     for _, platform in ipairs(platforms) do
         if platform.selected then
             platform.selected = false
@@ -591,10 +621,28 @@ function editor:duplicatePlatforms()
             newPlatform.selected = true
             table.insert(newPlatforms, newPlatform)
 
-            if #newPlatforms == 1 then
-                selectedPlatform = newPlatform
+            if (#newPlatforms + #newItems) == 1 then
+                selectedItem = newPlatform
             else
                 table.insert(extraSelected, newPlatform)
+            end
+        end
+    end
+
+    for _, v in ipairs({checkpoints, finishlines}) do
+        for _, item in ipairs(v) do
+            if item.selected then
+                item.selected = false
+
+                local newItem = (item._type == "checkpoint" and Checkpoint or FinishLine):new(vec3.new(item.data.position.x, item.data.position.y + 5, item.data.position.z))
+                newItem.selected = true
+                table.insert(newItems, newItem)
+
+                if (#newPlatforms + #newItems) == 1 then
+                    selectedItem = newItem
+                else
+                    table.insert(extraSelected, newItem)
+                end
             end
         end
     end
@@ -602,42 +650,64 @@ function editor:duplicatePlatforms()
     for _, v in ipairs(newPlatforms) do
         table.insert(platforms, v)
     end
+
+    for _, v in ipairs(newItems) do
+        table.insert(v._type == "checkpoint" and checkpoints or finishlines, v)
+    end
 end
 
 function editor:copyPlatforms()
     table.clear(clipboard)
 
-    for _, platform in ipairs(platforms) do
-        if platform.selected then
-            table.insert(clipboard, table.clone(platform.data))
+    for _, v in ipairs({platforms, checkpoints, finishlines}) do
+        for _, item in ipairs(v) do
+            if item.selected then
+                local data = table.clone(item.data)
+                data._type = item._type
+                table.insert(clipboard, data)
+            end
         end
     end
-
-    print(table.tostring(clipboard))
 end
 
 function editor:pastePlatforms()
     self:updateHistory()
 
     table.clear(extraSelected)
-    selectedPlatform = nil
+    selectedItem = nil
 
-    for _, platform in ipairs(platforms) do
-        platform.selected = false
+    for _, v in ipairs({platforms, checkpoints, finishlines}) do
+        for _, item in ipairs(v) do
+            item.selected = false
+        end
     end
 
-    for i, data in ipairs(clipboard) do
-        local newPlatform = Platform:new(data)
-        newPlatform.selected = true
-        table.insert(newPlatform, platform)
+    for i, v in ipairs(clipboard) do
+        local lookup = {
+            ["platform"] = Platform,
+            ["checkpoint"] = Checkpoint,
+            ["finishline"] = FinishLine
+        }
+
+        local tableLookup = {
+            ["platform"] = platforms,
+            ["checkpoint"] = checkpoints,
+            ["finishline"] = finishlines
+        }
+
+        local data = v._type == "platform" and v or v.position
+
+        local newItem = lookup[v._type]:new(data)
+        newItem.selected = true
+        table.insert(newItem, newItem)
 
         if i == 1 then
-            selectedPlatform = newPlatform
+            selectedItem = newItem
         else
-            table.insert(extraSelected, newPlatform)
+            table.insert(extraSelected, newItem)
         end
 
-        table.insert(platforms, newPlatform)
+        table.insert(tableLookup[v._type], newItem)
     end
 end
 

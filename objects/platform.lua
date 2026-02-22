@@ -45,6 +45,7 @@ function platform:new(data)
         hovered = false,
         selected = false,
         time = 0.0,
+        _type = "platform",
         handles = {
             x = {
                 axis = "x",

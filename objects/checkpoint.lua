@@ -22,6 +22,7 @@ function checkpoint:new(position)
         shader = love.graphics.newShader(g3d.shaderpath, "shaders/checkpoint.glsl"),
         speed = 1,
         nonPlatform = true,
+        _type = "checkpoint",
         handles = {
             x = {
                 axis = "x",
@@ -121,6 +122,12 @@ function checkpoint:draw()
             end
         end
     end
+end
+
+function checkpoint:destroy()
+    self.model = nil
+    self.handles = nil
+    self = nil
 end
 
 return checkpoint
