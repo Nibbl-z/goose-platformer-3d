@@ -287,7 +287,7 @@ function player:solveCollision(platforms, dt)
             local minX, maxX = platform.data.position.x - platform.data.size.x / 2, platform.data.position.x + platform.data.size.x / 2
             local minZ, maxZ = platform.data.position.z - platform.data.size.z / 2, platform.data.position.z + platform.data.size.z / 2
             local x, z = self.position.x, self.position.z
-            
+
             if x < minX then
                 self.xTouch = -1
             elseif x > maxX then
@@ -433,7 +433,7 @@ function player:update(dt, platforms)
             end
         end
         self.lastModelRotation = modelRotation
-        self.modelDirection = self.modelDirection + ((modelRotation + self.wraparoundCompensation) - self.modelDirection) * 0.1
+        self.modelDirection = self.modelDirection + ((modelRotation + self.wraparoundCompensation) - self.modelDirection) * (dt * 20)
     else
         self.currentAnimation = "idle"
         self.acceleration = math.clamp(self.acceleration - dt * 4, 0, 1)
@@ -489,7 +489,7 @@ function player:update(dt, platforms)
         self.airtime = self.airtime + dt
     end
 
-    self.lerpPosition:lerp(self.position, 0.4)
+    self.lerpPosition:lerp(self.position, 1 - math.exp(-35 * dt))
 
     if not self.menuMode then
         g3d.camera.lookInDirection(self.camera.position.x, self.camera.position.z, self.camera.position.y, math.rad(self.camera.rotation.y), math.rad(self.camera.rotation.z))
@@ -556,8 +556,6 @@ end
 
 function player:draw()
     if not self.active then return end
-    love.graphics.print(self.xTouch)
-    love.graphics.print(self.zTouch, 0, 50)
     self.root:draw()
     self.leftLeg:draw()
     self.rightLeg:draw()
