@@ -28,8 +28,8 @@ function ui:init()
         timer = textlabel:new {
             text = function ()
                 local minutes = math.floor(gametime / 60)
-                local seconds = math.floor(gametime)
-                local ms = math.floor((gametime - seconds) * 1000)
+                local seconds = math.floor(gametime) - minutes * 60
+                local ms = math.floor((gametime - (math.floor(gametime))) * 1000)
 
                 return string.format("%02d", minutes)..":"..string.format("%02d", seconds).."."..string.format("%03d", ms)
             end,
@@ -79,8 +79,8 @@ function ui:init()
                 message = textlabel:new {
                     text = function ()
                         local minutes = math.floor(gametime / 60)
-                        local seconds = math.floor(gametime)
-                        local ms = math.floor((gametime - seconds) * 1000)
+                        local seconds = math.floor(gametime) - minutes * 60
+                        local ms = math.floor((gametime - (math.floor(gametime))) * 1000)
 
                         return "you beat the level in "..string.format("%02d", minutes)..":"..string.format("%02d", seconds).."."..string.format("%03d", ms).."!"
                     end,
