@@ -29,6 +29,10 @@ function vec3.__mul(a, b)
     return vec3.new(a.x * b, a.y * b, a.z * b)
 end
 
+function vec3.__div(a, b)
+    return vec3.new(a.x / b, a.y / b, a.z / b)
+end
+
 function vec3:get()
     return {self.x, self.z, self.y}
 end

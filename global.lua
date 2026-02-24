@@ -21,6 +21,34 @@ editorState = {
 
 gametime = 0.0
 
+
+function intersect3d(pos1, size1, pos2, size2)
+    local minx1, miny1, minz1 = pos1.x - size1.x / 2, pos1.y - size1.y / 2, pos1.z - size1.z / 2
+    local maxx1, maxy1, maxz1 = pos1.x + size1.x / 2, pos1.y + size1.y / 2, pos1.z + size1.z / 2
+    local minx2, miny2, minz2 = pos2.x - size2.x / 2, pos2.y - size2.y / 2, pos2.z - size2.z / 2
+    local maxx2, maxy2, maxz2 = pos2.x + size2.x / 2, pos2.y + size2.y / 2, pos2.z + size2.z / 2
+
+    return 
+        minx1 <= maxx2 and
+        maxx1 >= minx2 and
+        miny1 <= maxy2 and
+        maxy1 >= miny2 and
+        minz1 <= maxz2 and
+        maxz1 >= minz2
+end
+
+function point3d(point, pos, size)
+    local minx, miny, minz = pos.x - size.x / 2, pos.y - size.y / 2, pos.z - size.z / 2
+    local maxx, maxy, maxz = pos.x + size.x / 2, pos.y + size.y / 2, pos.z + size.z / 2
+    return 
+        point.x >= minx and
+        point.x <= maxx and
+        point.y >= miny and
+        point.y <= maxy and
+        point.z >= minz and
+        point.z <= maxz
+end
+
 -- source: https://github.com/EmmanuelOga/columns/blob/master/utils/color.lua (because. why do this myself. again.)
 -- (edited to input 0-1 rgb instead of 0-255 rgb)
 
