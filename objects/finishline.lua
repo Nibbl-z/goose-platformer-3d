@@ -11,7 +11,7 @@ function finishline:new(position)
     }
 
     local object = {
-        model = g3d.newModel(g3d.loadObj("models/finishline.obj", false, true), assets["img/finishline.skin.png"], position:get(), {0,0,-1}, {0.5,0.5,0.5}),
+        model = g3d.newModel(g3d.loadObj("models/finishline.obj", false, true), assets["img/finishline.skin.png"], (position - vec3.new(0,2,0)):get(), {0,0,-1}, {0.5,0.5,0.5}),
         data = {
             position = position
         },
@@ -68,7 +68,7 @@ function finishline:new(position)
 end
 
 function finishline:update(dt)
-    self.data.position = vec3.fromg3d(self.model.translation)
+    self.data.position = vec3.fromg3d(self.model.translation) + vec3.new(0, 2, 0)
     self.shader:send("hovered", self.hovered)
     self.shader:send("selected", self.selected)
 
