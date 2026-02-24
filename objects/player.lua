@@ -224,6 +224,8 @@ function player:new()
         jumpPressed = false,
         airtime = 0.0,
         spawnpoint = vec3.new(0,0,0),
+        xTouch = 0,
+        zTouch = 0,
 
         currentAnimation = "idle",
         currentFrame = -1,
@@ -260,6 +262,7 @@ function player:isGrounded(platforms)
                 self:reset()
                 return nil
             end
+            self.position.y = platform.data.position.y + platform.data.size.y / 2 + 1.5
             return true
         end
     end
@@ -268,10 +271,12 @@ function player:isGrounded(platforms)
 end
 
 function player:solveCollision(platforms, dt)
+    local collides = false
     for _, platform in ipairs(platforms) do
-        local collide = intersect3d(self.position + vec3.new(0,0.2,0), vec3.new(1,2.7,1), platform.data.position, platform.data.size)
+        local collide = intersect3d(self.position + vec3.new(0,0.2,0), vec3.new(2,2.7,2), platform.data.position, platform.data.size)
         
         if collide then
+            collides = true
             if platform.data.type == PLATFORM_TYPE.lava then
                 self:reset()
                 return nil
@@ -282,25 +287,25 @@ function player:solveCollision(platforms, dt)
             local minX, maxX = platform.data.position.x - platform.data.size.x / 2, platform.data.position.x + platform.data.size.x / 2
             local minZ, maxZ = platform.data.position.z - platform.data.size.z / 2, platform.data.position.z + platform.data.size.z / 2
             local x, z = self.position.x, self.position.z
-
-            local nx, nz = 0, 0
+            
             if x < minX then
-                nx = -1
+                self.xTouch = -1
+            elseif x > maxX then
+                self.xTouch = 1
+            else
+                self.xTouch = 0
             end
-            if x > maxX then
-                nx = 1
-            end
+            
             if z < minZ then
-                nz = -1
-            end
-            if z > maxZ then
-                nz = 1
+                self.zTouch = -1
+            elseif z > maxZ then
+                self.zTouch = 1
+            else
+                self.zTouch = 0
             end
 
-            print(x, z)
-
-            self.position.x = self.position.x + nx * math.clamp(dt, 0, 1) * RUN_SPEED * 2
-            self.position.z = self.position.z + nz * math.clamp(dt, 0, 1) * RUN_SPEED * 2
+            -- self.position.x = self.position.x + nx * math.clamp(dt, 0, 1) * RUN_SPEED * 4
+            -- self.position.z = self.position.z + nz * math.clamp(dt, 0, 1) * RUN_SPEED * 4
         end
 
         local above = point3d(self.position + vec3.new(0,1.5,0), platform.data.position, platform.data.size)
@@ -314,6 +319,11 @@ function player:solveCollision(platforms, dt)
             self.velocity.y = -7
             self.position.y = self.position.y - GRAVITY * dt
         end
+    end
+
+    if not collides then
+        self.xTouch = 0
+        self.zTouch = 0
     end
 end
 
@@ -445,7 +455,25 @@ function player:update(dt, platforms)
         self.velocity.y = JUMP_HEIGHT
     end
     
-    self.position = self.position + self.lastDirection:normalize() * dt * RUN_SPEED * self.acceleration
+    local normalizedDirection = self.lastDirection:normalize()
+
+    if normalizedDirection.x > 0 and self.xTouch == -1 then
+        normalizedDirection.x = 0
+    end
+
+    if normalizedDirection.x < 0 and self.xTouch == 1 then
+        normalizedDirection.x = 0
+    end
+
+    if normalizedDirection.z > 0 and self.zTouch == -1 then
+        normalizedDirection.z = 0
+    end
+
+    if normalizedDirection.z < 0 and self.zTouch == 1 then
+        normalizedDirection.z = 0
+    end
+
+    self.position = self.position + normalizedDirection * dt * RUN_SPEED * self.acceleration
 
     self.position = self.position + self.velocity * dt
 
@@ -528,6 +556,8 @@ end
 
 function player:draw()
     if not self.active then return end
+    love.graphics.print(self.xTouch)
+    love.graphics.print(self.zTouch, 0, 50)
     self.root:draw()
     self.leftLeg:draw()
     self.rightLeg:draw()
