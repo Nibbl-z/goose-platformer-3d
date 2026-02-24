@@ -423,8 +423,7 @@ function editor:update(dt, platforms)
                     end
                 end
             end
-
-            if g3d.collisions.sphereIntersection(item.model.verts, item.model, rayPos.x, rayPos.z, rayPos.y, 1) then
+            if point3d(rayPos, item.data.position, item.data.size or vec3.new(4,4,4)) then
                 if i <= dist then
                     dist = i
                     chosenItem = item
