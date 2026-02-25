@@ -167,7 +167,7 @@ function love.load()
             end
 
             Skybox:draw()
-            
+            Editor:drawGhost()
         end,
         {Editor}
     )

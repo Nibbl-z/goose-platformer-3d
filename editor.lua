@@ -63,6 +63,9 @@ local typeLookup = {
     ["finishline"] = FinishLine
 }
 
+local ghostGoose
+local ghostShader = love.graphics.newShader(g3d.shaderpath, "shaders/ghost.glsl")
+
 function editor:undo()
     local typeTableLookup = {
         ["platform"] = platforms,
@@ -127,6 +130,11 @@ function editor:redo()
 end
 
 function editor:init()
+    ghostGoose = {
+        root = g3d.newModel(g3d.loadObj("models/goose.obj", false, true), assets["img/goose.skin.png"], vec3.new(0,0,0):get(), vec3.new(0,0,0):get()),
+        leftLeg = g3d.newModel(g3d.loadObj("models/leftleg.obj", false, true), assets["img/goose.skin.png"], vec3.new(0,0,0):get(), vec3.new(0,0,0):get()),
+        rightLeg = g3d.newModel(g3d.loadObj("models/rightleg.obj", false, true), assets["img/goose.skin.png"], vec3.new(0,0,0):get(), vec3.new(0,0,0):get()),
+    }
     saturationValueShader:send("hue", 0)
 
     -- Ctrl+Z (undo)
@@ -553,6 +561,12 @@ function editor:draw()
 
     love.graphics.circle("fill", x + (sm * 120), y + ((1 - vm) * 120), 2)
     love.graphics.rectangle("fill", x1, y1 + (hm * 120), 25, 2)
+end
+
+function editor:drawGhost()
+    for _, v in pairs(ghostGoose) do
+        v:draw(ghostShader)
+    end
 end
 
 function editor:wheelmoved(x, y)
