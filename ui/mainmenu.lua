@@ -78,10 +78,10 @@ function ui:LevelCard(level, filename)
                 backgroundcolor = Color.new(0,0,0,0)
             },
             description = textlabel:new {
-                text = level.desc,
+                text = level.description,
                 size = UDim2.new(1,0,0.5,0),
                 position = UDim2.new(0,0,0.35,10),
-                textsize = 30,
+                textsize = 20,
                 fontpath = "LTSuperior.ttf",
                 halign = "left",
                 valign = "top",
