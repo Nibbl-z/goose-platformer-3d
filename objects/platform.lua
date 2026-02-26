@@ -46,6 +46,11 @@ function platform:new(data)
         selected = false,
         time = 0.0,
         _type = "platform",
+        _incomingMove = vec3.new(0,0,0),
+        _incomingMoveSnapped = vec3.new(0,0,0),
+        _incomingScale = vec3.new(0,0,0),
+        _incomingScaleSnapped = vec3.new(0,0,0),
+        _dragging = false,
         handles = {
             x = {
                 axis = "x",
@@ -95,6 +100,10 @@ function platform:new(data)
         }
     }
 
+    for _, v in pairs(object.handles) do
+        v._position = vec3.fromg3d(v.positionModel.translation)
+    end
+
     object.model.mesh:setTexture(assets[getTexture(object)])
 
     setmetatable(object, self)
@@ -115,8 +124,40 @@ function platform:update(dt)
     self.time = self.time + dt
     self.shader:send("time", self.time)
 
-    self.data.position = vec3.fromg3d(self.model.translation)
-    self.data.size = vec3.fromg3d(self.model.scale)
+    -- if self._dragging then
+    --     if self.snapAmount == 0 or self.snap == false then
+    --         self.model:setTranslation((vec3.fromg3d(self.model.translation) + self._incomingMove):getTuple())
+    --     else
+    --         self.model:setTranslation((vec3.fromg3d(self.model.translation) + vec3.new(
+    --             math.round(self._incomingMove.x, editorState.snapAmount),
+    --             math.round(self._incomingMove.y, editorState.snapAmount),
+    --             math.round(self._incomingMove.z, editorState.snapAmount)
+    --         )):getTuple())
+    --     end
+    -- end
+    
+    -- self._incomingMove = vec3.new(
+    --     math.round(self._incomingMoveSnapless.x, editorState.snap and editorState.snapAmount or 0),
+    --     math.round(self._incomingMoveSnapless.y, editorState.snap and editorState.snapAmount or 0),
+    --     math.round(self._incomingMoveSnapless.z, editorState.snap and editorState.snapAmount or 0)
+    -- )
+
+    self._incomingMoveSnapped = vec3.new(
+        math.round(self._incomingMove.x, editorState.snap and editorState.snapAmount or 0),
+        math.round(self._incomingMove.y, editorState.snap and editorState.snapAmount or 0),
+        math.round(self._incomingMove.z, editorState.snap and editorState.snapAmount or 0)
+    )
+
+    self._incomingScaleSnapped = vec3.new(
+        math.round(self._incomingScale.x, editorState.snap and editorState.snapAmount or 0),
+        math.round(self._incomingScale.y, editorState.snap and editorState.snapAmount or 0),
+        math.round(self._incomingScale.z, editorState.snap and editorState.snapAmount or 0)
+    )
+
+    
+    local pos = vec3.fromg3d(self.model.translation)
+    local scale = vec3.fromg3d(self.model.scale)
+    --self.data.size = vec3.fromg3d(self.model.scale)
 
     for k, v in pairs(self.data.position) do
         self.data.position[k] = math.round(v, 0.0001)
@@ -129,7 +170,7 @@ function platform:update(dt)
     for k, handle in pairs(self.handles) do
         for _, model in ipairs({"positionModel", "scaleModel"}) do
             local offset = vec3.new(0,0,0)
-            offset[handle.axis] = self.data.size[handle.axis] / 2 + 3
+            offset[handle.axis] = scale[handle.axis] / 2 + 3
 
             if handle.axis == "y" then
                 offset[handle.axis] = offset[handle.axis] * -1
@@ -139,7 +180,10 @@ function platform:update(dt)
                 offset[handle.axis] = offset[handle.axis] * -1
             end
 
-            handle[model]:setTranslation((self.data.position - offset):getTuple())
+
+
+            handle._position = pos - offset
+            handle[model]:setTranslation((pos - offset):getTuple())
         end
     end
 

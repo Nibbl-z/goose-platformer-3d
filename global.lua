@@ -16,7 +16,9 @@ editorState = {
     rightClickPos = UDim2.new(0,0,0,0),
     usingTextInput = false,
     selectedPlatforms = {},
-    unsavedChanges = false
+    unsavedChanges = false,
+    snap = false,
+    snapAmount = 0
 }
 
 gametime = 0.0

@@ -160,7 +160,7 @@ function PropertiesVec3(property, isVector)
     }
 end
 
-function PropertiesCheckbox(title, callbackOn, callbackOff, condition)
+function PropertiesCheckbox(title, callbackOn, callbackOff, condition, dontUpdateHistory)
     return uibase:new {
         size = UDim2.new(1,0,0,25),
         backgroundcolor = Color.new(0,0,0,0),
@@ -181,7 +181,7 @@ function PropertiesCheckbox(title, callbackOn, callbackOff, condition)
                     return condition() and "img/checkbox_on.png" or "img/checkbox_off.png"
                 end,
                 mousebutton1up = function (self)
-                    Editor:updateHistory()
+                    if dontUpdateHistory == nil then Editor:updateHistory() end
                     if condition() then
                         callbackOff()
                     else
@@ -191,6 +191,12 @@ function PropertiesCheckbox(title, callbackOn, callbackOff, condition)
             }
         }
     }
+end
+
+function Checkbox(callbackOn, callbackOff, condition)
+    local checkbox = PropertiesCheckbox("", callbackOn, callbackOff, condition, true)
+    
+    return checkbox:get("checkbox")
 end
 
 function ui:addNotif(text)
@@ -400,9 +406,41 @@ function ui:init()
                     end,
                     mouseexit = function (btn) exit(btn) end
                 },
+                snapLabel = textlabel:new {
+                    text = "Snap",
+                    halign = "right",
+                    size = UDim2.new(0,35,1,0),
+                    backgroundcolor = Color.new(0,0,0,0),
+                    textsize = 12,
+                    textcolor = Color.new(1,1,1,1)
+                },
+                snapToggle = Checkbox(function ()
+                    editorState.snap = true
+                end, function ()
+                    editorState.snap = false
+                end, function ()
+                    return editorState.snap
+                end),
+
+                snapInput = textinput:new {
+                    placeholdertext = "0",
+                    halign = "left",
+                    size = UDim2.new(0,100,0,25),
+                    backgroundcolor = Color.fromRgb(50,50,50),
+                    textsize = 12,
+                    textcolor = Color.new(1,1,1,1),
+                    onenter = function (v)
+                        if tonumber(v.text) == nil then
+                            v.text = tostring(editorState.snapAmount)
+                            return
+                        end
+                        editorState.snapAmount = tonumber(v.text) or 0
+                    end
+                },
+
                 camSpeed = textlabel:new {
                     text = function ()
-                        return "Camera speed: "..tostring(editorState.camSpeed)
+                        return "Cam speed: "..tostring(editorState.camSpeed)
                     end,
                     halign = "left",
                     size = UDim2.new(0,150,1,0),

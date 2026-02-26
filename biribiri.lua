@@ -101,6 +101,9 @@ end
 ---@return number number
 math.round = function (number, multiple)
     multiple = multiple or 1
+    if multiple == 0 then
+        multiple = 0.0001
+    end
     return math.floor(number / multiple + 0.5) * multiple
 end
 

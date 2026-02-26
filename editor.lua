@@ -274,11 +274,12 @@ function editor:mousemoved(x, y, dx, dy)
                     self:updateHistory()
                 end
                 dragging = true
-                local distance = (camera.position - vec3.fromg3d(chosenHandle.positionModel.translation)):magnitude()
+                --platform._dragging = true
+                local distance = (camera.position - chosenHandle._position):magnitude()
 
                 local d = math.sqrt(dx ^ 2 + dy ^ 2)
                 local pos = camRay(distance)
-                local sign = ((pos - vec3.fromg3d(chosenHandle.positionModel.translation))[chosenHandle.axis] < 0) and -1 or 1
+                local sign = ((pos - chosenHandle._position)[chosenHandle.axis] < 0) and -1 or 1
 
                 if editorState.tool == EDITOR_TOOLS.scale and chosenHandle.axis ~= "y" then -- i dont even know, i dont even want to know, 
                     sign = sign * -1
@@ -287,32 +288,58 @@ function editor:mousemoved(x, y, dx, dy)
                 local move = d * (distance / 400 * sign)
                 
                 if editorState.tool == EDITOR_TOOLS.move then
-                    platform.model:setTranslation((vec3.fromg3d(platform.model.translation) + vec3.new(
+                    -- platform._incomingMove = platform._incomingMove + vec3.new(
+                    --     math.round(chosenHandle.axis == "x" and move or 0, editorState.snap and editorState.snapAmount or 0),
+                    --     math.round(chosenHandle.axis == "y" and move or 0, editorState.snap and editorState.snapAmount or 0),
+                    --     math.round(chosenHandle.axis == "z" and move or 0, editorState.snap and editorState.snapAmount or 0)
+                    -- )
+
+                    platform._incomingMove = platform._incomingMove + vec3.new(
                         chosenHandle.axis == "x" and move or 0,
                         chosenHandle.axis == "y" and move or 0,
                         chosenHandle.axis == "z" and move or 0
-                    )):getTuple())
+                    )
+
+                    platform.model:setTranslation((platform.data.position + platform._incomingMoveSnapped):getTuple())
+
+                    -- platform.model:setTranslation((vec3.fromg3d(platform.model.translation) + vec3.new(
+                    --     chosenHandle.axis == "x" and move or 0,
+                    --     chosenHandle.axis == "y" and move or 0,
+                    --     chosenHandle.axis == "z" and move or 0
+                    -- )):getTuple())
                 elseif editorState.tool == EDITOR_TOOLS.scale and not platform.nonPlatform then
                     if editorState.tool == EDITOR_TOOLS.scale and chosenHandle.negative == true then
                         move = move * -1
                     end
-                    platform.model:setScale((vec3.fromg3d(platform.model.scale) + vec3.new(
+                    -- platform.model:setScale((vec3.fromg3d(platform.model.scale) + vec3.new(
+                    --     chosenHandle.axis == "x" and move or 0,
+                    --     chosenHandle.axis == "y" and move or 0,
+                    --     chosenHandle.axis == "z" and move or 0
+                    -- )):getTuple())
+
+                    platform._incomingScale = platform._incomingScale + vec3.new(
                         chosenHandle.axis == "x" and move or 0,
                         chosenHandle.axis == "y" and move or 0,
                         chosenHandle.axis == "z" and move or 0
-                    )):getTuple())
+                    )
 
-                    platform.model:setScale(math.abs(platform.model.scale[1]), math.abs(platform.model.scale[2]), math.abs(platform.model.scale[3]))
+                    platform.model:setScale(
+                        math.abs(platform.data.size.x + platform._incomingScaleSnapped.x),
+                        math.abs(platform.data.size.z + platform._incomingScaleSnapped.z),
+                        math.abs(platform.data.size.y + platform._incomingScaleSnapped.y)
+                    )
                     
                     if editorState.tool == EDITOR_TOOLS.scale and chosenHandle.negative == true then
                         move = move * -1
                     end
 
-                    platform.model:setTranslation((vec3.fromg3d(platform.model.translation) - vec3.new(
-                        chosenHandle.axis == "x" and move / 2 or 0,
-                        chosenHandle.axis == "y" and -move / 2 or 0,
-                        chosenHandle.axis == "z" and move / 2 or 0
+                    platform.model:setTranslation((platform.data.position - vec3.new(
+                        platform._incomingScaleSnapped.x / 2,
+                        -platform._incomingScaleSnapped.y / 2,
+                        platform._incomingScaleSnapped.z / 2
                     )):getTuple())
+
+                    --platform.data.position = vec3.fromg3d(platform.model.translation)
                 end
             end
         end
@@ -392,8 +419,19 @@ function editor:update(dt, platforms)
 
     for _, v in ipairs({platforms, checkpoints, finishlines}) do     
         for _, item in ipairs(v) do
+            if mouse1down then
+                item._incomingMove = vec3.new(0,0,0)
+                item._incomingScale = vec3.new(0,0,0)
+            end
+
+            if mouse1 then
+                item.data.position = vec3.fromg3d(item.model.translation)
+                item.data.size = vec3.fromg3d(item.model.scale)
+            end
+
             item:update(dt)
             item.hovered = false
+            item._dragging = false
             for _, handle in pairs(item.handles) do
                 if not dragging then
                     handle.hovered = false
@@ -425,7 +463,7 @@ function editor:update(dt, platforms)
         for _, item in ipairs(optimizedItems) do
             if item.selected then
                 for _, handle in pairs(item.handles) do
-                    if vec3.magnitude(rayPos - vec3.fromg3d(handle.positionModel.translation)) <= 6 and not dragging and i <= handleDist and not (editorState.tool == EDITOR_TOOLS.scale and item.nonPlatform) then
+                    if vec3.magnitude(rayPos - handle._position) <= 6 and not dragging and i <= handleDist and not (editorState.tool == EDITOR_TOOLS.scale and item.nonPlatform) then
                         handleDist = i
                         chosenHandle = handle
                     end
@@ -471,13 +509,14 @@ function editor:update(dt, platforms)
             hm, sm, vm = self:getPlatformColors()
         end
     end
-
+    
     if mouse2 and not cameraTurning then
         editorState.rightClicked = true
         editorState.rightClickPos = UDim2.new(0, love.mouse.getX(), 0, love.mouse.getY())
     end
 
     if mouse1 then
+        
         editorState.rightClicked = false
     end
 
@@ -535,6 +574,8 @@ end
 
 function editor:draw()
     local ui = require("ui.editor")
+
+    love.graphics.print(tostring(mouse1).." "..tostring(mouse1down))
 
     -- debugging renderer i used for making undo/redo history work, just gonna keep this just in case
     -- love.graphics.print(tostring(currentHistory).."::"..tostring(#history), 100, 50)
