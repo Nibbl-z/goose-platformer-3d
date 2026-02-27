@@ -20,6 +20,8 @@ function finishline:new(position)
         selected = false,
         nonPlatform = true,
         _type = "finishline",
+        _incomingMove = vec3.new(0,0,0),
+        _incomingMoveSnapped = vec3.new(0,0,0),
         handles = {
             x = {
                 axis = "x",
@@ -62,13 +64,23 @@ function finishline:new(position)
             },
         }
     }
+
+    for _, v in pairs(object.handles) do
+        v._position = vec3.fromg3d(v.positionModel.translation)
+    end
     
     setmetatable(object, self)
     return object
 end
 
 function finishline:update(dt)
-    self.data.position = vec3.fromg3d(self.model.translation) + vec3.new(0, 2, 0)
+    self._incomingMoveSnapped = vec3.new(
+        math.round(self._incomingMove.x, editorState.snap and editorState.snapAmount or 0),
+        math.round(self._incomingMove.y, editorState.snap and editorState.snapAmount or 0),
+        math.round(self._incomingMove.z, editorState.snap and editorState.snapAmount or 0)
+    )
+
+    --self.data.position = vec3.fromg3d(self.model.translation) + vec3.new(0, 2, 0)
     self.shader:send("hovered", self.hovered)
     self.shader:send("selected", self.selected)
 
@@ -77,6 +89,8 @@ function finishline:update(dt)
     end
 
     local finishlineSize = vec3.new(2,4,2)
+
+    local pos = vec3.fromg3d(self.model.translation)
 
     for k, handle in pairs(self.handles) do
         local offset = vec3.new(0,0,0)
@@ -90,7 +104,8 @@ function finishline:update(dt)
             offset[handle.axis] = offset[handle.axis] * -1
         end
 
-        handle.positionModel:setTranslation((self.data.position - offset):getTuple())
+        handle._position = pos - offset
+        handle.positionModel:setTranslation((pos - offset):getTuple())
     end
 end
 

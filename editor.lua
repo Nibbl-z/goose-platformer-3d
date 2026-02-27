@@ -300,7 +300,13 @@ function editor:mousemoved(x, y, dx, dy)
                         chosenHandle.axis == "z" and move or 0
                     )
 
-                    platform.model:setTranslation((platform.data.position + platform._incomingMoveSnapped):getTuple())
+                    
+
+                    if platform._type == "finishline" then
+                        platform.model:setTranslation((platform.data.position + platform._incomingMoveSnapped + vec3.new(0,-2,0)):getTuple())
+                    else
+                        platform.model:setTranslation((platform.data.position + platform._incomingMoveSnapped):getTuple())
+                    end
 
                     -- platform.model:setTranslation((vec3.fromg3d(platform.model.translation) + vec3.new(
                     --     chosenHandle.axis == "x" and move or 0,
@@ -425,7 +431,12 @@ function editor:update(dt, platforms)
             end
 
             if mouse1 then
-                item.data.position = vec3.fromg3d(item.model.translation)
+                if item._type == "finishline" then
+                    item.data.position = vec3.fromg3d(item.model.translation) + vec3.new(0,2,0)
+                else
+                    item.data.position = vec3.fromg3d(item.model.translation)
+                end
+                
                 item.data.size = vec3.fromg3d(item.model.scale)
             end
 

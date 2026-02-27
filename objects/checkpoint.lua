@@ -23,6 +23,8 @@ function checkpoint:new(position)
         speed = 1,
         nonPlatform = true,
         _type = "checkpoint",
+        _incomingMove = vec3.new(0,0,0),
+        _incomingMoveSnapped = vec3.new(0,0,0),
         handles = {
             x = {
                 axis = "x",
@@ -65,13 +67,22 @@ function checkpoint:new(position)
             },
         }
     }
+
+    for _, v in pairs(object.handles) do
+        v._position = vec3.fromg3d(v.positionModel.translation)
+    end
     
     setmetatable(object, self)
     return object
 end
 
 function checkpoint:update(dt)
-    self.data.position = vec3.fromg3d(self.model.translation)
+    self._incomingMoveSnapped = vec3.new(
+        math.round(self._incomingMove.x, editorState.snap and editorState.snapAmount or 0),
+        math.round(self._incomingMove.y, editorState.snap and editorState.snapAmount or 0),
+        math.round(self._incomingMove.z, editorState.snap and editorState.snapAmount or 0)
+    )
+
     self.time = self.time + dt * (self.active and 1 or 0.25)
     self.model:setRotation(0, 0, self.model.rotation[3] + dt * self.speed)
 
@@ -87,6 +98,7 @@ function checkpoint:update(dt)
     end
 
     local checkpointSize = vec3.new(2,4,2)
+    local pos = vec3.fromg3d(self.model.translation)
 
     for k, handle in pairs(self.handles) do
         local offset = vec3.new(0,0,0)
@@ -100,7 +112,8 @@ function checkpoint:update(dt)
             offset[handle.axis] = offset[handle.axis] * -1
         end
 
-        handle.positionModel:setTranslation((self.data.position - offset):getTuple())
+        handle._position = pos - offset
+        handle.positionModel:setTranslation((pos - offset):getTuple())
     end
 end
 
