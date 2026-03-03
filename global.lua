@@ -22,6 +22,7 @@ editorState = {
 }
 
 gametime = 0.0
+paused = false
 
 
 function intersect3d(pos1, size1, pos2, size2)

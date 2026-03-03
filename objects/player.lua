@@ -250,6 +250,7 @@ function player:new()
 end
 
 function player:mousemoved(x, y, dx, dy)
+    if paused then return end
     self.camera.rotation = self.camera.rotation - vec3.new(0, dx * SENSITIVITY, dy * SENSITIVITY)
     self.camera.rotation.z = math.clamp(self.camera.rotation.z, -90, 90)
 end
@@ -384,6 +385,7 @@ function player:updateCameraDistance(platforms)
 end
 
 function player:update(dt, platforms)
+    if paused then return end
     if not self.active then return end
 
     if not self.menuMode then

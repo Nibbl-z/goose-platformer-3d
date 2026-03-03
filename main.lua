@@ -106,7 +106,7 @@ function love.load()
         -- Update
         function (dt)
             Player.active = true
-            if not Player.win then
+            if not Player.win and not paused then
                 gametime = gametime + dt
             end
             
@@ -223,6 +223,18 @@ end
 
 function love.keypressed(key)
     yan:keypressed(key)
+
+    if key == "escape" and currentScene == "game" then
+        paused = not paused
+
+        if paused then
+            love.mouse.setRelativeMode(false)
+            ui.game:pause()
+        else
+            love.mouse.setRelativeMode(true)
+            ui.game:unpause()
+        end
+    end
 
     if key == "," then
         love.mouse.setRelativeMode(true)
