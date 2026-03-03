@@ -1,6 +1,7 @@
 require "yan"
 
 local ui = {}
+local Level = require "level"
 
 function ui:finish()
     tween:new(self.screen:get("fade"), TweenInfo.new(0.4), {backgroundcolor = Color.new(0,0,0,0.6)}):play()
@@ -97,7 +98,8 @@ function ui:init()
                 end, UDim2.new(0.5, -20, 0, 60), 25, true),
 
                 restart = Button("blue", "Play Again", UDim2.new(0.75,0,1,-35), function (btn)
-                    print("ble")
+                    Level:restart()
+                    self:reset()
                 end, UDim2.new(0.5,-20,0,60), 25, true)
             }
         }

@@ -127,6 +127,22 @@ function level:loadGame(data)
     currentScene = "game"
 end
 
+function level:restart()
+    gametime = 0.0
+    love.keyboard.setKeyRepeat(false)
+    Player.position = vec3.new(0,0,0)
+    Player.spawnpoint = vec3.new(0,0,0)
+    Player.velocity = vec3.new(0,0,0)
+    love.mouse.setRelativeMode(true)
+
+    Player.menuMode = false
+    Player.win = false
+
+    for _, checkpoint in ipairs(checkpoints) do
+        checkpoint.active = false
+    end
+end
+
 function level:loadEditor(data)
     table.clear(platforms)
     table.clear(checkpoints)
