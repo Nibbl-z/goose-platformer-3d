@@ -335,14 +335,16 @@ function editor:mousemoved(x, y, dx, dy)
                         math.abs(platform.data.size.y + platform._incomingScaleSnapped.y)
                     )
                     
+                    local otherSign = 1
+
                     if editorState.tool == EDITOR_TOOLS.scale and chosenHandle.negative == true then
-                        move = move * -1
+                        otherSign = -1 -- idk man.
                     end
 
                     platform.model:setTranslation((platform.data.position - vec3.new(
-                        platform._incomingScaleSnapped.x / 2,
-                        -platform._incomingScaleSnapped.y / 2,
-                        platform._incomingScaleSnapped.z / 2
+                        platform._incomingScaleSnapped.x / 2 * otherSign,
+                        -platform._incomingScaleSnapped.y / 2 * otherSign,
+                        platform._incomingScaleSnapped.z / 2 * otherSign
                     )):getTuple())
 
                     --platform.data.position = vec3.fromg3d(platform.model.translation)

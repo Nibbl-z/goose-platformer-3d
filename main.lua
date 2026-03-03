@@ -38,8 +38,6 @@ function love.load()
         v:init()
     end
 
-
-
     SCENES["mainmenu"] = Scene:new(
         ui.mainmenu, 
         -- Init
