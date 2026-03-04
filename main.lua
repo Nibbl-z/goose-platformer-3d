@@ -42,6 +42,8 @@ function love.load()
         ui.mainmenu, 
         -- Init
         function ()
+            Skybox:set("night")
+
             ui.mainmenu:enterAnim()
 
             Player.position = vec3.new(4.5,20,-2)
@@ -253,7 +255,6 @@ end
 function love.draw()
     love.graphics.setColor(1,1,1)
     --love.graphics.print(tostring(love.timer.getFPS()), 0, 100)
-    love.graphics.setBackgroundColor(0.1,0.1,0.1,1)
 
     for k, scene in pairs(SCENES) do
         if k == currentScene then 

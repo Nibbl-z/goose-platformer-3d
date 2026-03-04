@@ -85,7 +85,7 @@ function ui:init()
                     
                 end, UDim2.new(0.6, -20, 0, 60), 25, true),
 
-                restart = Button("orange", "Restart", UDim2.new(0.5,0,0.5,70), function (btn)
+                restart = Button("red", "Restart", UDim2.new(0.5,0,0.5,70), function (btn)
                     paused = false
                     self:unpause()
                     Level:restart()

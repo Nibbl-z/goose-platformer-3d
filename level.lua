@@ -30,6 +30,7 @@ function level:export(data, filename)
         name = data.name,
         description = data.description,
         creator = data.creator,
+        skybox = data.skybox,
         platforms = {},
         checkpoints = {},
         finishlines = {},
@@ -123,6 +124,8 @@ function level:loadGame(data)
     for _, pos in ipairs(data.finishlines) do
         table.insert(finishlines, FinishLine:new(vec3.new(pos.x, pos.y, pos.z)))
     end
+    
+    Skybox:set(data.skybox)
 
     currentScene = "game"
 end
@@ -159,6 +162,8 @@ function level:loadEditor(data)
     for _, pos in ipairs(data.finishlines) do
         table.insert(finishlines, FinishLine:new(vec3.new(pos.x, pos.y, pos.z)))
     end
+
+    Skybox:set(data.skybox)
 
     currentScene = "editor"
 end

@@ -8,7 +8,8 @@ local popupOpen = false
 
 local INPUT_FIELD = {
     TextField = 1,
-    Label = 2
+    Label = 2,
+    Carousel = 3
 }
 
 function Button(color, text, position, callback, size, textSize, isPopup)
@@ -200,6 +201,48 @@ function Popup(data)
         }
     end
 
+    local function CarouselField(data)
+        local options = data.options
+        local currentOption = 1
+        return uibase:new {
+            size = UDim2.new(1,0,0,40),
+            backgroundcolor = Color.new(0,0,0,0),
+            children = {
+                label = textlabel:new {
+                    size = UDim2.new(0.25,0,1,0),
+                    backgroundcolor = Color.new(0,0,0,0),
+                    text = data.label,
+                    fontpath = "LTSuperior.ttf",
+                    textcolor = Color.new(1,1,1,1),
+                    textsize = 16,
+                },
+                left = Button("green", "<", UDim2.new(0.375,0,0.5,0), function (v)
+                    currentOption = currentOption - 1
+                    if currentOption == 0 then
+                        currentOption = #options
+                    end
+                    v.parent:get("input").text = options[currentOption]
+                end, UDim2.new(0,50,1,-10), 30, true),
+                right = Button("green", ">", UDim2.new(0.925,0,0.5,0), function (v)
+                    currentOption = currentOption + 1
+                    if currentOption > #options then
+                        currentOption = 1
+                    end
+                    v.parent:get("input").text = options[currentOption]
+                end, UDim2.new(0,50,1,-10), 30, true),
+                input = textlabel:new {
+                    size = UDim2.new(0.4,0,1,0),
+                    position = UDim2.new(0.45,0,0,0),
+                    fontpath = "LTSuperior.ttf",
+                    backgroundcolor = Color.new(0,0,0,0.5),
+                    textcolor = Color.new(1,1,1,1),
+                    textsize = 24,
+                    text = options[1]
+                },
+            }
+        }
+    end
+
     local popup = uibase:new {
         size = UDim2.new(0.5,0,0.5,0),
         position = UDim2.new(0.5,0,0.5,30),
@@ -268,7 +311,8 @@ function Popup(data)
     for k, input in pairs(inputs) do
         local lookup = {
             [INPUT_FIELD.TextField] = TextField,
-            [INPUT_FIELD.Label] = LabelField
+            [INPUT_FIELD.Label] = LabelField,
+            [INPUT_FIELD.Carousel] = CarouselField
         }
 
         local instance = lookup[input.type](input.data)
@@ -412,6 +456,7 @@ function ui:init()
                             name = {type = INPUT_FIELD.TextField, data = {label = "Level Name"}, order = 1},
                             description = {type = INPUT_FIELD.TextField, data = {label = "Description"}, order = 2},
                             creator = {type = INPUT_FIELD.TextField, data = {label = "Level Creator (that's you!)"}, order = 3},
+                            skybox = {type = INPUT_FIELD.Carousel, data = {label = "Skybox", options = table.clone(SKYBOXES)}, order = 4}
                         },
                         callback = function (inputs)
                             local result = Level:export(inputs)
