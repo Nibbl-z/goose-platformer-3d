@@ -42,6 +42,8 @@ function love.load()
         ui.mainmenu, 
         -- Init
         function ()
+            love.keyboard.setKeyRepeat(true)
+
             Skybox:set("night")
 
             ui.mainmenu:enterAnim()

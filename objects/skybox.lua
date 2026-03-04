@@ -24,13 +24,13 @@ SKYBOX_COLOR = {
     black = Color.fromRgb(0,0,0,255),
     gray = Color.fromRgb(30,30,30,255),
     white = Color.fromRgb(255,255,255,255),
-    red = Color.fromRgb(255, 0, 0,255),
-    orange = Color.fromRgb(255, 127, 0,255),
-    yellow = Color.fromRgb(255,255,0,255),
-    green = Color.fromRgb(0,255,0,255),
-    blue = Color.fromRgb(0,0,255,255),
-    purple = Color.fromRgb(127,0,255,255),
-    pink = Color.fromRgb(255,0,255,255)
+    red = Color.fromRgb(255, 40, 40, 255),
+    orange = Color.fromRgb(255, 127, 40,255),
+    yellow = Color.fromRgb(255,255,40,255),
+    green = Color.fromRgb(40,255,40,255),
+    blue = Color.fromRgb(40,40,255,255),
+    purple = Color.fromRgb(127,40,255,255),
+    pink = Color.fromRgb(255,40,255,255)
 }
 
 function skybox:new()

@@ -97,15 +97,18 @@ function ui:LevelCard(level, filename)
                 currentLevelPath = filename
                 Level:loadEditor(level)
             end, UDim2.new(0,110,0,50), 25),
-            Button("orange", "Rename", UDim2.new(0,300,1.2,-70), function ()
+            Button("orange", "Change Metadata", UDim2.new(0,300,1.2,-70), function ()
                 self:createPopup({
-                    title = "Rename Level",
+                    title = "Edit Metadata",
                     buttonText = "Confirm",
                     inputs = {
-                        name = {type = INPUT_FIELD.TextField, data = {label = "New Name"}, order = 1},
+                        name = {type = INPUT_FIELD.TextField, data = {label = "Level Name", preset = level.name}, order = 1},
+                        description = {type = INPUT_FIELD.TextField, data = {label = "Description", preset = level.description}, order = 2},
+                        creator = {type = INPUT_FIELD.TextField, data = {label = "Level Creator (that's you!)", preset = level.creator}, order = 3},
+                        skybox = {type = INPUT_FIELD.Carousel, data = {label = "Skybox", options = table.clone(SKYBOXES), preset = level.skybox}, order = 4}
                     },
                     callback = function (inputs)
-                        local result = Level:renameLevel(filename, inputs.name)
+                        local result = Level:changeMetadata(inputs, filename)
                         if result ~= nil then
                             self:createPopup({
                                 title = "Error",
@@ -127,7 +130,7 @@ function ui:LevelCard(level, filename)
                         end
                     end
                 })
-            end, UDim2.new(0,110,0,50), 25),
+            end, UDim2.new(0,110,0,50), 20),
             Button("red", "Delete", UDim2.new(0,420,1.2,-70), function ()
                 self:createPopup({
                     title = "Delete Level",
@@ -177,6 +180,7 @@ function Popup(data)
                     backgroundcolor = Color.new(0,0,0,0.5),
                     textcolor = Color.new(1,1,1,1),
                     textsize = 16,
+                    text = data.preset or ""
                 },
                 label = textlabel:new {
                     size = UDim2.new(0.25,0,1,0),
@@ -204,6 +208,11 @@ function Popup(data)
     local function CarouselField(data)
         local options = data.options
         local currentOption = 1
+
+        if data.preset ~= nil then
+            currentOption = table.find(options, data.preset) or 1
+        end
+
         return uibase:new {
             size = UDim2.new(1,0,0,40),
             backgroundcolor = Color.new(0,0,0,0),
@@ -237,7 +246,7 @@ function Popup(data)
                     backgroundcolor = Color.new(0,0,0,0.5),
                     textcolor = Color.new(1,1,1,1),
                     textsize = 24,
-                    text = options[1]
+                    text = options[currentOption]
                 },
             }
         }

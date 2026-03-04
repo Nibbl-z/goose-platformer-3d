@@ -168,43 +168,100 @@ function level:loadEditor(data)
     currentScene = "editor"
 end
 
-function level:renameLevel(oldName, newName)
-    if string.len(newName) <= 0 then
+function level:changeMetadata(newData, filename)
+    if newData.name == "" then
         return "Level name needs to be at least 1 character!"
     end
 
-    local newNamePath = newName..".goose3d"
-    local info = love.filesystem.getInfo(newNamePath)
-    print(info)
-    if info ~= nil then
-        return "Another level already has the new name!"
+    if newData.description == "" then
+        return "Level description needs to be at least 1 character!"
     end
 
-    local oldFile = love.filesystem.newFile(oldName)
+    if newData.creator == "" then
+        return "Level creator needs to be at least 1 character!"
+    end
 
-    local ok, err = oldFile:open("r")
+    local renameFile = false
+
+    local file = love.filesystem.newFile(filename)
+
+    local ok, err = file:open("r")
     if not ok then
-        return "Failed to load level data: "..err
+        return "Failed to update level: "..err
     end
 
-    local data = loadstring("return "..oldFile:read())()
-    data.name = newName
+    local data = loadstring("return "..file:read())()
+    if data.name ~= newData.name then
+        renameFile = true
+    end
+    data.name = newData.name
+    data.description = newData.description
+    data.creator = newData.creator
+    data.skybox = newData.skybox
 
     local stringedData = table.tostring(data)
 
-    local newFile = love.filesystem.newFile(newNamePath)
-    local ok, err = newFile:open("w")
-    if not ok then
-        return "Failed to update level name: "..err
+    if renameFile then
+        local newFile = love.filesystem.newFile(newData.name..".goose3d")
+
+        local ok, err = newFile:open("w")
+        if not ok then
+            return "Failed to update level: "..err
+        end
+
+        local ok, err = newFile:write(stringedData)
+        if not ok then
+            return "Failed to update level: "..err
+        end
+
+        file:close()
+        newFile:close()
+        love.filesystem.remove(filename)
+    else
+        file:close()
+        local ok, err = file:open("w")
+
+        if not ok then
+            return "Failed to update level: "..err
+        end
+
+        local ok, err = file:write(stringedData)
+        if not ok then
+            return "Failed to update level: "..err
+        end
+
+        file:close()
     end
 
-    local ok, err = newFile:write(stringedData)
-    if not ok then
-        return "Failed to update level name: "..err
-    end
+    -- local newNamePath = newName..".goose3d"
+    -- local info = love.filesystem.getInfo(newNamePath)
+    -- print(info)
+    -- if info ~= nil then
+    --     return "Another level already has the new name!"
+    -- end
 
-    oldFile:close()
-    love.filesystem.remove(oldName)
+    -- local oldFile = love.filesystem.newFile(oldName)
+
+    -- local ok, err = oldFile:open("r")
+    -- if not ok then
+    --     return "Failed to load level data: "..err
+    -- end
+
+    -- local data = loadstring("return "..oldFile:read())()
+    -- data.name = newName
+
+    -- local stringedData = table.tostring(data)
+
+    -- local newFile = love.filesystem.newFile(newNamePath)
+    -- local ok, err = newFile:open("w")
+    -- if not ok then
+    --     return "Failed to update level name: "..err
+    -- end
+
+    -- local ok, err = newFile:write(stringedData)
+    -- if not ok then
+    --     return "Failed to update level name: "..err
+    -- end
 end
 
 function level:deleteLevel(path)
