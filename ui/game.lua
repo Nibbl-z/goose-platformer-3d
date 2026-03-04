@@ -38,19 +38,28 @@ function ui:init()
     end, true)
 
     self.screen = screen:new {
-        timer = textlabel:new {
-            text = function ()
-                local minutes = math.floor(gametime / 60)
-                local seconds = math.floor(gametime) - minutes * 60
-                local ms = math.floor((gametime - (math.floor(gametime))) * 1000)
+        timer = uibase:new{
+            size = UDim2.new(0.275,0,0.1,0),
+            anchorpoint = Vector2.new(0.5,0),
+            position = UDim2.new(0.5,0,0,10),
+            cornerradius = UDim.new(0,16),
+            backgroundcolor = Color.new(0,0,0,0.5),
+            children = {
+                textlabel:new {
+                    text = function ()
+                        local minutes = math.floor(gametime / 60)
+                        local seconds = math.floor(gametime) - minutes * 60
+                        local ms = math.floor((gametime - (math.floor(gametime))) * 1000)
 
-                return string.format("%02d", minutes)..":"..string.format("%02d", seconds).."."..string.format("%03d", ms)
-            end,
-            textsize = 40,
-            fontpath = "LTSuperior.ttf",
-            textcolor = Color.new(1,1,1,1),
-            backgroundcolor = Color.new(0,0,0,0),
-            size = UDim2.new(1,0,0.1,0)
+                        return string.format("%02d", minutes)..":"..string.format("%02d", seconds).."."..string.format("%03d", ms)
+                    end,
+                    textsize = 40,
+                    fontpath = "LTSuperior.ttf",
+                    textcolor = Color.new(1,1,1,1),
+                    backgroundcolor = Color.new(0,0,0,0),
+                    size = UDim2.new(1,0,1,0)
+                },
+            }
         },
 
         fade = uibase:new {
