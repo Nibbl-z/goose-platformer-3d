@@ -588,8 +588,6 @@ end
 function editor:draw()
     local ui = require("ui.editor")
 
-    love.graphics.print(tostring(mouse1).." "..tostring(mouse1down))
-
     -- debugging renderer i used for making undo/redo history work, just gonna keep this just in case
     -- love.graphics.print(tostring(currentHistory).."::"..tostring(#history), 100, 50)
     -- for i, v in ipairs(history) do

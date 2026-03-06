@@ -109,25 +109,29 @@ function level:load(filename)
 end
 
 function level:loadGame(data)
-    table.clear(platforms)
-    table.clear(checkpoints)
-    table.clear(finishlines)
+    tween:new(fade, TweenInfo.new(0.19), {value = 1}):play()
 
-    for _, data in ipairs(data.platforms) do
-        table.insert(platforms, Platform:new(data))
-    end
+    biribiri:CreateAndStartTimer(0.2, function ()
+        table.clear(platforms)
+        table.clear(checkpoints)
+        table.clear(finishlines)
 
-    for _, pos in ipairs(data.checkpoints) do
-        table.insert(checkpoints, Checkpoint:new(vec3.new(pos.x, pos.y, pos.z)))
-    end
+        for _, data in ipairs(data.platforms) do
+            table.insert(platforms, Platform:new(data))
+        end
 
-    for _, pos in ipairs(data.finishlines) do
-        table.insert(finishlines, FinishLine:new(vec3.new(pos.x, pos.y, pos.z)))
-    end
-    
-    Skybox:set(data.skybox)
+        for _, pos in ipairs(data.checkpoints) do
+            table.insert(checkpoints, Checkpoint:new(vec3.new(pos.x, pos.y, pos.z)))
+        end
 
-    currentScene = "game"
+        for _, pos in ipairs(data.finishlines) do
+            table.insert(finishlines, FinishLine:new(vec3.new(pos.x, pos.y, pos.z)))
+        end
+        
+        Skybox:set(data.skybox)
+        currentScene = "game"
+        tween:new(fade, TweenInfo.new(0.2), {value = 0}):play()
+    end)
 end
 
 function level:restart()
@@ -147,25 +151,31 @@ function level:restart()
 end
 
 function level:loadEditor(data)
-    table.clear(platforms)
-    table.clear(checkpoints)
-    table.clear(finishlines)
+    tween:new(fade, TweenInfo.new(0.19), {value = 1}):play()
 
-    for _, data in ipairs(data.platforms) do
-        table.insert(platforms, Platform:new(data))
-    end
+    biribiri:CreateAndStartTimer(0.2, function ()
+        table.clear(platforms)
+        table.clear(checkpoints)
+        table.clear(finishlines)
+    
+        for _, data in ipairs(data.platforms) do
+            table.insert(platforms, Platform:new(data))
+        end
+    
+        for _, pos in ipairs(data.checkpoints) do
+            table.insert(checkpoints, Checkpoint:new(vec3.new(pos.x, pos.y, pos.z)))
+        end
+    
+        for _, pos in ipairs(data.finishlines) do
+            table.insert(finishlines, FinishLine:new(vec3.new(pos.x, pos.y, pos.z)))
+        end
+    
+        Skybox:set(data.skybox)
+    
+        currentScene = "editor"
 
-    for _, pos in ipairs(data.checkpoints) do
-        table.insert(checkpoints, Checkpoint:new(vec3.new(pos.x, pos.y, pos.z)))
-    end
-
-    for _, pos in ipairs(data.finishlines) do
-        table.insert(finishlines, FinishLine:new(vec3.new(pos.x, pos.y, pos.z)))
-    end
-
-    Skybox:set(data.skybox)
-
-    currentScene = "editor"
+        tween:new(fade, TweenInfo.new(0.2), {value = 0}):play()
+    end)
 end
 
 function level:changeMetadata(newData, filename)

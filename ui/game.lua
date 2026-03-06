@@ -89,8 +89,12 @@ function ui:init()
                 },
                 menu = Button("green", "Back to Menu", UDim2.new(0.5,0,0.5,0), function (btn)
                     paused = false
-                    currentScene = "mainmenu"
-                    self:unpause()
+                    tween:new(fade, TweenInfo.new(0.19), {value = 1}):play()
+
+                    biribiri:CreateAndStartTimer(0.2, function ()
+                        self:unpause()
+                        currentScene = "mainmenu"
+                    end)
                     
                 end, UDim2.new(0.6, -20, 0, 60), 25, true),
 
@@ -150,7 +154,11 @@ function ui:init()
                 },
                 
                 menu = Button("green", "Back to Menu", UDim2.new(0.25,0,1,-35), function (btn)
-                    currentScene = "mainmenu"
+                    tween:new(fade, TweenInfo.new(0.19), {value = 1}):play()
+
+                    biribiri:CreateAndStartTimer(0.2, function ()
+                        currentScene = "mainmenu"
+                    end)
                 end, UDim2.new(0.5, -20, 0, 60), 25, true),
 
                 restart = Button("blue", "Play Again", UDim2.new(0.75,0,1,-35), function (btn)

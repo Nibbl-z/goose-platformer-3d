@@ -253,7 +253,11 @@ function ui:init()
                         if editorState.unsavedChanges then
                             self.exitConfirmation = true
                         else
-                            currentScene = "mainmenu"
+                            tween:new(fade, TweenInfo.new(0.19), {value = 1}):play()
+
+                            biribiri:CreateAndStartTimer(0.2, function ()
+                                currentScene = "mainmenu"
+                            end)
                         end
                     end,
                     mouseenter = function (btn) 
@@ -531,8 +535,14 @@ function ui:init()
                     anchorpoint = Vector2.new(0,1),
                     text = "Exit",
                     mousebutton1up = function ()
-                        currentScene = "mainmenu"
-                    end
+                        tween:new(fade, TweenInfo.new(0.19), {value = 1}):play()
+
+                        biribiri:CreateAndStartTimer(0.2, function ()
+                            currentScene = "mainmenu"
+                        end)
+                    end,
+                    mouseenter = function(btn) btn.backgroundcolor = Color.fromRgb(50,50,50) end,
+                    mouseexit = function(btn) btn.backgroundcolor = Color.fromRgb(40,40,40) end
                 },
                 cancel = textlabel:new {
                     textcolor = Color.new(1,1,1,1),
@@ -543,7 +553,9 @@ function ui:init()
                     text = "Cancel",
                     mousebutton1up = function ()
                         self.exitConfirmation = false
-                    end
+                    end,
+                    mouseenter = function(btn) btn.backgroundcolor = Color.fromRgb(50,50,50) end,
+                    mouseexit = function(btn) btn.backgroundcolor = Color.fromRgb(40,40,40) end
                 }
             }
         },

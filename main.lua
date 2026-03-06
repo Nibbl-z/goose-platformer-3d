@@ -7,7 +7,6 @@ local player = require("objects.player")
 local Editor = require("editor")
 local World = require("objects.world")
 local skybox = require("objects.skybox")
-local FinishLine = require("objects.finishline")
 local Scene = require("objects.scene")
 
 local ui = {
@@ -24,6 +23,10 @@ local SCENES = {}
 currentScene = "mainmenu"
 currentLevelPath = ""
 local lastScene = nil
+
+fade = {
+    value = 0
+}
 
 function love.load()
     uiCanvas = love.graphics.newCanvas()
@@ -42,6 +45,8 @@ function love.load()
         ui.mainmenu, 
         -- Init
         function ()
+            tween:new(fade, TweenInfo.new(0.2), {value = 0}):play()
+
             love.keyboard.setKeyRepeat(true)
 
             Skybox:set("night")
@@ -146,6 +151,7 @@ function love.load()
         function ()
             love.keyboard.setKeyRepeat(true)
             ui.editor.exitConfirmation = false
+            editorState.unsavedChanges = false
             Editor:reset()
         end,
         -- Update
@@ -269,4 +275,7 @@ function love.draw()
     if currentScene == "editor" then -- yes, icky hard coding, but this is literally just one edge case i dont want to deal with rn
         Editor:draw()
     end
+
+    love.graphics.setColor(0,0,0,fade.value)
+    love.graphics.rectangle("fill", 0,0,800,600)
 end
