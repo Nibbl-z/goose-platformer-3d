@@ -39,11 +39,13 @@ function Button(color, text, position, callback, size, textSize, isPopup)
         end,
         mousebutton1down = function (btn)
             if popupOpen and not isPopup then return end
+            assets["sfx/click_down.ogg"]:play()
             btn.image = "img/btn_"..color.."_pressed.png"
             tween:new(btn, TweenInfo.new(0.2, EasingStyle.CubicOut), {size = (size and (size - UDim2.new(0, 10, 0, 5))) or UDim2.new(0, 290, 0, 95)}):play()
         end,
         mousebutton1up = function (btn)
             if popupOpen and not isPopup then return end
+            assets["sfx/click_up.ogg"]:play()
             btn.image = "img/btn_"..color..".png"
             tween:new(btn, TweenInfo.new(0.2, EasingStyle.CubicOut), {size = (size and (size + UDim2.new(0, 5, 0, 5))) or UDim2.new(0, 305, 0, 105)}):play()
             callback(btn)

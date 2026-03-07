@@ -32,6 +32,7 @@ function love.load()
     uiCanvas = love.graphics.newCanvas()
 
     biribiri:LoadSprites("img")
+    biribiri:LoadAudio("sfx", "static")
 
     Player = player:new()
     Skybox = skybox:new()

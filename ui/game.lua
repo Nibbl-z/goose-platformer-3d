@@ -4,6 +4,7 @@ local ui = {}
 local Level = require "level"
 
 function ui:finish()
+    assets["sfx/tada.ogg"]:play()
     tween:new(self.screen:get("fade"), TweenInfo.new(0.4), {backgroundcolor = Color.new(0,0,0,0.6)}):play()
     self.screen:get("ending").position = UDim2.new(0.5,0,0.5,-20)
     self.screen:get("ending").visible = true

@@ -15,6 +15,15 @@ local MOVE_DIRECTIONS = {
     d = 270
 }
 
+local footstepSoundLookup = {
+    stone = "stone",
+    plastic = "stone",
+    wood = "wood",
+    planks = "wood",
+    metal = "metal",
+    sheet_metal = "metal"
+}
+
 local GRAVITY = 70
 
 local ANIMATIONS = {
@@ -227,6 +236,9 @@ function player:new()
         xTouch = 0,
         zTouch = 0,
 
+        footstepSoundTimer = 0.0,
+        touchingMaterial = MATERIAL[1],
+
         currentAnimation = "idle",
         currentFrame = -1,
         currentFrameData = nil,
@@ -256,7 +268,6 @@ function player:mousemoved(x, y, dx, dy)
 end
 
 function player:isGrounded(platforms)
-
     for _, platform in ipairs(platforms) do
         if point3d(self.position - vec3.new(0, 1.5, 0), platform.data.position, platform.data.size) then
             if platform.data.type == PLATFORM_TYPE.lava then
@@ -264,6 +275,7 @@ function player:isGrounded(platforms)
                 return nil
             end
             self.position.y = platform.data.position.y + platform.data.size.y / 2 + 1.5
+            self.touchingMaterial = platform.data.material
             return true
         end
     end
@@ -291,16 +303,20 @@ function player:solveCollision(platforms, dt)
 
             if x < minX then
                 self.xTouch = -1
+                self.touchingMaterial = platform.data.material
             elseif x > maxX then
                 self.xTouch = 1
+                self.touchingMaterial = platform.data.material
             else
                 self.xTouch = 0
             end
             
             if z < minZ then
                 self.zTouch = -1
+                self.touchingMaterial = platform.data.material
             elseif z > maxZ then
                 self.zTouch = 1
+                self.touchingMaterial = platform.data.material
             else
                 self.zTouch = 0
             end
@@ -422,8 +438,17 @@ function player:update(dt, platforms)
     if direction.x == 0 then
         modelRotation = 0
     end
+    
+    if self.footstepSoundTimer >= 0.35 then
+        self.footstepSoundTimer = 0
+        assets["sfx/footstep_"..footstepSoundLookup[self.touchingMaterial]..tostring(love.math.random(1,4)..".ogg")]:play()
+    end
 
     if keysDown > 0 then
+        if self.grounded then
+            self.footstepSoundTimer = self.footstepSoundTimer + dt
+        end
+
         self.lastDirection = direction
         self.acceleration = math.clamp(self.acceleration + dt * 4, 0, 1)
         
@@ -455,6 +480,7 @@ function player:update(dt, platforms)
         self.jumpPressed = false
         self.grounded = false
         self.velocity.y = JUMP_HEIGHT
+        assets["sfx/jump.ogg"]:play()
     end
     
     local normalizedDirection = self.lastDirection:normalize()
@@ -482,6 +508,12 @@ function player:update(dt, platforms)
     local grounded = self:isGrounded(platforms)
 
     if grounded ~= nil then
+        if self.grounded == false and self.airtime >= 1 then
+            assets["sfx/landing.ogg"]:play()
+        elseif self.grounded == false then
+            self.footstepSoundTimer = 10
+        end
+
         self.airtime = 0
         self.velocity.y = 0
         self.grounded = true
