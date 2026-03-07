@@ -90,7 +90,7 @@ function finishline:update(dt)
 
     local finishlineSize = vec3.new(2,4,2)
 
-    local pos = vec3.fromg3d(self.model.translation)
+    local pos = vec3.fromg3d(self.model.translation) + vec3.new(0,2,0)
 
     for k, handle in pairs(self.handles) do
         local offset = vec3.new(0,0,0)

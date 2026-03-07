@@ -464,7 +464,9 @@ function editor:update(dt, platforms)
     for _, v in ipairs({platforms, checkpoints, finishlines}) do 
         for _, item in ipairs(v) do
             local pos = vec3.fromg3d(item.model.translation)
+            
             if (pos - camera.position):magnitude() <= 80 then
+                
                 table.insert(optimizedItems, item)
             end
         end
@@ -482,14 +484,27 @@ function editor:update(dt, platforms)
                     end
                 end
             end
-            if point3d(rayPos, item.data.position, item.data.size or vec3.new(4,4,4)) then
-                if i <= dist then
-                    dist = i
-                    chosenItem = item
+
+            if not item.nonPlatform then
+                if point3d(rayPos, item.data.position, item.data.size or vec3.new(4,4,4)) then
+                    if i <= dist then
+                        dist = i
+                        chosenItem = item
+                    end
+                    
+                    break
+                end   
+            else
+                if vec3.magnitude(rayPos - item.data.position) < 3 then
+                    if i <= dist then
+                        dist = i
+                        chosenItem = item
+                    end
+                    
+                    break
                 end
-                
-                break
             end
+            
         end
     end
     
