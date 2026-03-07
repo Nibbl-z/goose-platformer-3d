@@ -130,7 +130,6 @@ function level:loadGame(data)
         
         Skybox:set(data.skybox)
         currentScene = "game"
-        tween:new(fade, TweenInfo.new(0.2), {value = 0}):play()
     end)
 end
 
@@ -173,8 +172,8 @@ function level:loadEditor(data)
         Skybox:set(data.skybox)
     
         currentScene = "editor"
-
         tween:new(fade, TweenInfo.new(0.2), {value = 0}):play()
+
     end)
 end
 

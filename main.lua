@@ -102,6 +102,8 @@ function love.load()
         ui.game, 
         -- Init
         function ()
+            tween:new(fade, TweenInfo.new(0.5), {value = 0}):play()
+
             gametime = 0.0
             love.keyboard.setKeyRepeat(false)
             Player.position = vec3.new(0,0,0)
@@ -150,6 +152,8 @@ function love.load()
         ui.editor,
         -- Init
         function ()
+            tween:new(fade, TweenInfo.new(0.5), {value = 0}):play()
+
             love.keyboard.setKeyRepeat(true)
             ui.editor.exitConfirmation = false
             editorState.unsavedChanges = false
