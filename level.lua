@@ -31,6 +31,7 @@ function level:export(data, filename)
         description = data.description,
         creator = data.creator,
         skybox = data.skybox,
+        music = data.music,
         platforms = {},
         checkpoints = {},
         finishlines = {},
@@ -127,6 +128,13 @@ function level:loadGame(data)
         for _, pos in ipairs(data.finishlines) do
             table.insert(finishlines, FinishLine:new(vec3.new(pos.x, pos.y, pos.z)))
         end
+
+        if data.music ~= "None" then
+            assets["music/"..data.music..".mp3"]:setLooping(true)
+            assets["music/"..data.music..".mp3"]:setVolume(0.3)
+            assets["music/"..data.music..".mp3"]:play()
+            currentMusic = data.music
+        end
         
         Skybox:set(data.skybox)
         currentScene = "game"
@@ -207,6 +215,7 @@ function level:changeMetadata(newData, filename)
     data.description = newData.description
     data.creator = newData.creator
     data.skybox = newData.skybox
+    data.music = newData.music
 
     local stringedData = table.tostring(data)
 

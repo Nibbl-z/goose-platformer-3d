@@ -102,12 +102,14 @@ function ui:LevelCard(level, filename)
             Button("orange", "Change Metadata", UDim2.new(0,300,1.2,-70), function ()
                 self:createPopup({
                     title = "Edit Metadata",
+                    height = 0.65,
                     buttonText = "Confirm",
                     inputs = {
                         name = {type = INPUT_FIELD.TextField, data = {label = "Level Name", preset = level.name}, order = 1},
                         description = {type = INPUT_FIELD.TextField, data = {label = "Description", preset = level.description}, order = 2},
                         creator = {type = INPUT_FIELD.TextField, data = {label = "Level Creator (that's you!)", preset = level.creator}, order = 3},
-                        skybox = {type = INPUT_FIELD.Carousel, data = {label = "Skybox", options = table.clone(SKYBOXES), preset = level.skybox}, order = 4}
+                        skybox = {type = INPUT_FIELD.Carousel, data = {label = "Skybox", options = table.clone(SKYBOXES), preset = level.skybox}, order = 4},
+                        music = {type = INPUT_FIELD.Carousel, data = {label = "Music", options = table.clone(BGM), preset = level.music}, order = 5}
                     },
                     callback = function (inputs)
                         local result = Level:changeMetadata(inputs, filename)
@@ -255,7 +257,7 @@ function Popup(data)
     end
 
     local popup = uibase:new {
-        size = UDim2.new(0.5,0,0.5,0),
+        size = UDim2.new(0.5,0,data.height or 0.5,0),
         position = UDim2.new(0.5,0,0.5,30),
         anchorpoint = Vector2.new(0.5, 0.5),
         backgroundcolor = Color.new(0.1,0.1,0.1,0.98),
@@ -462,12 +464,14 @@ function ui:init()
                 create = Button("green", "New Level", UDim2.new(0,245,0,40), function ()
                     self:createPopup({
                         title = "Create Level",
+                        height = 0.65,
                         buttonText = "Confirm",
                         inputs = {
                             name = {type = INPUT_FIELD.TextField, data = {label = "Level Name"}, order = 1},
                             description = {type = INPUT_FIELD.TextField, data = {label = "Description"}, order = 2},
                             creator = {type = INPUT_FIELD.TextField, data = {label = "Level Creator (that's you!)"}, order = 3},
-                            skybox = {type = INPUT_FIELD.Carousel, data = {label = "Skybox", options = table.clone(SKYBOXES)}, order = 4}
+                            skybox = {type = INPUT_FIELD.Carousel, data = {label = "Skybox", options = table.clone(SKYBOXES)}, order = 4},
+                            music = {type = INPUT_FIELD.Carousel, data = {label = "Music", options = table.clone(BGM)}, order = 5}
                         },
                         callback = function (inputs)
                             local result = Level:export(inputs)

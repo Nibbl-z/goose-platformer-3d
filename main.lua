@@ -28,11 +28,23 @@ fade = {
     value = 0
 }
 
+BGM = {
+    "None",
+    "Green Goose",
+    "Purple Goose",
+    "Blue Goose",
+    "Manipulation",
+    "Purgatory"
+}
+
+currentMusic = nil
+
 function love.load()
     uiCanvas = love.graphics.newCanvas()
 
     biribiri:LoadSprites("img")
     biribiri:LoadAudio("sfx", "static")
+    biribiri:LoadAudio("music", "stream")
 
     Player = player:new()
     Skybox = skybox:new()
@@ -46,6 +58,14 @@ function love.load()
         ui.mainmenu, 
         -- Init
         function ()
+            if currentMusic ~= nil then
+                assets["music/"..currentMusic..".mp3"]:stop()
+            end
+
+            assets["music/Menu.mp3"]:setLooping(true)
+            assets["music/Menu.mp3"]:setVolume(0.3)
+            assets["music/Menu.mp3"]:play()
+
             tween:new(fade, TweenInfo.new(0.2), {value = 0}):play()
 
             love.keyboard.setKeyRepeat(true)
@@ -102,6 +122,7 @@ function love.load()
         ui.game, 
         -- Init
         function ()
+            assets["music/Menu.mp3"]:stop()
             tween:new(fade, TweenInfo.new(0.5), {value = 0}):play()
 
             gametime = 0.0
@@ -152,6 +173,7 @@ function love.load()
         ui.editor,
         -- Init
         function ()
+            assets["music/Menu.mp3"]:stop()
             tween:new(fade, TweenInfo.new(0.5), {value = 0}):play()
 
             love.keyboard.setKeyRepeat(true)
