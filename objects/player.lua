@@ -271,6 +271,7 @@ function player:isGrounded(platforms)
     for _, platform in ipairs(platforms) do
         if point3d(self.position - vec3.new(0, 1.5, 0), platform.data.position, platform.data.size) then
             if platform.data.type == PLATFORM_TYPE.lava then
+                assets["sfx/death.wav"]:play()
                 self:reset()
                 return nil
             end
@@ -291,6 +292,7 @@ function player:solveCollision(platforms, dt)
         if collide then
             collides = true
             if platform.data.type == PLATFORM_TYPE.lava then
+                assets["sfx/death.wav"]:play()
                 self:reset()
                 return nil
             end
@@ -329,6 +331,7 @@ function player:solveCollision(platforms, dt)
         
         if above then
             if platform.data.type == PLATFORM_TYPE.lava then
+                assets["sfx/death.wav"]:play()
                 self:reset()
                 return nil
             end
@@ -441,7 +444,9 @@ function player:update(dt, platforms)
     
     if self.footstepSoundTimer >= 0.35 then
         self.footstepSoundTimer = 0
-        assets["sfx/footstep_"..footstepSoundLookup[self.touchingMaterial]..tostring(love.math.random(1,4)..".ogg")]:play()
+        local id = love.math.random(1,4)
+        assets["sfx/footstep_"..footstepSoundLookup[self.touchingMaterial]..id..".ogg"]:stop()
+        assets["sfx/footstep_"..footstepSoundLookup[self.touchingMaterial]..id..".ogg"]:play()
     end
 
     if keysDown > 0 then
@@ -480,6 +485,7 @@ function player:update(dt, platforms)
         self.jumpPressed = false
         self.grounded = false
         self.velocity.y = JUMP_HEIGHT
+        assets["sfx/jump.ogg"]:stop()
         assets["sfx/jump.ogg"]:play()
     end
     
@@ -554,6 +560,10 @@ function player:update(dt, platforms)
     for _, checkpoint in ipairs(checkpoints) do
         local dist = (self.position - checkpoint.data.position):magnitude()
         if dist <= 4 then
+            if checkpoint.active == false then
+                assets["sfx/checkpoint.wav"]:play()
+            end
+
             self.spawnpoint = checkpoint.data.position
             checkpoint.speed = 5
             checkpoint.active = true
