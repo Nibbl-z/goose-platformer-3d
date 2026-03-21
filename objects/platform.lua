@@ -52,73 +52,37 @@ function platform:new(data)
         _incomingScaleSnapped = vec3.new(0,0,0),
         _dragging = false,
         handles = {
-            x = {
-                axis = "x",
-                positionModel = g3d.newModel("models/movehandle.obj", assets["img/goog.png"], (data.position - vec3.new(data.size.x / 2 + 3, 0, 0)):get(), vec3.new(0,math.rad(90),0):get(), vec3.new(0.5,0.5,0.5):get()),
-                scaleModel = g3d.newModel("models/scalehandle.obj", assets["img/goog.png"], (data.position - vec3.new(data.size.x / 2 + 3, 0, 0)):get(), vec3.new(0,math.rad(90),0):get(), vec3.new(0.5,0.5,0.5):get()),
-                shader = love.graphics.newShader(g3d.shaderpath, "shaders/solid.glsl"),
-                hovered = false
-            },
-            y = {
-                axis = "y",
-                positionModel = g3d.newModel("models/movehandle.obj", assets["img/goog.png"], (data.position + vec3.new(0, data.size.y / 2 + 3, 0)):get(), vec3.new(math.rad(90),0,0):get(), vec3.new(0.5,0.5,0.5):get()),
-                scaleModel = g3d.newModel("models/scalehandle.obj", assets["img/goog.png"], (data.position + vec3.new(0, data.size.y / 2 + 3, 0)):get(), vec3.new(math.rad(90),0,0):get(), vec3.new(0.5,0.5,0.5):get()),
-                shader = love.graphics.newShader(g3d.shaderpath, "shaders/solid.glsl"),
-                hovered = false
-            },
-            z = {
-                axis = "z",
-                positionModel = g3d.newModel("models/movehandle.obj", assets["img/goog.png"], (data.position + vec3.new(0, data.size.y / 2 + 3, 0)):get(), vec3.new(0,math.rad(180),0):get(), vec3.new(0.5,0.5,0.5):get()),
-                scaleModel = g3d.newModel("models/scalehandle.obj", assets["img/goog.png"], (data.position - vec3.new(0, 0, data.size.z / 2 + 3)):get(), vec3.new(0,math.rad(180),0):get(), vec3.new(0.5,0.5,0.5):get()),
-                shader = love.graphics.newShader(g3d.shaderpath, "shaders/solid.glsl"),
-                hovered = false
-            },
-            nx = {
-                axis = "x",
-                negative = true,
-                positionModel = g3d.newModel("models/movehandle.obj", assets["img/goog.png"], (data.position - vec3.new(data.size.x / 2 + 3, 0, 0)):get(), vec3.new(0,math.rad(270),0):get(), vec3.new(0.5,0.5,0.5):get()),
-                scaleModel = g3d.newModel("models/scalehandle.obj", assets["img/goog.png"], (data.position - vec3.new(data.size.x / 2 + 3, 0, 0)):get(), vec3.new(0,math.rad(270),0):get(), vec3.new(0.5,0.5,0.5):get()),
-                shader = love.graphics.newShader(g3d.shaderpath, "shaders/solid.glsl"),
-                hovered = false
-            },
-            ny = {
-                axis = "y",
-                negative = true,
-                positionModel = g3d.newModel("models/movehandle.obj", assets["img/goog.png"], (data.position + vec3.new(0, data.size.y / 2 + 3, 0)):get(), vec3.new(math.rad(270),0,0):get(), vec3.new(0.5,0.5,0.5):get()),
-                scaleModel = g3d.newModel("models/scalehandle.obj", assets["img/goog.png"], (data.position + vec3.new(0, data.size.y / 2 + 3, 0)):get(), vec3.new(math.rad(270),0,0):get(), vec3.new(0.5,0.5,0.5):get()),
-                shader = love.graphics.newShader(g3d.shaderpath, "shaders/solid.glsl"),
-                hovered = false
-            },
-            nz = {
-                axis = "z",
-                negative = true,
-                positionModel = g3d.newModel("models/movehandle.obj", assets["img/goog.png"], (data.position + vec3.new(0, data.size.y / 2 + 3, 0)):get(), vec3.new(0,math.rad(0),0):get(), vec3.new(0.5,0.5,0.5):get()),
-                scaleModel = g3d.newModel("models/scalehandle.obj", assets["img/goog.png"], (data.position - vec3.new(0, 0, data.size.z / 2 + 3)):get(), vec3.new(0,math.rad(0),0):get(), vec3.new(0.5,0.5,0.5):get()),
-                shader = love.graphics.newShader(g3d.shaderpath, "shaders/solid.glsl"),
-                hovered = false
-            },
+            
         }
     }
 
-    for _, v in pairs(object.handles) do
-        v._position = vec3.fromg3d(v.positionModel.translation)
-    end
-
     object.model.mesh:setTexture(assets[getTexture(object)])
+    object.model:compress()
 
     setmetatable(object, self)
+
+    print(collectgarbage("count") / 1000)
 
     return object
 end
 
 function platform:destroy()
+    self.model.mesh:release()
     self.model = nil
-    self.handles = nil
+    self.shader:release()
+    self.shader = nil
+    self:destroyHandles()
     self = nil
 end
 
 
 function platform:update(dt)
+    if self.selected then
+        self:createHandles()
+    else
+        self:destroyHandles()
+    end
+
     -- "this is horrible but there wont be any other handle types. I THINK"
     -- he was quickly proven wrong
     self.time = self.time + dt
@@ -180,8 +144,6 @@ function platform:update(dt)
                 offset[handle.axis] = offset[handle.axis] * -1
             end
 
-
-
             handle._position = pos - offset
             handle[model]:setTranslation((pos - offset):getTuple())
         end
@@ -196,6 +158,71 @@ local HANDLE_COLORS = {
     z = {0.0, 0.0, 1.0}
 }
 
+function platform:createHandles()
+    if self.handles["x"] ~= nil then return end
+
+    self.handles = {
+        x = {
+            axis = "x",
+            positionModel = g3d.newModel("models/movehandle.obj", nil, (self.data.position - vec3.new(self.data.size.x / 2 + 3, 0, 0)):get(), vec3.new(0,math.rad(90),0):get(), vec3.new(0.5,0.5,0.5):get()),
+            scaleModel = g3d.newModel("models/scalehandle.obj", nil, (self.data.position - vec3.new(self.data.size.x / 2 + 3, 0, 0)):get(), vec3.new(0,math.rad(90),0):get(), vec3.new(0.5,0.5,0.5):get()),
+            shader = love.graphics.newShader(g3d.shaderpath, "shaders/solid.glsl"),
+            hovered = false
+        },
+        y = {
+            axis = "y",
+            positionModel = g3d.newModel("models/movehandle.obj", nil, (self.data.position + vec3.new(0, self.data.size.y / 2 + 3, 0)):get(), vec3.new(math.rad(90),0,0):get(), vec3.new(0.5,0.5,0.5):get()),
+            scaleModel = g3d.newModel("models/scalehandle.obj", nil, (self.data.position + vec3.new(0, self.data.size.y / 2 + 3, 0)):get(), vec3.new(math.rad(90),0,0):get(), vec3.new(0.5,0.5,0.5):get()),
+            shader = love.graphics.newShader(g3d.shaderpath, "shaders/solid.glsl"),
+            hovered = false
+        },
+        z = {
+            axis = "z",
+            positionModel = g3d.newModel("models/movehandle.obj", nil, (self.data.position + vec3.new(0, self.data.size.y / 2 + 3, 0)):get(), vec3.new(0,math.rad(180),0):get(), vec3.new(0.5,0.5,0.5):get()),
+            scaleModel = g3d.newModel("models/scalehandle.obj", nil, (self.data.position - vec3.new(0, 0, self.data.size.z / 2 + 3)):get(), vec3.new(0,math.rad(180),0):get(), vec3.new(0.5,0.5,0.5):get()),
+            shader = love.graphics.newShader(g3d.shaderpath, "shaders/solid.glsl"),
+            hovered = false
+        },
+        nx = {
+            axis = "x",
+            negative = true,
+            positionModel = g3d.newModel("models/movehandle.obj", nil, (self.data.position - vec3.new(self.data.size.x / 2 + 3, 0, 0)):get(), vec3.new(0,math.rad(270),0):get(), vec3.new(0.5,0.5,0.5):get()),
+            scaleModel = g3d.newModel("models/scalehandle.obj", nil, (self.data.position - vec3.new(self.data.size.x / 2 + 3, 0, 0)):get(), vec3.new(0,math.rad(270),0):get(), vec3.new(0.5,0.5,0.5):get()),
+            shader = love.graphics.newShader(g3d.shaderpath, "shaders/solid.glsl"),
+            hovered = false
+        },
+        ny = {
+            axis = "y",
+            negative = true,
+            positionModel = g3d.newModel("models/movehandle.obj", nil, (self.data.position + vec3.new(0, self.data.size.y / 2 + 3, 0)):get(), vec3.new(math.rad(270),0,0):get(), vec3.new(0.5,0.5,0.5):get()),
+            scaleModel = g3d.newModel("models/scalehandle.obj", nil, (self.data.position + vec3.new(0, self.data.size.y / 2 + 3, 0)):get(), vec3.new(math.rad(270),0,0):get(), vec3.new(0.5,0.5,0.5):get()),
+            shader = love.graphics.newShader(g3d.shaderpath, "shaders/solid.glsl"),
+            hovered = false
+        },
+        nz = {
+            axis = "z",
+            negative = true,
+            positionModel = g3d.newModel("models/movehandle.obj", nil, (self.data.position + vec3.new(0, self.data.size.y / 2 + 3, 0)):get(), vec3.new(0,math.rad(0),0):get(), vec3.new(0.5,0.5,0.5):get()),
+            scaleModel = g3d.newModel("models/scalehandle.obj", nil, (self.data.position - vec3.new(0, 0, self.data.size.z / 2 + 3)):get(), vec3.new(0,math.rad(0),0):get(), vec3.new(0.5,0.5,0.5):get()),
+            shader = love.graphics.newShader(g3d.shaderpath, "shaders/solid.glsl"),
+            hovered = false
+        },
+    }
+
+    for _, v in pairs(self.handles) do
+        v._position = vec3.fromg3d(v.positionModel.translation)
+    end
+end
+
+function platform:destroyHandles()
+    if self.handles["x"] == nil then return end
+    for _, handle in pairs(self.handles) do
+        handle = nil
+    end
+
+    table.clear(self.handles)
+end
+
 function platform:draw()
     if self.model == nil then return end
     
@@ -209,14 +236,16 @@ function platform:draw()
     --love.graphics.setColor(1,1,1,1)
     if self.selected then
         for k, handle in pairs(self.handles) do
+            
             handle.shader:send("color", {HANDLE_COLORS[handle.axis][1], HANDLE_COLORS[handle.axis][2], HANDLE_COLORS[handle.axis][3], handle.hovered and 1 or 0.4})
 
-            if editorState.tool == EDITOR_TOOLS.move then
-                handle.positionModel:draw(handle.shader)
-            else
-                handle.scaleModel:draw(handle.shader)
-            end
-            
+            pcall(function()
+                if editorState.tool == EDITOR_TOOLS.move then
+                    handle.positionModel:draw(handle.shader)
+                else
+                    handle.scaleModel:draw(handle.shader)
+                end
+            end)
         end
     end
 end

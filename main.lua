@@ -79,7 +79,7 @@ function love.load()
 
             g3d.camera.lookAt(0,0,0,5,0,0)
 
-            table.clear(platforms)
+            level:cleanup()
 
             table.insert(platforms, Platform:new({
                 position = vec3.new(5,-7,-2.2),
@@ -252,6 +252,8 @@ function love.update(dt)
     --     Player.active = false
     --     Skybox:update(Editor:getCam().position)
     -- end
+
+    collectgarbage("collect")
 end
 
 function love.textinput(text)
@@ -287,6 +289,8 @@ function love.keypressed(key)
     end
 end
 
+
+local thefont = love.graphics.newFont(16)
 function love.draw()
     love.graphics.setColor(1,1,1)
     --love.graphics.print(tostring(love.timer.getFPS()), 0, 100)
@@ -305,4 +309,11 @@ function love.draw()
 
     love.graphics.setColor(0,0,0,fade.value)
     love.graphics.rectangle("fill", 0,0,800,600)
+
+    local stats = love.graphics.getStats()
+
+    love.graphics.setColor(1,1,1,1)
+    local str = string.format("texture: %.2f MB,memory: %s", stats.texturememory / 1024 / 1024, tostring(collectgarbage("count") / 1024))
+    love.graphics.setFont(thefont)
+    love.graphics.print(str, 10, 50)
 end

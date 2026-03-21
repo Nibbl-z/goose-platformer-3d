@@ -59,6 +59,9 @@ table.clear = function (t)
     repeat
         table.remove(t, 1)
     until #t == 0
+
+    t = nil
+    t = {}
 end
 
 -- love how this function never actually worked very cool <3

@@ -113,9 +113,7 @@ function level:loadGame(data)
     tween:new(fade, TweenInfo.new(0.19), {value = 1}):play()
 
     biribiri:CreateAndStartTimer(0.2, function ()
-        table.clear(platforms)
-        table.clear(checkpoints)
-        table.clear(finishlines)
+        self:cleanup()
 
         for _, data in ipairs(data.platforms) do
             table.insert(platforms, Platform:new(data))
@@ -155,6 +153,17 @@ function level:restart()
     for _, checkpoint in ipairs(checkpoints) do
         checkpoint.active = false
     end
+end
+
+function level:cleanup()
+    for _, v in ipairs(platforms) do
+        v:destroy()
+    end
+
+    table.clear(platforms)
+    table.clear(checkpoints)
+    table.clear(finishlines)
+    platforms = {}
 end
 
 function level:loadEditor(data)
