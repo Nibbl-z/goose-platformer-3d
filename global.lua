@@ -24,6 +24,7 @@ editorState = {
 gametime = 0.0
 paused = false
 platform_id = 0
+voidheight = -50
 
 function intersect3d(pos1, size1, pos2, size2)
     local minx1, miny1, minz1 = pos1.x - size1.x / 2, pos1.y - size1.y / 2, pos1.z - size1.z / 2

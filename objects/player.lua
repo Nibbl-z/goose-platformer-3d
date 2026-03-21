@@ -602,6 +602,11 @@ function player:update(dt, platforms)
         end
     end
 
+    if self.position.y < voidheight then
+        assets["sfx/death.wav"]:play()
+        self:reset()
+    end
+
     self:updateModel()
 end
 

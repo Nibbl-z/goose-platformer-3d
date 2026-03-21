@@ -58,6 +58,8 @@ function love.load()
         ui.mainmenu, 
         -- Init
         function ()
+            voidheight = -50
+            
             if currentMusic ~= nil then
                 assets["music/"..currentMusic..".mp3"]:stop()
             end

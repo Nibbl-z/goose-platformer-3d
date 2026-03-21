@@ -110,9 +110,11 @@ function level:load(filename)
 end
 
 function level:loadGame(data)
+    
     tween:new(fade, TweenInfo.new(0.19), {value = 1}):play()
 
     biribiri:CreateAndStartTimer(0.2, function ()
+        voidheight = -30
         self:cleanup()
 
         for _, data in ipairs(data.platforms) do
@@ -135,6 +137,13 @@ function level:loadGame(data)
         end
         
         Skybox:set(data.skybox)
+
+        for _, platform in ipairs(platforms) do
+            if (platform.data.position.y - platform.data.size.y / 2 - 30) <= voidheight then
+                voidheight = (platform.data.position.y - platform.data.size.y / 2 - 30)
+            end
+        end
+
         currentScene = "game"
     end)
 end
