@@ -70,7 +70,7 @@ function ui:init()
         },
 
         pause = uibase:new {
-            size = UDim2.new(0.5,0,0.5,0),
+            size = UDim2.new(0.5,0,0.65,0),
             position = UDim2.new(0.5,0,0.5,30),
             anchorpoint = Vector2.new(0.5, 0.5),
             backgroundcolor = Color.new(0.1,0.1,0.1,0.98),
@@ -88,7 +88,13 @@ function ui:init()
                     backgroundcolor = Color.new(0,0,0,0),
                     size = UDim2.new(1,0,0.2,0)
                 },
-                menu = Button("green", "Back to Menu", UDim2.new(0.5,0,0.5,0), function (btn)
+                resume = Button("green", "Resume", UDim2.new(0.5,0,0.6,-100), function (btn)
+                    paused = false
+                    self:unpause()
+                    self:reset()
+                    love.mouse.setRelativeMode(true)
+                end, UDim2.new(0.6, -20, 0, 60), 25, true),
+                menu = Button("blue", "Back to Menu", UDim2.new(0.5,0,0.6,-30), function (btn)
                     paused = false
                     tween:new(fade, TweenInfo.new(0.19), {value = 1}):play()
 
@@ -99,7 +105,15 @@ function ui:init()
                     
                 end, UDim2.new(0.6, -20, 0, 60), 25, true),
 
-                restart = Button("red", "Restart", UDim2.new(0.5,0,0.5,70), function (btn)
+                respawn = Button("orange", "Respawn at Checkpoint", UDim2.new(0.5,0,0.6,40), function (btn)
+                    paused = false
+                    self:unpause()
+                    self:reset()
+                    Player:reset()
+                    love.mouse.setRelativeMode(true)
+                end, UDim2.new(0.6, -20, 0, 60), 20, true),
+
+                restart = Button("red", "Restart", UDim2.new(0.5,0,0.6,110), function (btn)
                     paused = false
                     self:unpause()
                     Level:restart()
