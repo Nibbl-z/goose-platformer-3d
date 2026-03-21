@@ -649,9 +649,9 @@ function editor:draw()
     local x, y = ui.screen:get("properties"):get("colorpicker"):get("sv"):getdrawingcoordinates()
     local x1, y1 = ui.screen:get("properties"):get("colorpicker"):get("h"):getdrawingcoordinates()
     
-    love.graphics.draw(assets["img/goog.png"], x, y, 0, 120/128)
+    love.graphics.draw(assets["img/goog.png"], x, y, 0, 120)
     love.graphics.setShader(hueShader)
-    love.graphics.draw(assets["img/goog.png"], x1, y1, 0, 25/128, 120/128)
+    love.graphics.draw(assets["img/goog.png"], x1, y1, 0, 25, 120)
     love.graphics.setShader()
 
     love.graphics.circle("fill", x + (sm * 120), y + ((1 - vm) * 120), 2)
