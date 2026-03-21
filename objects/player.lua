@@ -383,6 +383,7 @@ function player:updateModel()
                 py = data["position"].z
                 pz = data["position"].y
             end
+            
         end
 
         local x = px * math.cos(self.modelDirection) - py * math.sin(self.modelDirection)

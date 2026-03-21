@@ -22,6 +22,7 @@ function finishline:new(position)
         _type = "finishline",
         _incomingMove = vec3.new(0,0,0),
         _incomingMoveSnapped = vec3.new(0,0,0),
+        _id = platform_id,
         handles = {
             x = {
                 axis = "x",
@@ -65,12 +66,24 @@ function finishline:new(position)
         }
     }
 
+    platform_id = platform_id + 1
+
     for _, v in pairs(object.handles) do
         v._position = vec3.fromg3d(v.positionModel.translation)
     end
     
     setmetatable(object, self)
     return object
+end
+
+function finishline:setData(newData)
+    for k, v in pairs(newData) do
+        if k == "position" then
+            self.model:setTranslation(v:getTuple())
+        end
+
+        self.data[k] = v
+    end
 end
 
 function finishline:update(dt)

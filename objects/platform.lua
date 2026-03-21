@@ -17,11 +17,6 @@ MATERIAL = {
     "sheet_metal"
 }
 
-local textureLookup = {
-    [0] = "img/stone.png",
-    [1] = "img/lava.png"
-}
-
 local function getTexture(p)
     if p.data.type == PLATFORM_TYPE.lava then
         return "img/lava.png"
@@ -55,19 +50,32 @@ function platform:new(data)
         _incomingScale = vec3.new(0,0,0),
         _incomingScaleSnapped = vec3.new(0,0,0),
         _dragging = false,
+        _id = platform_id,
         handles = {
             
         }
     }
+
+    platform_id = platform_id + 1
 
     object.model.mesh:setTexture(assets[getTexture(object)])
     object.model:compress()
 
     setmetatable(object, self)
 
-    print(collectgarbage("count") / 1000)
-
     return object
+end
+
+function platform:setData(newData)
+    for k, v in pairs(newData) do
+        if k == "position" then
+            self.model:setTranslation(v:getTuple())
+        end
+        if k == "size" then
+            self.model:setScale(v:getTuple())
+        end
+        self.data[k] = v
+    end
 end
 
 function platform:destroy()
@@ -86,6 +94,8 @@ function platform:update(dt)
     else
         self:destroyHandles()
     end
+
+    if self.shader == nil then return end
 
     -- "this is horrible but there wont be any other handle types. I THINK"
     -- he was quickly proven wrong

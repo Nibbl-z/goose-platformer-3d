@@ -66,13 +66,57 @@ local typeLookup = {
 local ghostGoose
 local ghostShader = love.graphics.newShader(g3d.shaderpath, "shaders/ghost.glsl")
 
-function editor:undo()
+local function checkUnchanged(before, after)
+    for k, v in pairs(before) do
+        if v ~= after[k] then
+            return false
+        end
+    end
+
+    return true
+end
+
+local function historyChange(chosenHistory)
     local typeTableLookup = {
         ["platform"] = platforms,
         ["checkpoint"] = checkpoints,
         ["finishline"] = finishlines
     }
 
+    for _, v in ipairs({platforms, checkpoints, finishlines}) do
+        for i, item in ipairs(v) do
+            if chosenHistory[item._id] ~= nil then
+                item:setData(chosenHistory[item._id])
+            end
+
+            if chosenHistory[item._id] == nil then
+                table.remove(v, i)
+                item:destroy()
+            end
+        end
+    end
+
+    for k, data in pairs(chosenHistory) do
+        local exists = false
+
+        for _, v in ipairs({platforms, checkpoints, finishlines}) do
+            for _, item in ipairs(v) do
+                if item._id == k then
+                    exists = true
+                    break
+                end
+            end
+        end
+
+        if not exists then
+            local item = typeLookup[data._type]:new(data._type == "platform" and data or data.position)
+
+            table.insert(typeTableLookup[data._type], item)
+        end
+    end
+end
+
+function editor:undo()
     if #history == 0 then return end
     if currentHistory == 0 then
         table.clear(stateBeforeUndo)
@@ -80,22 +124,13 @@ function editor:undo()
             for _, item in ipairs(v) do
                 local data = table.clone(item.data)
                 data._type = item._type
-                table.insert(stateBeforeUndo, data)
+                stateBeforeUndo[item._id] = data
             end
         end
     end
     currentHistory = math.clamp(currentHistory + 1, 1, #history)
 
-    table.clear(platforms)
-    table.clear(checkpoints)
-    table.clear(finishlines)
-
-    for _, data in ipairs(history[currentHistory]) do
-        print(table.tostring(data))
-        local item = typeLookup[data._type]:new(data._type == "platform" and data or data.position)
-
-        table.insert(typeTableLookup[data._type], item)
-    end
+    historyChange(history[currentHistory])
 end
 
 function editor:redo()
@@ -113,20 +148,13 @@ function editor:redo()
     
     if currentHistory == 1 then
         currentHistory = 0
-        for _, data in ipairs(stateBeforeUndo) do
-            local item = typeLookup[data._type]:new(data._type == "platform" and data or data.position)
-            
-            table.insert(typeTableLookup[data._type], item)
-        end
+        historyChange(stateBeforeUndo)
         return
     end
 
     currentHistory = math.clamp(currentHistory - 1, 1, #history)
 
-    for _, data in ipairs(history[currentHistory]) do
-        local item = typeLookup[data._type]:new(data._type == "platform" and data or data.position)
-        table.insert(typeTableLookup[data._type], item)
-    end
+    historyChange(history[currentHistory])
 end
 
 function editor:init()
@@ -237,14 +265,14 @@ function editor:updateHistory()
         for _, item in ipairs(v) do
             local data = table.clone(item.data)
             data._type = item._type
-            table.insert(historyPlatforms, data)
+            historyPlatforms[item._id] = data
         end
     end
 
     table.insert(history, 1, historyPlatforms)
     
     if #history >= MAX_HISTORY then
-        table.remove(history, 100)
+        table.remove(history, MAX_HISTORY)
     end
 end
 

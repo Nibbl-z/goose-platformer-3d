@@ -207,6 +207,7 @@ local function LoadSpriteFolder(directory)
     for _, v in ipairs(love.filesystem.getDirectoryItems(directory)) do
         local info = love.filesystem.getInfo(directory.."/"..v)
         
+        
         if info.type == "file" then
             local sprite = nil
             
