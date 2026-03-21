@@ -40,7 +40,7 @@ function platform:new(data)
             color = (data.color and Color.new(data.color.r, data.color.g, data.color.b, data.color.a)) or Color.fromRgb(70,70,70),
             material = data.material or MATERIAL[1]
         },
-        model = g3d.newModel("models/cube.obj", assets[textureLookup[data.type]], {data.position.x, data.position.z, data.position.y}, vec3.new(0,0,0):get(), {data.size.x, data.size.z, data.size.y}),
+        model = g3d.newModel("models/cube.obj", assets[getTexture({data = {type = data.type or PLATFORM_TYPE.default, material = data.material or MATERIAL[1]}})], {data.position.x, data.position.z, data.position.y}, vec3.new(0,0,0):get(), {data.size.x, data.size.z, data.size.y}),
         shader = love.graphics.newShader(g3d.shaderpath, "shaders/platform.glsl"),
         hovered = false,
         selected = false,
