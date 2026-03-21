@@ -269,15 +269,18 @@ end
 
 function player:isGrounded(platforms)
     for _, platform in ipairs(platforms) do
-        if point3d(self.position - vec3.new(0, 1.5, 0), platform.data.position, platform.data.size) then
-            if platform.data.type == PLATFORM_TYPE.lava then
-                assets["sfx/death.wav"]:play()
-                self:reset()
-                return nil
+        local radius = math.max(platform.data.size.x, platform.data.size.y, platform.data.size.z) / 2
+        if (self.position - platform.data.position):magnitude() < radius + 5 and platform.data.collision == true then
+            if point3d(self.position - vec3.new(0, 1.5, 0), platform.data.position, platform.data.size) then
+                if platform.data.type == PLATFORM_TYPE.lava then
+                    assets["sfx/death.wav"]:play()
+                    self:reset()
+                    return nil
+                end
+                self.position.y = platform.data.position.y + platform.data.size.y / 2 + 1.5
+                self.touchingMaterial = platform.data.material
+                return true
             end
-            self.position.y = platform.data.position.y + platform.data.size.y / 2 + 1.5
-            self.touchingMaterial = platform.data.material
-            return true
         end
     end
 
@@ -287,57 +290,60 @@ end
 function player:solveCollision(platforms, dt)
     local collides = false
     for _, platform in ipairs(platforms) do
-        local collide = intersect3d(self.position + vec3.new(0,0.2,0), vec3.new(2,2.7,2), platform.data.position, platform.data.size)
+        local radius = math.max(platform.data.size.x, platform.data.size.y, platform.data.size.z) / 2
+        if (self.position - platform.data.position):magnitude() < radius + 5 and platform.data.collision then
+            local collide = intersect3d(self.position + vec3.new(0,0.2,0), vec3.new(2,2.7,2), platform.data.position, platform.data.size)
         
-        if collide then
-            collides = true
-            if platform.data.type == PLATFORM_TYPE.lava then
-                assets["sfx/death.wav"]:play()
-                self:reset()
-                return nil
-            end
-            self.airtime = 0
-            self.grounded = true
+            if collide then
+                collides = true
+                if platform.data.type == PLATFORM_TYPE.lava then
+                    assets["sfx/death.wav"]:play()
+                    self:reset()
+                    return nil
+                end
+                self.airtime = 0
+                self.grounded = true
 
-            local minX, maxX = platform.data.position.x - platform.data.size.x / 2, platform.data.position.x + platform.data.size.x / 2
-            local minZ, maxZ = platform.data.position.z - platform.data.size.z / 2, platform.data.position.z + platform.data.size.z / 2
-            local x, z = self.position.x, self.position.z
+                local minX, maxX = platform.data.position.x - platform.data.size.x / 2, platform.data.position.x + platform.data.size.x / 2
+                local minZ, maxZ = platform.data.position.z - platform.data.size.z / 2, platform.data.position.z + platform.data.size.z / 2
+                local x, z = self.position.x, self.position.z
 
-            if x < minX then
-                self.xTouch = -1
-                self.touchingMaterial = platform.data.material
-            elseif x > maxX then
-                self.xTouch = 1
-                self.touchingMaterial = platform.data.material
-            else
-                self.xTouch = 0
+                if x < minX then
+                    self.xTouch = -1
+                    self.touchingMaterial = platform.data.material
+                elseif x > maxX then
+                    self.xTouch = 1
+                    self.touchingMaterial = platform.data.material
+                else
+                    self.xTouch = 0
+                end
+                
+                if z < minZ then
+                    self.zTouch = -1
+                    self.touchingMaterial = platform.data.material
+                elseif z > maxZ then
+                    self.zTouch = 1
+                    self.touchingMaterial = platform.data.material
+                else
+                    self.zTouch = 0
+                end
+
+                -- self.position.x = self.position.x + nx * math.clamp(dt, 0, 1) * RUN_SPEED * 4
+                -- self.position.z = self.position.z + nz * math.clamp(dt, 0, 1) * RUN_SPEED * 4
             end
+
+            local above = point3d(self.position + vec3.new(0,1.5,0), platform.data.position, platform.data.size)
             
-            if z < minZ then
-                self.zTouch = -1
-                self.touchingMaterial = platform.data.material
-            elseif z > maxZ then
-                self.zTouch = 1
-                self.touchingMaterial = platform.data.material
-            else
-                self.zTouch = 0
+            if above then
+                if platform.data.type == PLATFORM_TYPE.lava then
+                    assets["sfx/death.wav"]:play()
+                    self:reset()
+                    return nil
+                end
+                self.grounded = false
+                self.velocity.y = -7
+                self.position.y = self.position.y - GRAVITY * dt
             end
-
-            -- self.position.x = self.position.x + nx * math.clamp(dt, 0, 1) * RUN_SPEED * 4
-            -- self.position.z = self.position.z + nz * math.clamp(dt, 0, 1) * RUN_SPEED * 4
-        end
-
-        local above = point3d(self.position + vec3.new(0,1.5,0), platform.data.position, platform.data.size)
-        
-        if above then
-            if platform.data.type == PLATFORM_TYPE.lava then
-                assets["sfx/death.wav"]:play()
-                self:reset()
-                return nil
-            end
-            self.grounded = false
-            self.velocity.y = -7
-            self.position.y = self.position.y - GRAVITY * dt
         end
     end
 
@@ -389,17 +395,21 @@ end
 
 function player:updateCameraDistance(platforms)
     for _, platform in ipairs(platforms) do
-        for i = 0, CAMERA_DISTANCE, 0.5 do
-            local camPos = (vec3.new(
-                math.cos(math.rad(self.camera.rotation.y)) * math.cos(math.rad(self.camera.rotation.z)) * -i, 
-                math.sin(math.rad(self.camera.rotation.z)) * -i, 
-                math.sin(math.rad(self.camera.rotation.y)) * math.cos(math.rad(self.camera.rotation.z)) * -i
-            ) + self.position + vec3.new(0,1,0))
-    
-            if point3d(camPos, platform.data.position, platform.data.size) then
-                return i - 1
+        local radius = math.max(platform.data.size.x, platform.data.size.y, platform.data.size.z) / 2
+        if (self.camera.position - platform.data.position):magnitude() < radius + 5 and platform.data.collision then
+            for i = 0, CAMERA_DISTANCE, 0.1 do
+                local camPos = (vec3.new(
+                    math.cos(math.rad(self.camera.rotation.y)) * math.cos(math.rad(self.camera.rotation.z)) * -i, 
+                    math.sin(math.rad(self.camera.rotation.z)) * -i, 
+                    math.sin(math.rad(self.camera.rotation.y)) * math.cos(math.rad(self.camera.rotation.z)) * -i
+                ) + self.position + vec3.new(0,1,0))
+        
+                if point3d(camPos, platform.data.position, platform.data.size) then
+                    return i - 1
+                end
             end
         end
+        
     end
 end
 

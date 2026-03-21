@@ -661,16 +661,18 @@ function ui:init()
 
                     return condition
                 end),
-                collision = PropertiesCheckbox("collision", function ()
+                isCollision = PropertiesCheckbox("collision", function ()
                     for _, platform in ipairs(editorState.selectedPlatforms) do
                         if not platform.nonPlatform then      
                             platform.data.collision = true
+                            print(platform.data.collision)
                         end
                     end
                 end, function ()
                     for _, platform in ipairs(editorState.selectedPlatforms) do
                         if not platform.nonPlatform then      
                             platform.data.collision = false
+                            print(table.tostring(platform.data))
                         end
                     end
                 end, function ()

@@ -31,12 +31,16 @@ local function getTexture(p)
 end
 
 function platform:new(data)
+    if data.collision == nil then
+        data.collision = true
+    end
+
     local object = {
         data = {
             position = vec3.new(data.position.x, data.position.y, data.position.z),
             size = vec3.new(data.size.x, data.size.y, data.size.z),
             type = data.type or PLATFORM_TYPE.default,
-            collision = data.collision or true,
+            collision = data.collision,
             color = (data.color and Color.new(data.color.r, data.color.g, data.color.b, data.color.a)) or Color.fromRgb(70,70,70),
             material = data.material or MATERIAL[1]
         },
