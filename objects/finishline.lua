@@ -23,47 +23,7 @@ function finishline:new(position)
         _incomingMove = vec3.new(0,0,0),
         _incomingMoveSnapped = vec3.new(0,0,0),
         _id = platform_id,
-        handles = {
-            x = {
-                axis = "x",
-                positionModel = g3d.newModel("models/movehandle.obj", assets["img/goog.png"], (data.position - vec3.new(data.size.x / 2 + 3, 0, 0)):get(), vec3.new(0,math.rad(90),0):get(), vec3.new(0.5,0.5,0.5):get()),
-                shader = love.graphics.newShader(g3d.shaderpath, "shaders/solid.glsl"),
-                hovered = false
-            },
-            y = {
-                axis = "y",
-                positionModel = g3d.newModel("models/movehandle.obj", assets["img/goog.png"], (data.position + vec3.new(0, data.size.y / 2 + 3, 0)):get(), vec3.new(math.rad(90),0,0):get(), vec3.new(0.5,0.5,0.5):get()),
-                shader = love.graphics.newShader(g3d.shaderpath, "shaders/solid.glsl"),
-                hovered = false
-            },
-            z = {
-                axis = "z",
-                positionModel = g3d.newModel("models/movehandle.obj", assets["img/goog.png"], (data.position + vec3.new(0, data.size.y / 2 + 3, 0)):get(), vec3.new(0,math.rad(180),0):get(), vec3.new(0.5,0.5,0.5):get()),
-                shader = love.graphics.newShader(g3d.shaderpath, "shaders/solid.glsl"),
-                hovered = false
-            },
-            nx = {
-                axis = "x",
-                negative = true,
-                positionModel = g3d.newModel("models/movehandle.obj", assets["img/goog.png"], (data.position - vec3.new(data.size.x / 2 + 3, 0, 0)):get(), vec3.new(0,math.rad(270),0):get(), vec3.new(0.5,0.5,0.5):get()),   
-                shader = love.graphics.newShader(g3d.shaderpath, "shaders/solid.glsl"),
-                hovered = false
-            },
-            ny = {
-                axis = "y",
-                negative = true,
-                positionModel = g3d.newModel("models/movehandle.obj", assets["img/goog.png"], (data.position + vec3.new(0, data.size.y / 2 + 3, 0)):get(), vec3.new(math.rad(270),0,0):get(), vec3.new(0.5,0.5,0.5):get()),
-                shader = love.graphics.newShader(g3d.shaderpath, "shaders/solid.glsl"),
-                hovered = false
-            },
-            nz = {
-                axis = "z",
-                negative = true,
-                positionModel = g3d.newModel("models/movehandle.obj", assets["img/goog.png"], (data.position + vec3.new(0, data.size.y / 2 + 3, 0)):get(), vec3.new(0,math.rad(0),0):get(), vec3.new(0.5,0.5,0.5):get()),
-                shader = love.graphics.newShader(g3d.shaderpath, "shaders/solid.glsl"),
-                hovered = false
-            },
-        }
+        handles = {}
     }
 
     platform_id = platform_id + 1
@@ -86,7 +46,72 @@ function finishline:setData(newData)
     end
 end
 
+function finishline:createHandles()
+    if self.handles["x"] ~= nil then return end
+
+    self.handles = {
+        x = {
+            axis = "x",
+            positionModel = g3d.newModel("models/movehandle.obj", nil, (self.data.position - vec3.new(self.data.size.x / 2 + 3, 0, 0)):get(), vec3.new(0,math.rad(90),0):get(), vec3.new(0.5,0.5,0.5):get()),
+            shader = love.graphics.newShader(g3d.shaderpath, "shaders/solid.glsl"),
+            hovered = false
+        },
+        y = {
+            axis = "y",
+            positionModel = g3d.newModel("models/movehandle.obj", nil, (self.data.position + vec3.new(0, self.data.size.y / 2 + 3, 0)):get(), vec3.new(math.rad(90),0,0):get(), vec3.new(0.5,0.5,0.5):get()),
+            shader = love.graphics.newShader(g3d.shaderpath, "shaders/solid.glsl"),
+            hovered = false
+        },
+        z = {
+            axis = "z",
+            positionModel = g3d.newModel("models/movehandle.obj", nil, (self.data.position + vec3.new(0, self.data.size.y / 2 + 3, 0)):get(), vec3.new(0,math.rad(180),0):get(), vec3.new(0.5,0.5,0.5):get()),
+            shader = love.graphics.newShader(g3d.shaderpath, "shaders/solid.glsl"),
+            hovered = false
+        },
+        nx = {
+            axis = "x",
+            negative = true,
+            positionModel = g3d.newModel("models/movehandle.obj", nil, (self.data.position - vec3.new(self.data.size.x / 2 + 3, 0, 0)):get(), vec3.new(0,math.rad(270),0):get(), vec3.new(0.5,0.5,0.5):get()),
+            shader = love.graphics.newShader(g3d.shaderpath, "shaders/solid.glsl"),
+            hovered = false
+        },
+        ny = {
+            axis = "y",
+            negative = true,
+            positionModel = g3d.newModel("models/movehandle.obj", nil, (self.data.position + vec3.new(0, self.data.size.y / 2 + 3, 0)):get(), vec3.new(math.rad(270),0,0):get(), vec3.new(0.5,0.5,0.5):get()),
+            shader = love.graphics.newShader(g3d.shaderpath, "shaders/solid.glsl"),
+            hovered = false
+        },
+        nz = {
+            axis = "z",
+            negative = true,
+            positionModel = g3d.newModel("models/movehandle.obj", nil, (self.data.position + vec3.new(0, self.data.size.y / 2 + 3, 0)):get(), vec3.new(0,math.rad(0),0):get(), vec3.new(0.5,0.5,0.5):get()),
+            shader = love.graphics.newShader(g3d.shaderpath, "shaders/solid.glsl"),
+            hovered = false
+        },
+    }
+
+    for _, v in pairs(self.handles) do
+        v._position = vec3.fromg3d(v.positionModel.translation)
+    end
+end
+
+function finishline:destroyHandles()
+    if self.handles["x"] == nil then return end
+    for _, handle in pairs(self.handles) do
+        handle = nil
+    end
+
+    table.clear(self.handles)
+end
+
 function finishline:update(dt)
+    if self.selected then
+        self:createHandles()
+    else
+        self:destroyHandles()
+    end
+
     self._incomingMoveSnapped = vec3.new(
         math.round(self._incomingMove.x, editorState.snap and editorState.snapAmount or 0),
         math.round(self._incomingMove.y, editorState.snap and editorState.snapAmount or 0),
