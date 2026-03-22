@@ -40,6 +40,8 @@ BGM = {
 currentMusic = nil
 
 function love.load()
+    love.window.setIcon(love.image.newImageData("img/icon.png"))
+
     uiCanvas = love.graphics.newCanvas()
 
     biribiri:LoadSprites("img")
