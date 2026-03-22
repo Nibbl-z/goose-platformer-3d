@@ -15,7 +15,7 @@ vec4 effect( vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords 
     float mult = 0.4;
 
     if (hovered) {
-        size = 10;
+        size = 10.0;
         offset = 0.06;
         extra = 0.1;
         mult = 0.6;
