@@ -291,8 +291,6 @@ function love.keypressed(key)
     end
 end
 
-
-local thefont = love.graphics.newFont(16)
 function love.draw()
     love.graphics.setColor(1,1,1)
     --love.graphics.print(tostring(love.timer.getFPS()), 0, 100)
@@ -311,11 +309,4 @@ function love.draw()
 
     love.graphics.setColor(0,0,0,fade.value)
     love.graphics.rectangle("fill", 0,0,800,600)
-
-    local stats = love.graphics.getStats()
-
-    love.graphics.setColor(1,1,1,1)
-    local str = string.format("texture: %.2f MB,memory: %s", stats.texturememory / 1024 / 1024, tostring(collectgarbage("count") / 1024))
-    love.graphics.setFont(thefont)
-    love.graphics.print(str, 10, 50)
 end

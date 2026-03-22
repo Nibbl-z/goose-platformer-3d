@@ -388,7 +388,7 @@ function ui:populateLevels()
             size = UDim2.new(1,0,1,0),
             children = {
                 label = textlabel:new {
-                    text = "No custom levels found! Create one by clicking the New Level button, or by putting .goose3d files in %appdata%/goose-platformer-3d", -- todo: change text for web build i guess?
+                    text = ISWEB and "No custom levels found! Create one by clicking the New Level button." or "No custom levels found! Create one by clicking the New Level button, or by putting .goose3d files in %appdata%/goose-platformer-3d",
                     size = UDim2.new(0.8,0,0.8,0),
                     position = UDim2.new(0.5,0,0.5,0),
                     anchorpoint = Vector2.new(0.5,0.5),
@@ -580,6 +580,10 @@ function ui:init()
             }
         }
     }
+
+    if ISWEB then
+        self.screen:get("main"):get("quit").visible = false
+    end
 
     self:enterAnim()
     self:populateLevels()

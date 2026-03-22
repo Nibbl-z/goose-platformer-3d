@@ -263,6 +263,12 @@ end
 
 function player:mousemoved(x, y, dx, dy)
     if paused then return end
+    if ISWEB then
+        if dx > 100 then return end
+        if dy > 100 then return end
+        if dx < -100 then return end
+        if dy < -100 then return end
+    end
     self.camera.rotation = self.camera.rotation - vec3.new(0, dx * SENSITIVITY, dy * SENSITIVITY)
     self.camera.rotation.z = math.clamp(self.camera.rotation.z, -90, 90)
 end
@@ -611,7 +617,12 @@ function player:update(dt, platforms)
 end
 
 function player:wheelmoved(x, y)
-    CAMERA_DISTANCE = math.clamp(CAMERA_DISTANCE - y, 3, 30)
+    if ISWEB then
+        CAMERA_DISTANCE = math.clamp(CAMERA_DISTANCE - (y / 100), 3, 30)
+    else
+        CAMERA_DISTANCE = math.clamp(CAMERA_DISTANCE - y, 3, 30)
+    end
+    
 end
 
 function player:draw()
