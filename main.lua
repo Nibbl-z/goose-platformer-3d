@@ -277,15 +277,6 @@ function love.keypressed(key)
         end
     end
 
-    if key == "," then
-        love.mouse.setRelativeMode(true)
-        currentScene = "game"
-        World:updateMesh()
-    elseif key == "." then
-        currentScene = "editor"
-    elseif key == "/" then
-        currentScene = "mainmenu"
-    end
     if key == "space" and (Player.grounded or Player.airtime <= 0.2) then
         Player.jumpPressed = true
     end

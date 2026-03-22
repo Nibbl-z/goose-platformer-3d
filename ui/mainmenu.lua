@@ -53,7 +53,7 @@ function Button(color, text, position, callback, size, textSize, isPopup)
     }
 end
 
-function ui:LevelCard(level, filename)
+function ui:LevelCard(level, filename, isOfficial)
     return uibase:new {
         size = UDim2.new(1,0,1,0),
         backgroundcolor = Color.new(0,0,0,0),
@@ -95,11 +95,11 @@ function ui:LevelCard(level, filename)
                 currentLevelPath = filename
                 Level:loadGame(level)
             end, UDim2.new(0,110,0,50), 25),
-            Button("blue", "Edit", UDim2.new(0,180,1.2,-70), function ()
+            not isOfficial and Button("blue", "Edit", UDim2.new(0,180,1.2,-70), function ()
                 currentLevelPath = filename
                 Level:loadEditor(level)
-            end, UDim2.new(0,110,0,50), 25),
-            Button("orange", "Change Metadata", UDim2.new(0,300,1.2,-70), function ()
+            end, UDim2.new(0,110,0,50), 25) or nil,
+            not isOfficial and Button("orange", "Change Metadata", UDim2.new(0,300,1.2,-70), function ()
                 self:createPopup({
                     title = "Edit Metadata",
                     height = 0.65,
@@ -134,8 +134,8 @@ function ui:LevelCard(level, filename)
                         end
                     end
                 })
-            end, UDim2.new(0,110,0,50), 20),
-            Button("red", "Delete", UDim2.new(0,420,1.2,-70), function ()
+            end, UDim2.new(0,110,0,50), 20) or nil,
+            not isOfficial and Button("red", "Delete", UDim2.new(0,420,1.2,-70), function ()
                 self:createPopup({
                     title = "Delete Level",
                     buttonText = "Cancel",
@@ -154,7 +154,7 @@ function ui:LevelCard(level, filename)
                         tween:new(self.screen:get("levels"):get("levelContainer"):get("scroller"), TweenInfo.new(0.3, EasingStyle.CubicOut), {position = UDim2.new(-self.currentLevel + 1, 0, 0, 0)}):play()
                     end
                 })
-            end, UDim2.new(0,110,0,50), 25),
+            end, UDim2.new(0,110,0,50), 25) or nil,
         }
     }
 end
@@ -361,26 +361,41 @@ function ui:enterAnim()
     end)
 end
 
-function ui:populateLevels()
+function ui:populateLevels(isOfficial)
     self.totalLevels = 0
     local scroller = self.screen:get("levels"):get("levelContainer"):get("scroller")
 
     table.clear(scroller.children)
 
-    love.filesystem.setIdentity("goose-platformer-3d")
-
     table.clear(levels)
 
-    for _, filename in ipairs(love.filesystem.getDirectoryItems("")) do
-        if filename:match("^.+(%..+)$") == ".goose3d" then
-            local level = Level:load(filename) 
-            if type(level) == "table" then
-                table.insert(levels, level)
-                self:LevelCard(level, filename):setparent(scroller)
-                self.totalLevels = self.totalLevels + 1
+    if isOfficial then
+        for _, filename in ipairs(love.filesystem.getDirectoryItems("/levels")) do
+            if filename:match("^.+(%..+)$") == ".goose3d" then
+                local level = Level:load("levels/"..filename) 
+                if type(level) == "table" then
+                    table.insert(levels, level)
+                    self:LevelCard(level, filename, true):setparent(scroller)
+                    self.totalLevels = self.totalLevels + 1
+                end
+            end
+        end
+    else
+        love.filesystem.setIdentity("goose-platformer-3d")
+
+        for _, filename in ipairs(love.filesystem.getDirectoryItems("")) do
+            if filename:match("^.+(%..+)$") == ".goose3d" then
+                local level = Level:load(filename) 
+                if type(level) == "table" then
+                    table.insert(levels, level)
+                    self:LevelCard(level, filename, false):setparent(scroller)
+                    self.totalLevels = self.totalLevels + 1
+                end
             end
         end
     end
+    
+    self.screen:get("levels"):get("create").visible = not isOfficial
 
     if self.totalLevels == 0 then
         local message = uibase:new {
@@ -438,12 +453,16 @@ function ui:init()
                 },
         
                 play = Button("green", "Play Levels", UDim2.new(0,200,0,300), function ()
-                    
+                    self.currentLevel = 1
+                    self.screen:get("levels"):get("levelContainer"):get("scroller").position = UDim2.new(0,0,0,0)   
+                    self:populateLevels(true)
+                    tween:new(self.screen:get("main"), TweenInfo.new(1, EasingStyle.CubicOut), {position = UDim2.new(-1,0,0,0)}):play()
+                    tween:new(self.screen:get("levels"), TweenInfo.new(1, EasingStyle.CubicOut), {position = UDim2.new(0,0,0,0)}):play()
                 end),
                 create = Button("blue", "Custom Levels", UDim2.new(0,200,0,410), function ()
                     self.currentLevel = 1
                     self.screen:get("levels"):get("levelContainer"):get("scroller").position = UDim2.new(0,0,0,0)   
-                    self:populateLevels()
+                    self:populateLevels(false)
                     tween:new(self.screen:get("main"), TweenInfo.new(1, EasingStyle.CubicOut), {position = UDim2.new(-1,0,0,0)}):play()
                     tween:new(self.screen:get("levels"), TweenInfo.new(1, EasingStyle.CubicOut), {position = UDim2.new(0,0,0,0)}):play()
                 end),

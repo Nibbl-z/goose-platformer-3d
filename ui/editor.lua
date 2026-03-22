@@ -70,7 +70,7 @@ function PropertiesVec3(property, isVector)
                 else
                     -- i love assuming itll only be an rgb because thats all im adding anyway
                     local color = Color.new(platform.data[prop].r, platform.data[prop].g, platform.data[prop].b)
-                    color[axis] = value
+                    color[axis] = value / 255
 
                     platform.data[prop] = color
                 end
